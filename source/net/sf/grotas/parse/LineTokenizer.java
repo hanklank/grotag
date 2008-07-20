@@ -78,6 +78,7 @@ public class LineTokenizer {
         fireWarning(message, getColumn());
     }
 
+    // TODO: collect warnings in WarningPool or something.
     private void fireWarning(String message, int messageColumn) {
         assert message != null;
         assert messageColumn >= 0;
@@ -180,7 +181,7 @@ public class LineTokenizer {
         if (!hasNext() && (parserState == IN_COMMAND_BRACE)) {
             insertCloseBrace = true;
         }
-        assert type == TYPE_INVALID : "token type must be set";
+        assert type != TYPE_INVALID : "token type must be set";
     }
 
     private boolean hasChars() {
