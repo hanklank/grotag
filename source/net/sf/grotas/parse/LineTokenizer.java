@@ -86,6 +86,33 @@ public class LineTokenizer {
                 + message);
     }
 
+    private boolean atSignIsCommand(int atSignColumn) {
+        assert atSignColumn >= 0;
+        boolean result = false;
+        char atSign = text.charAt(atSignColumn);
+        int textLength = text.length();
+
+        assert atSign == '@' : "character at column " + atSignColumn
+                + " must be " + tools.sourced("@") + " but is "
+                + tools.sourced(atSign);
+
+        if (atSignColumn < textLength - 1) {
+            char charAfterAtSign = text.charAt(atSignColumn + 1);
+            boolean charAfterAtSignIsOpenBrace = (charAfterAtSign == '{');
+
+            if ((atSignColumn > 0) || charAfterAtSignIsOpenBrace) {
+                if (charAfterAtSignIsOpenBrace
+                        && (atSignColumn < textLength - 2)) {
+                    char charAfterOpenBrace = text.charAt(atSignColumn + 2);
+                    result = !Character.isWhitespace(charAfterOpenBrace);
+                }
+            } else {
+                result = !Character.isWhitespace(charAfterAtSign);
+            }
+        }
+        return result;
+    }
+
     public void advance() {
         if (!hasNext()) {
             throw new IllegalStateException(
@@ -112,7 +139,8 @@ public class LineTokenizer {
                 column += 1;
             }
             type = TYPE_SPACE;
-        } else if (some == '@') {
+        } else if ((parserState == IN_TEXT) && (some == '@')
+                && atSignIsCommand(column - 1)) {
             // Parse @ indicating a command.
             parserState = IN_COMMAND;
             type = TYPE_COMMAND;
@@ -127,14 +155,23 @@ public class LineTokenizer {
             int quoteColumn = column;
 
             do {
-                token += text.charAt(column);
+                try {
+                    token += text.charAt(column);
+                } catch (StringIndexOutOfBoundsException error) {
+                    System.err.println("(" + lineNumber + ":" + column + ") ");
+                    System.err.println("  text = " + tools.sourced(text));
+                    System.err.println("  token = " + tools.sourced(token));
+                    throw error;
+                }
                 column += 1;
             } while (hasChars() && (text.charAt(column) != '"'));
 
-            if (!token.endsWith("\"") || token.equals("\"")) {
-                token += "\"";
+            if (!hasChars()) {
                 fireWarning("appended missing trailing quote", quoteColumn);
+            } else {
+                column += 1;
             }
+            token += "\"";
             type = TYPE_STRING;
         } else if ((parserState == IN_COMMAND_BRACE) && (some == '}')) {
             // Parse "}" within a command to indicate end of command.
@@ -147,16 +184,21 @@ public class LineTokenizer {
             // Parse normal text.
             boolean afterBackslash = (some == '\\');
 
+            if (some == '@') {
+                fireWarning("inserting backslash before dangling \"@\"");
+                assert token.equals("@");
+                token = "\\@";
+            }
             while (hasChars()
                     && !Character.isWhitespace(text.charAt(column))
                     && !((parserState == IN_COMMAND_BRACE) && (text
                             .charAt(column) == '}'))
                     && !((parserState == IN_TEXT)
-                            && (text.charAt(column) == '@') && !afterBackslash)) {
+                            && (text.charAt(column) == '@') && !afterBackslash && atSignIsCommand(column))) {
                 some = text.charAt(column);
                 if (afterBackslash) {
                     if ((some != '\\') && (some != '@')) {
-                        fireWarning("inserted missing backslash before dangling backslash with "
+                        fireWarning("inserted backslash before dangling backslash with "
                                 + tools.sourced(some)
                                 + " instead of \"\\\" or \"@\"");
                         token += '\\';
@@ -166,6 +208,9 @@ public class LineTokenizer {
                 } else if (some == '\\') {
                     token += some;
                     afterBackslash = true;
+                } else if (some == '@') {
+                    fireWarning("inserted backslash before dangling \"@\"");
+                    token += "\\" + some;
                 } else {
                     token += some;
                 }
@@ -173,7 +218,7 @@ public class LineTokenizer {
             }
 
             if (afterBackslash) {
-                fireWarning("appended missing backslash after dangling baskslash at end of token");
+                fireWarning("appended backslash after dangling backslash at end of token");
                 token += '\\';
             }
             type = TYPE_TEXT;

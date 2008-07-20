@@ -47,6 +47,32 @@ public class LineTokenizerTest {
     }
 
     @Test
+    public void testDanglingCommandAtEndOfLine() {
+        testTokenizer("x@", new String[] { "x\\@" });
+    }
+
+    @Test
+    public void testDanglingAtSign() {
+        testTokenizer("@", new String[] { "\\@" });
+    }
+
+    @Test
+    public void testDanglingInlineCommandWithCloseBraceAtStartOfLine() {
+        testTokenizer("@{", new String[] { "\\@{" });
+    }
+
+    @Test
+    public void testDanglingInlineCommandWithCloseBrace() {
+        testTokenizer("x@{", new String[] { "x\\@{" });
+    }
+
+
+    @Test
+    public void testDanglingInlineCommandWithoutOpenBrace() {
+        testTokenizer("hugo@sepp.com", new String[] { "hugo\\@sepp.com" });
+    }
+
+    @Test
     public void testTextWithBracesAroundLocalCommand() {
         testTokenizer("{@{b}}", new String[] { "{", "@", "{", "b", "}", "}" });
     }
@@ -66,6 +92,14 @@ public class LineTokenizerTest {
         testTokenizer("@node \"hugo\"", new String[] { "@", "node", " ",
                 "\"hugo\"" });
     }
+
+    @Test
+    public void testCommandWithString2() {
+        testTokenizer("@NODE M \"L G\"", new String[] { "@", "NODE", " ",
+                "M", " ", "\"L G\""});
+    }
+
+    
 
     @Test
     public void testEscaped() {
