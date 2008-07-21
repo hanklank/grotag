@@ -49,7 +49,7 @@ public class ItemReader {
             do {
                 line = guideReader.readLine();
                 if (line != null) {
-                    tokenizer = new LineTokenizer(line, lineNumber);
+                    tokenizer = new LineTokenizer(guideFile, lineNumber, line);
                     while (tokenizer.hasNext()) {
                         columnNumber = tokenizer.getColumn();
                         tokenizer.advance();

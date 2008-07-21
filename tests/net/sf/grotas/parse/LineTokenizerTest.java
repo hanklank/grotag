@@ -2,6 +2,8 @@ package net.sf.grotas.parse;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import net.sf.grotas.common.Tools;
 import net.sf.grotas.parse.LineTokenizer;
 
@@ -139,7 +141,7 @@ public class LineTokenizerTest {
     }
 
     private void testTokenizer(String text, String[] expectedTokens) {
-        LineTokenizer tokenizer = new LineTokenizer(text, 3);
+        LineTokenizer tokenizer = new LineTokenizer(new File("<dummy>.guide"), 3, text);
         int expectedTokenCount = expectedTokens.length;
 
         for (int i = 0; i < expectedTokenCount; i += 1) {
@@ -150,5 +152,4 @@ public class LineTokenizerTest {
             System.out.println("token: " + tools.sourced(tokenizer.getToken()));
         }
     }
-
 }

@@ -1,5 +1,7 @@
 package net.sf.grotas.parse;
 
+import java.io.File;
+
 import net.sf.grotas.common.Tools;
 
 /** Tokenizer for a single line of an AmigaGuide document */
@@ -30,6 +32,8 @@ public class LineTokenizer {
     private char type;
     private Tools tools;
     private boolean insertCloseBrace;
+    private File sourceFile;
+    private MessagePool messagePool;
 
     /**
      * Create a new LineTokenizer for the line <code>newText</code> read from
@@ -47,13 +51,16 @@ public class LineTokenizer {
      *                the number of the line when read from the input file,
      *                starting with 0
      */
-    public LineTokenizer(String newText, int newLineNumber) {
-        assert newText != null;
+    public LineTokenizer(File newFile, int newLineNumber, String newText) {
+        assert newFile != null;
         assert newLineNumber >= 0;
+        assert newText != null;
 
         tools = Tools.getInstance();
-        text = tools.withoutTrailingWhiteSpace(newText);
+        messagePool = MessagePool.getInstance();
+        sourceFile = newFile;
         lineNumber = newLineNumber;
+        text = tools.withoutTrailingWhiteSpace(newText);
         column = 0;
         columnOpenBrace = NO_COLUMN;
         parserState = IN_TEXT;
@@ -78,12 +85,10 @@ public class LineTokenizer {
         fireWarning(message, getColumn());
     }
 
-    // TODO: collect warnings in WarningPool or something.
     private void fireWarning(String message, int messageColumn) {
         assert message != null;
         assert messageColumn >= 0;
-        System.err.println("(" + getLine() + ":" + messageColumn + ") - "
-                + message);
+        messagePool.add(sourceFile, getLine(), getColumn(), message);
     }
 
     private boolean atSignIsCommand(int atSignColumn) {
