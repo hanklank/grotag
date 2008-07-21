@@ -1,4 +1,4 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.grotas.common.Tools;
+import net.sf.grotag.common.Tools;
 
 public class ItemReader {
     private static final char BEFORE_DATABASE = 'b';

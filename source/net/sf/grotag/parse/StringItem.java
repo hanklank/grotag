@@ -1,8 +1,8 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
 import java.io.File;
 
-import net.sf.grotas.common.Tools;
+import net.sf.grotag.common.Tools;
 
 public class StringItem extends AbstractItem {
     private String string;

@@ -1,8 +1,8 @@
-package net.sf.grotas;
+package net.sf.grotag;
 
 import java.io.File;
 
-import net.sf.grotas.parse.ItemReader;
+import net.sf.grotag.parse.ItemReader;
 
 /**
  * Grotas - Amigaguide viewer and converter.

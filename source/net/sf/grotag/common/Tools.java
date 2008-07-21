@@ -1,4 +1,4 @@
-package net.sf.grotas.common;
+package net.sf.grotag.common;
 
 import java.util.Map;
 import java.util.TreeMap;

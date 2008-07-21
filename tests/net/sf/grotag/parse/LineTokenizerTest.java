@@ -1,11 +1,11 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
 import static org.junit.Assert.*;
 
 import java.io.File;
 
-import net.sf.grotas.common.Tools;
-import net.sf.grotas.parse.LineTokenizer;
+import net.sf.grotag.common.Tools;
+import net.sf.grotag.parse.LineTokenizer;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +68,6 @@ public class LineTokenizerTest {
         testTokenizer("x@{", new String[] { "x\\@{" });
     }
 
-
     @Test
     public void testDanglingInlineCommandWithoutOpenBrace() {
         testTokenizer("hugo@sepp.com", new String[] { "hugo\\@sepp.com" });
@@ -97,11 +96,9 @@ public class LineTokenizerTest {
 
     @Test
     public void testCommandWithString2() {
-        testTokenizer("@NODE M \"L G\"", new String[] { "@", "NODE", " ",
-                "M", " ", "\"L G\""});
+        testTokenizer("@NODE M \"L G\"", new String[] { "@", "NODE", " ", "M",
+                " ", "\"L G\"" });
     }
-
-    
 
     @Test
     public void testEscaped() {
@@ -141,7 +138,8 @@ public class LineTokenizerTest {
     }
 
     private void testTokenizer(String text, String[] expectedTokens) {
-        LineTokenizer tokenizer = new LineTokenizer(new File("<dummy>.guide"), 3, text);
+        LineTokenizer tokenizer = new LineTokenizer(new File("<dummy>.guide"),
+                3, text);
         int expectedTokenCount = expectedTokens.length;
 
         for (int i = 0; i < expectedTokenCount; i += 1) {

@@ -1,9 +1,9 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
 import java.io.File;
 import java.util.List;
 
-import net.sf.grotas.common.Tools;
+import net.sf.grotag.common.Tools;
 
 public class CommandItem extends AbstractItem {
     private String commandName;

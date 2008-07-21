@@ -1,6 +1,8 @@
-package net.sf.grotas.common;
+package net.sf.grotag.common;
 
 import static org.junit.Assert.*;
+
+import net.sf.grotag.common.Tools;
 
 import org.junit.Before;
 import org.junit.Test;

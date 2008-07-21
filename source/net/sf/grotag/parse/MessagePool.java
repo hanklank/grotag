@@ -1,4 +1,4 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
 import java.io.File;
 import java.util.SortedSet;

@@ -1,6 +1,9 @@
-package net.sf.grotas.parse;
+package net.sf.grotag.parse;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -13,8 +16,6 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import sun.rmi.runtime.GetThreadPoolAction;
 
 /**
  * Test for ItemReader.
@@ -100,11 +101,11 @@ public class ItemReaderTest {
         assertNotNull(commandItem.getItems());
         assertEquals(2, commandItem.getItems().size());
     }
-    
+
     private File getTestGuide(String relativeName) {
         return new File(new File("tests", "guides"), relativeName);
     }
-    
+
     @Test
     public void testLichtTools() throws Exception {
         File guide = getTestGuide("LichtTools.guide");
@@ -113,6 +114,6 @@ public class ItemReaderTest {
         for (AbstractItem item : reader.getItems()) {
             System.out.println(item);
         }
-        
+
     }
 }
