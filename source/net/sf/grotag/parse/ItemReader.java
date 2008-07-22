@@ -9,30 +9,16 @@ import java.io.InputStreamReader;
 import java.util.LinkedList;
 import java.util.List;
 
-import net.sf.grotag.common.Tools;
-
 public class ItemReader {
-    private static final char BEFORE_DATABASE = 'b';
     private LineTokenizer tokenizer;
     private File guideFile;
-    private char state;
     private List<AbstractItem> items;
-    private Tools tools;
     private int lineNumber;
 
     public ItemReader(File newGuideFile) {
         assert newGuideFile != null;
-        tools = Tools.getInstance();
         guideFile = newGuideFile;
         items = new LinkedList<AbstractItem>();
-    }
-
-    // TODO: collect warnings in WarningPool or something.
-    private void fireWarning(String message, int messageColumn) {
-        assert message != null;
-        assert messageColumn >= 0;
-        System.err.println("(" + lineNumber + ":" + messageColumn + ") - "
-                + message);
     }
 
     public void read() throws IOException {
@@ -44,7 +30,6 @@ public class ItemReader {
 
         lineNumber = 0;
         items = new LinkedList<AbstractItem>();
-        state = BEFORE_DATABASE;
         try {
             do {
                 line = guideReader.readLine();
