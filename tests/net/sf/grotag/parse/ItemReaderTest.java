@@ -51,7 +51,7 @@ public class ItemReaderTest {
         ItemReader reader = new ItemReader(guide);
         reader.read();
         List<AbstractItem> items = reader.getItems();
-        assertEquals(2, items.size());
+        assertEquals(3, items.size());
         AbstractItem item = items.get(0);
         System.out.println(item);
         assertTrue(item instanceof SpaceItem);
@@ -64,7 +64,7 @@ public class ItemReaderTest {
         ItemReader reader = new ItemReader(guide);
         reader.read();
         List<AbstractItem> items = reader.getItems();
-        assertEquals(1, items.size());
+        assertEquals(2, items.size());
         AbstractItem item = items.get(0);
         System.out.println(item);
         assertTrue(item instanceof TextItem);
@@ -77,7 +77,7 @@ public class ItemReaderTest {
         ItemReader reader = new ItemReader(guide);
         reader.read();
         List<AbstractItem> items = reader.getItems();
-        assertEquals(1, items.size());
+        assertEquals(2, items.size());
         AbstractItem item = items.get(0);
         System.out.println(item);
         assertTrue(item instanceof TextItem);

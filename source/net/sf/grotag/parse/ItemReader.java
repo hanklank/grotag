@@ -48,8 +48,21 @@ public class ItemReader {
                                     columnNumber, tokenizer.getToken()));
                         }
                     }
+                    
+                    // Add newline unless the last item is a line command.
+                    AbstractItem lastItem = items.get(items.size() - 1);
+                    boolean addNewLine = !(lastItem instanceof CommandItem);
+                    if (!addNewLine) {
+                        CommandItem lastCommand = (CommandItem) lastItem;
+                        addNewLine = lastCommand.isInline();
+                    }
+                    if (addNewLine) {
+                        items.add(new NewLineItem(guideFile, lineNumber,
+                                tokenizer.getColumn()));
+                    }
+
+                    lineNumber += 1;
                 }
-                lineNumber += 1;
             } while (line != null);
         } finally {
             guideReader.close();
