@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class Tools {
+    private static final String DEFAULT_TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
+
     /**
      * Size of slack in buffer escaped characters get encoded to.
      */
@@ -144,5 +146,51 @@ public class Tools {
     // @ ensures \result.length() >= (2 + digits);
     public/* @ pure @ */String hexString(long value, int digits) {
         return hexString(value, digits, null);
+    }
+
+    public String[] getToken(String line, int startColumn) {
+        return getToken(line, startColumn, null);
+    }
+
+    public String[] getToken(String line, int startColumn,
+            String continuingChars) {
+        assert line != null;
+        assert startColumn <= line.length();
+
+        String[] result = null;
+        String tokenChars = continuingChars;
+        String space = null;
+        String token = null;
+        int column = startColumn;
+
+        while ((column < line.length()) && (result == null)) {
+            // Skip white space
+            space = "";
+            while ((column < line.length())
+                    && Character.isWhitespace(line.charAt(column))) {
+                space += line.charAt(column);
+                column += 1;
+            }
+
+            if (tokenChars == null) {
+                tokenChars = DEFAULT_TOKEN_CHARS;
+            }
+            
+            if (column < line.length()) {
+                char firstChar = line.charAt(column);
+                
+                token = "" + firstChar;
+                if (tokenChars.indexOf(firstChar) >= 0) {
+                    column += 1;
+                    while ((column < line.length())
+                            && (tokenChars.indexOf(line.charAt(column)) >= 0)) {
+                        token += line.charAt(column);
+                        column += 1;
+                    }
+                }
+                result = new String[] { space, token };
+            }
+        }
+        return result;
     }
 }

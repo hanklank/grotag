@@ -24,4 +24,18 @@ public class ToolsTest {
         assertEquals("", tools.withoutTrailingWhiteSpace(" "));
         assertEquals("", tools.withoutTrailingWhiteSpace(""));
     }
+
+    @Test
+    public void testGetToken() {
+        assertArrayEquals(null, tools.getToken("", 0));
+        assertArrayEquals(null, tools.getToken(" ", 0));
+        assertArrayEquals(new String[]{"", "x"}, tools.getToken("x", 0));
+        assertArrayEquals(new String[]{"", "xyz"}, tools.getToken("xyz", 0));
+        assertArrayEquals(new String[]{" ", "x"}, tools.getToken(" x", 0));
+        assertArrayEquals(new String[]{"", "x"}, tools.getToken("x=y", 0));
+        assertArrayEquals(new String[]{"", "="}, tools.getToken("x=y", 1));
+        assertArrayEquals(new String[]{"", "x"}, tools.getToken("x y", 0));
+        assertArrayEquals(new String[]{"", "y"}, tools.getToken("x y", 2));
+        assertArrayEquals(new String[]{" ", "y"}, tools.getToken("x y", 1));
+    }
 }
