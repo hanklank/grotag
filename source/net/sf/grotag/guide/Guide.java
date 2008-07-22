@@ -63,16 +63,19 @@ public class Guide {
                             if (existingTag != null) {
                                 messagePool.add(new MessageItem(
                                         possibleMacroItem,
-                                        "disabled standard tag by macro "
-                                                + tools.sourced(macroName)));
+                                        "replaced standard tag "
+                                                + tools.sourced(existingTag
+                                                        .getName()
+                                                        + " with macro")));
                             }
                             macroMap.put(macroName, macro);
                             macroItemMap.put(macroName, possibleMacroItem);
                         } else {
+                            String originalMacroName = macroMap.get(macroName).getOriginalName();
                             MessageItem currentMacroMessage = new MessageItem(
                                     possibleMacroItem,
                                     "ignored duplicate definition of macro "
-                                            + tools.sourced(macroName));
+                                            + tools.sourced(originalMacroName));
                             MessageItem existingMacroMessage = new MessageItem(
                                     existingMacro,
                                     "previous definition of macro");
