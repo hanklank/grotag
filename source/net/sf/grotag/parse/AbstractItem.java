@@ -7,7 +7,7 @@ import java.io.File;
  * 
  * @author Thomas Aglassinger
  */
-abstract class AbstractItem {
+public abstract class AbstractItem {
     private File file;
     private int line;
     private int column;

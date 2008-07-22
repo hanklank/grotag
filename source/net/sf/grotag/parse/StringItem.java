@@ -20,12 +20,13 @@ public class StringItem extends AbstractItem {
         string = newString;
     }
 
-    public String getSpace() {
+    /** The string text without enclosing quotes. */
+    public String getString() {
         return string;
     }
 
     @Override
     protected String toStringSuffix() {
-        return "<string>" + Tools.getInstance().sourced(getSpace());
+        return "<string>" + Tools.getInstance().sourced(getString());
     }
 }

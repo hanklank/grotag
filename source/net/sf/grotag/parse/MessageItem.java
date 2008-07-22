@@ -12,6 +12,7 @@ public class MessageItem implements Comparable<MessageItem> {
     private int line;
     private int column;
     private String text;
+    private MessageItem seeAlso;
 
     public MessageItem(File newFile, int newLine, int newColumn, String newText) {
         assert newFile != null;
@@ -25,7 +26,11 @@ public class MessageItem implements Comparable<MessageItem> {
         column = newColumn;
         text = newText;
     }
-
+    
+    public MessageItem(AbstractItem baseItem, String newText) {
+        this(baseItem.getFile(), baseItem.getLine(), baseItem.getColumn(), newText);
+    }
+    
     public File getFile() {
         return file;
     }
@@ -42,10 +47,22 @@ public class MessageItem implements Comparable<MessageItem> {
         return text;
     }
 
+    public MessageItem getSeeAlso() {
+        return seeAlso;
+    }
+
+    public void setSeeAlso(MessageItem newSeeAlso1) {
+        seeAlso = newSeeAlso1;
+    }
+
     @Override
     public String toString() {
-        return getFile().getName() + "[" + getLine() + ":" + getColumn()
+        String result = getFile().getName() + "[" + getLine() + ":" + getColumn()
                 + "]: " + getText();
+        if (getSeeAlso() != null) {
+            result += "; see also: " + getSeeAlso().toString();
+        }
+        return result;
     }
 
     public int compareTo(MessageItem other) {
@@ -65,3 +82,4 @@ public class MessageItem implements Comparable<MessageItem> {
         return result;
     }
 }
+ 

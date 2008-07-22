@@ -1,0 +1,12 @@
+@database test.guide
+
+@NODE Main "LichtTools Guide 1.1 Copyright © 1995-2008 Michael Gehmair"
+
+         Table of Contents:@hugo
+
+@font Times.font 18
+
+         Welcome to the @{b}LichtTools@{ub} AmigaGuide®.
+
+@endnode
+ 
