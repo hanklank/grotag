@@ -41,7 +41,7 @@ public class Tag implements Comparable<Tag> {
     private Scope scope;
     private boolean isUnique;
     private boolean isMacro;
-    private AbstractItem macroTextItem;
+    private AbstractTextItem macroTextItem;
     private Version version;
 
     public Tag(String newName, Version newVersion, Scope newScope,
@@ -74,7 +74,7 @@ public class Tag implements Comparable<Tag> {
      * <code>newTextItem</code> which defines the text calls to the macro
      * should be replaced with.
      */
-    public static Tag createMacro(String newName, AbstractItem newTextItem) {
+    public static Tag createMacro(String newName, AbstractTextItem newTextItem) {
         assert newName != null;
         assert newName.equals(newName.toLowerCase());
         assert newName.length() > 0;
@@ -173,7 +173,7 @@ public class Tag implements Comparable<Tag> {
      * The <code>TextItem</code> containing the text that calls to the macro
      * should be replaced with.
      */
-    public AbstractItem getMacroTextItem() {
+    public AbstractTextItem getMacroTextItem() {
         assert isMacro;
         return macroTextItem;
     }

@@ -4,14 +4,19 @@
 
 @node main "some macros"
 @macro nodeMacro "text from node macro"
+@macro tenOptionMacro "many options: $1, $2, $3, $4, $5, $6, $7, $8, $9, $10"
 @macro parentMacro "parent macro insertig @{childMacro}"
 @macro childMacro "text from child macro and from @{grandChildMacro}"
 @macro grandChildMacro "text from grand child macro"
+
 
 normal text
 @{globalMacro hugo sepp}
 @{globalMacro hugo}
 @{nodeMacro}
+
+macro call with 10 options: @{tenOptionMacro a b c d e f g h i j}
+macro call with too many options: @{globalMacro hugo sepp resi}
 
 @{parentMacro}
 @{childMacro}

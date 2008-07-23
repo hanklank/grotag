@@ -82,10 +82,73 @@ public class Guide {
         }
     }
 
+    /** Replace all items calling a macro by the resolved sequence of Items. */
+    private void resolveMacros() {
+        int itemIndex = 0;
+        while (itemIndex < items.size()) {
+            AbstractItem item = items.get(itemIndex);
+            if (item instanceof CommandItem) {
+                CommandItem tagItem = (CommandItem) item;
+                if (tagItem.isInline()) {
+                    Tag macro = tagPool.getMacro(tagItem.getCommandName());
+                    if (macro != null) {
+                        resolveMacro(tagItem, macro);
+                        // messagePool.add(new MessageItem(tagItem, "resolving
+                        // macro @{" + macro.getName() + "}..."));
+                    }
+                }
+            }
+            itemIndex += 1;
+        }
+    }
+
+    private void resolveMacro(CommandItem caller, Tag macro) {
+        // Replace macro options.
+        String macroText = macro.getMacroTextItem().getText();
+        String optionsResolved = "";
+        int i = 0;
+        while (i < macroText.length()) {
+            char some = macroText.charAt(i);
+            if ((some == '$')
+                    && (i < (macroText.length() - 1) && Character
+                            .isDigit(macroText.charAt(i + 1)))) {
+                // TODO: Check how Amigaguide handles integer overflow for macro
+                // options.
+                int optionIndex = 0;
+                String optionText;
+
+                while ((i < (macroText.length() - 1) && Character
+                        .isDigit(macroText.charAt(i + 1)))) {
+                    i += 1;
+                    optionIndex = 10 * optionIndex
+                            + (macroText.charAt(i) - '0');
+                }
+                int accessOptionIndex = 1 + 2 * (optionIndex - 1);
+
+                if (accessOptionIndex < caller.getItems().size()) {
+                    optionText = ((AbstractTextItem) caller.getItems().get(
+                            accessOptionIndex)).getText();
+                    System.out.println("  substituting $" + optionIndex
+                            + " by: " + tools.sourced(optionText));
+                } else {
+                    optionText = "";
+                    System.out.println("  substituting $" + optionIndex
+                            + " by empty text");
+                }
+                optionsResolved  += optionText;
+            } else {
+                optionsResolved += some;
+            }
+            i += 1;
+        }
+        System.out.println("resolved macro: " + optionsResolved);
+    }
+
     public static Guide createGuide(File newGuideFile) throws IOException {
         Guide result = new Guide(newGuideFile);
         result.readItems();
         result.defineMacros();
+        result.resolveMacros();
         return result;
     }
 
