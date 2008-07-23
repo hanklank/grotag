@@ -59,6 +59,24 @@ public class ItemReaderTest {
     }
 
     @Test
+    public void testString() throws Exception {
+        File guide = createGuideFile("testText", "@title \"hugo\"");
+        ItemReader reader = new ItemReader(guide);
+        reader.read();
+        List<AbstractItem> items = reader.getItems();
+        assertEquals(1, items.size());
+        AbstractItem item = items.get(0);
+        System.out.println(item);
+        assertTrue(item instanceof CommandItem);
+        CommandItem titleItem = (CommandItem) item;
+        List<AbstractItem> options = titleItem.getItems();
+        assertEquals(2, options.size());
+        assertTrue(options.get(0) instanceof SpaceItem);
+        assertTrue(options.get(1) instanceof StringItem);
+        assertEquals("hugo", ((StringItem) options.get(1)).getText());
+    }
+
+    @Test
     public void testText() throws Exception {
         File guide = createGuideFile("testText", "a\\\\b\\@");
         ItemReader reader = new ItemReader(guide);

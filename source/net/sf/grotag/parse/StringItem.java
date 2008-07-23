@@ -22,7 +22,7 @@ public class StringItem extends AbstractTextItem {
         assert newString.charAt(0) == '"';
         assert newString.charAt(newString.length() - 1) == '"';
 
-        setText(newString.substring(1, newString.length() - 2));
+        setText(newString.substring(1, newString.length() - 1));
     }
 
     @Override

@@ -96,7 +96,7 @@ public class ItemReader {
                 commandItems.add(new SpaceItem(guideFile, lineNumber,
                         columnNumber, tokenizer.getToken()));
             } else if (tokenizer.getType() == LineTokenizer.TYPE_STRING) {
-                commandItems.add(new TextItem(guideFile, lineNumber,
+                commandItems.add(new StringItem(guideFile, lineNumber,
                         columnNumber, tokenizer.getToken()));
             } else {
                 commandItems.add(new TextItem(guideFile, lineNumber,
