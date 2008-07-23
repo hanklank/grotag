@@ -9,8 +9,7 @@ import net.sf.grotag.common.Tools;
  * 
  * @author Thomas Aglassinger
  */
-public class TextItem extends AbstractItem {
-    private String text;
+public class TextItem extends AbstractTextItem {
     private Tools tools;
 
     /**
@@ -21,27 +20,26 @@ public class TextItem extends AbstractItem {
         super(newFile, newLine, newColumn);
 
         boolean afterBackslash = false;
+        String textWithResolvedEscapes;
+
         tools = Tools.getInstance();
-        text = "";
+
+        textWithResolvedEscapes = "";
         for (int i = 0; i < newText.length(); i += 1) {
             char ch = newText.charAt(i);
             if (afterBackslash) {
                 // Tokenizer must ensure that there are only @'s and backslashes
                 // at this point.
                 assert (ch == '\\') || (ch == '@') : "ch=" + tools.sourced(ch);
-                text += ch;
+                textWithResolvedEscapes += ch;
                 afterBackslash = false;
             } else if (ch == '\\') {
                 afterBackslash = true;
             } else {
-                text += ch;
+                textWithResolvedEscapes += ch;
             }
         }
-
-    }
-
-    public String getText() {
-        return text;
+        setText(textWithResolvedEscapes);
     }
 
     @Override

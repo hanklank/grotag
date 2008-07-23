@@ -39,7 +39,9 @@ public class Tag implements Comparable<Tag> {
     private String name;
     private TagOption[] options;
     private Scope scope;
-    private boolean unique;
+    private boolean isUnique;
+    private boolean isMacro;
+    private AbstractItem macroTextItem;
     private Version version;
 
     public Tag(String newName, Version newVersion, Scope newScope,
@@ -65,6 +67,28 @@ public class Tag implements Comparable<Tag> {
             boolean newUnique, TagOption newOption) {
         this(newName, newVersion, newScope, newUnique,
                 new TagOption[] { newOption });
+    }
+
+    /**
+     * Create a macro with the name <code>newName</code> and
+     * <code>newTextItem</code> which defines the text calls to the macro
+     * should be replaced with.
+     */
+    public static Tag createMacro(String newName, AbstractItem newTextItem) {
+        assert newName != null;
+        assert newName.equals(newName.toLowerCase());
+        assert newName.length() > 0;
+        assert newTextItem != null;
+        assert (newTextItem instanceof TextItem)
+                || (newTextItem instanceof StringItem) : "newTextItem="
+                + newTextItem.getClass().getName();
+
+        // V34 because macros will be expanded anyway. @macro nevertheless is
+        // V40, and so are all V40 tags used within a macro.
+        Tag result = new Tag(newName, Version.V34, Scope.INLINE);
+        result.isMacro = true;
+        result.macroTextItem = newTextItem;
+        return result;
     }
 
     public static Tag createLink(String newName, Version newVersion) {
@@ -98,7 +122,7 @@ public class Tag implements Comparable<Tag> {
         name = newName;
         version = newVersion;
         scope = newScope;
-        unique = newUnique;
+        isUnique = newUnique;
         options = newOptions;
     }
 
@@ -135,6 +159,22 @@ public class Tag implements Comparable<Tag> {
 
     /** Is the tag unique within its scope? */
     public boolean isUnique() {
-        return unique;
+        return isUnique;
+    }
+
+    /**
+     * Is the tag a macro defined with <code>@@macro</code>?
+     */
+    public boolean isMacro() {
+        return isMacro;
+    }
+
+    /**
+     * The <code>TextItem</code> containing the text that calls to the macro
+     * should be replaced with.
+     */
+    public AbstractItem getMacroTextItem() {
+        assert isMacro;
+        return macroTextItem;
     }
 }

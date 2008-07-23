@@ -127,7 +127,7 @@ public class TagPool {
         return tagKey(tag.getName(), tag.getScope());
     }
 
-    private void addTag(Tag tag) {
+    public void addTag(Tag tag) {
         Map<String, Tag> targetMap = getMapForScope(tag.getScope());
         targetMap.put(tagKey(tag), tag);
     }
@@ -148,6 +148,14 @@ public class TagPool {
         Tag result = lookupMap.get(tagKey(name, scope));
         if ((result == null) && (scope == Tag.Scope.NODE)) {
             result = lookupMap.get(tagKey(name, Tag.Scope.GLOBAL));
+        }
+        return result;
+    }
+    
+    public Tag getMacro(String name) {
+        Tag result = getTag(name, Tag.Scope.INLINE);
+        if ((result != null) && !result.isMacro()) {
+            result = null;
         }
         return result;
     }
