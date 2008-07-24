@@ -1,7 +1,10 @@
 package net.sf.grotag.guide;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.List;
 
 import net.sf.grotag.common.Tools;
@@ -11,6 +14,7 @@ import net.sf.grotag.parse.CommandItem;
 import net.sf.grotag.parse.ItemReader;
 import net.sf.grotag.parse.MessageItem;
 import net.sf.grotag.parse.MessagePool;
+import net.sf.grotag.parse.NewLineItem;
 import net.sf.grotag.parse.SpaceItem;
 import net.sf.grotag.parse.Tag;
 import net.sf.grotag.parse.TagPool;
@@ -82,19 +86,58 @@ public class Guide {
         }
     }
 
-    /** Replace all items calling a macro by the resolved sequence of Items. */
-    private void resolveMacros() {
+    /**
+     * Replace all items calling a macro by the resolved sequence of items.
+     */
+    private void resolveMacros() throws IOException {
         int itemIndex = 0;
         while (itemIndex < items.size()) {
             AbstractItem item = items.get(itemIndex);
+            System.out.println("process " + item);
             if (item instanceof CommandItem) {
                 CommandItem tagItem = (CommandItem) item;
                 if (tagItem.isInline()) {
                     Tag macro = tagPool.getMacro(tagItem.getCommandName());
                     if (macro != null) {
-                        resolveMacro(tagItem, macro);
                         // messagePool.add(new MessageItem(tagItem, "resolving
                         // macro @{" + macro.getName() + "}..."));
+                        // Write resolved macro to file and parse it.
+                        String resolvedMacro = resolveMacro(tagItem, macro);
+                        File macroSnippletFile = File.createTempFile("macro-",
+                                ".guide");
+
+                        macroSnippletFile.deleteOnExit();
+                        System.out.println("writing resolved macro to: "
+                                + tools.sourced(macroSnippletFile
+                                        .getAbsolutePath()));
+                        BufferedWriter macroSnippletWriter = new BufferedWriter(
+                                new OutputStreamWriter(new FileOutputStream(
+                                        macroSnippletFile), "ISO-8859-1"));
+                        try {
+                            macroSnippletWriter.write(resolvedMacro);
+                        } finally {
+                            macroSnippletWriter.close();
+                        }
+
+                        try {
+                            ItemReader itemReader = new ItemReader(
+                                    macroSnippletFile);
+                            itemReader.read();
+                            List<AbstractItem> macroItems = itemReader
+                                    .getItems();
+
+                            assert macroItems.size() > 0;
+                            assert macroItems.get(macroItems.size() - 1) instanceof NewLineItem;
+                            macroItems.remove(macroItems.size() - 1);
+                            items.remove(itemIndex);
+                            items.addAll(itemIndex, macroItems);
+                            itemIndex -= 1;
+                        } finally {
+                            // TODO: Warn if file cannot be deleted.
+                            // TODO: Keep macro snipplet file in case it
+                            // contains error.
+                            macroSnippletFile.delete();
+                        }
                     }
                 }
             }
@@ -102,10 +145,10 @@ public class Guide {
         }
     }
 
-    private void resolveMacro(CommandItem caller, Tag macro) {
+    private String resolveMacro(CommandItem caller, Tag macro) {
         // Replace macro options.
         String macroText = macro.getMacroTextItem().getText();
-        String optionsResolved = "";
+        String result = "";
         int i = 0;
         while (i < macroText.length()) {
             char some = macroText.charAt(i);
@@ -135,13 +178,15 @@ public class Guide {
                     System.out.println("  substituting $" + optionIndex
                             + " by empty text");
                 }
-                optionsResolved  += optionText;
+                result += optionText;
             } else {
-                optionsResolved += some;
+                result += some;
             }
             i += 1;
         }
-        System.out.println("resolved macro: " + optionsResolved);
+        System.out.println("resolved macro: " + result);
+
+        return result;
     }
 
     public static Guide createGuide(File newGuideFile) throws IOException {
