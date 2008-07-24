@@ -11,12 +11,14 @@ public class CommandItem extends AbstractItem {
     private boolean isInline;
     private List<AbstractItem> items;
 
-    public CommandItem(File newFile, int newLine, int newColumn, String newCommandName, boolean newIsInline, List<AbstractItem> newItems) {
+    public CommandItem(File newFile, int newLine, int newColumn,
+            String newCommandName, boolean newIsInline,
+            List<AbstractItem> newItems) {
         super(newFile, newLine, newColumn);
-        
+
         assert newCommandName != null;
         assert newItems != null;
-        
+
         originalCommandName = newCommandName;
         commandName = newCommandName.toLowerCase();
         isInline = newIsInline;
@@ -40,6 +42,9 @@ public class CommandItem extends AbstractItem {
         return isInline;
     }
 
+    /**
+     * All options passed to this command, including white space.
+     */
     public List<AbstractItem> getItems() {
         return items;
     }
@@ -47,14 +52,14 @@ public class CommandItem extends AbstractItem {
     @Override
     protected String toStringSuffix() {
         String result = "<command>@";
-        
+
         if (isInline()) {
             result += "{";
         }
         result += Tools.getInstance().sourced(getOriginalCommandName()) + "[";
 
         boolean isFirstItem = true;
-        for (AbstractItem item: items) {
+        for (AbstractItem item : items) {
             if (isFirstItem) {
                 isFirstItem = false;
             } else {
@@ -67,5 +72,51 @@ public class CommandItem extends AbstractItem {
             result += "}";
         }
         return result;
+    }
+
+    private int getOptionItemIndex(int itemIndex) {
+        return 1 + 2 * itemIndex;
+    }
+
+    private int getOptionCount() {
+        int itemCount = getItems().size();
+        int result = itemCount / 2;
+        return result;
+    }
+
+    /**
+     * Option number <code>index</code> or <code>null</code> if there are
+     * not enough options.
+     */
+    public String getOption(int index) {
+        String result;
+
+        if (index < getOptionCount()) {
+            int optionItemIndex = getOptionItemIndex(index);
+            AbstractTextItem textItem = (AbstractTextItem) items
+                    .get(optionItemIndex);
+            result = textItem.getText();
+        } else {
+            result = null;
+        }
+
+        return result;
+    }
+
+    public void setOption(int index, String value) {
+        int optionIndex = getOptionItemIndex(index);
+        while (optionIndex >= items.size()) {
+            int itemIndex = items.size() - 1;
+            AbstractItem filler;
+
+            if (itemIndex % 2 == 0) {
+                filler = new SpaceItem(getFile(), getLine(), getColumn(), " ");
+            } else {
+                filler = new TextItem(getFile(), getLine(), getColumn(), "");
+            }
+            items.add(filler);
+        }
+        items.set(optionIndex, new StringItem(getFile(), getLine(),
+                getColumn(), "\"" + value + "\""));
     }
 }

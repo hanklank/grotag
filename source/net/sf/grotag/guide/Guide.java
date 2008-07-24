@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
@@ -18,6 +21,7 @@ import net.sf.grotag.parse.NewLineItem;
 import net.sf.grotag.parse.SpaceItem;
 import net.sf.grotag.parse.Tag;
 import net.sf.grotag.parse.TagPool;
+import net.sf.grotag.parse.TextItem;
 
 /**
  * An Amigaguide document.
@@ -29,7 +33,11 @@ public class Guide {
     private List<AbstractItem> items;
     private TagPool tagPool;
     private MessagePool messagePool;
+    private List<CommandItem> nodeList;
     private Tools tools;
+    private int uniqueNodeCounter;
+    private Map<String, CommandItem> nodeMap;
+    private Map<String, CommandItem> endNodeMap;
 
     private Guide(File newGuideFile) {
         assert newGuideFile != null;
@@ -189,11 +197,130 @@ public class Guide {
         return result;
     }
 
+    private void collectNodes() {
+        nodeList = new ArrayList<CommandItem>();
+        nodeMap = new TreeMap<String, CommandItem>();
+        endNodeMap = new TreeMap<String, CommandItem>();
+
+        String nodeName = null;
+        int i = 0;
+
+        while (i < items.size()) {
+            AbstractItem item = items.get(i);
+            if (item instanceof CommandItem) {
+                CommandItem command = (CommandItem) item;
+                String commandName = command.getCommandName();
+
+                if (commandName.equals("node")) {
+                    if (nodeName != null) {
+                        // Add missing @endnode.
+                        CommandItem endNodeItem = new CommandItem(command
+                                .getFile(), command.getLine(), command
+                                .getColumn(), "endnode", false,
+                                new ArrayList<AbstractItem>());
+                        items.add(i, endNodeItem);
+                        endNodeMap.put(nodeName, endNodeItem);
+                        i += 1;
+                        CommandItem previousNode = nodeList
+                                .get(nodeList.size() - 1);
+                        MessageItem message = new MessageItem(command,
+                                "added missing @endnode before @node");
+                        MessageItem seeAlso = new MessageItem(previousNode,
+                                "previous @node");
+                        message.setSeeAlso(seeAlso);
+                        messagePool.add(message);
+                    }
+                    nodeName = command.getOption(0);
+                    if (nodeName != null) {
+                        CommandItem nodeWithSameName = nodeMap.get(nodeName);
+                        if (nodeWithSameName != null) {
+                            // Change duplicate node name to something unique.
+                            AbstractTextItem uniqueNodeNameItem = getUniqueNodeNameItem(command
+                                    .getItems().get(1));
+                            command.setOption(0, uniqueNodeNameItem.getText());
+                            MessageItem message = new MessageItem(command,
+                                    "changed duplicate node name "
+                                            + tools.sourced(nodeName)
+                                            + " to "
+                                            + tools.sourced(uniqueNodeNameItem
+                                                    .getText()));
+                            MessageItem seeAlso = new MessageItem(
+                                    nodeWithSameName,
+                                    "existing node with same name");
+                            message.setSeeAlso(seeAlso);
+                            messagePool.add(message);
+                        }
+                    } else {
+                        nodeName = getUniqueNodeName();
+                        command.getItems().add(
+                                new SpaceItem(command.getFile(), command
+                                        .getLine(), command.getColumn(), " "));
+                        command.getItems().add(
+                                new TextItem(command.getFile(), command
+                                        .getLine(), command.getColumn(),
+                                        nodeName));
+                        MessageItem message = new MessageItem(command,
+                                "assigned name " + tools.sourced(nodeName)
+                                        + " to unnamed node");
+                        messagePool.add(message);
+                    }
+                    nodeList.add(command);
+                    nodeMap.put(nodeName, command);
+                } else if (commandName.equals("endnode")) {
+                    if (nodeName == null) {
+                        items.remove(i);
+                        i -= 1;
+                        messagePool.add(new MessageItem(command,
+                                "removed dangling @endnode"));
+                    } else {
+                        endNodeMap.put(nodeName, command);
+                        nodeName = null;
+                    }
+                }
+
+            }
+            i += 1;
+        }
+        if (nodeName != null) {
+            // Add missing @endnode at end of file
+            AbstractItem lastItem = items.get(items.size() - 1);
+            assert lastItem instanceof NewLineItem : "lastItem="
+                    + lastItem.getClass().getName();
+            CommandItem endNodeItem = new CommandItem(lastItem.getFile(),
+                    lastItem.getLine(), lastItem.getColumn(), "endnode", false,
+                    new ArrayList<AbstractItem>());
+            items.add(i, endNodeItem);
+            endNodeMap.put(nodeName, endNodeItem);
+            CommandItem previousNode = nodeMap.get(nodeName);
+            MessageItem message = new MessageItem(lastItem,
+                    "added missing @endnode at end of file");
+            MessageItem seeAlso = new MessageItem(previousNode,
+                    "previous @node");
+            message.setSeeAlso(seeAlso);
+            messagePool.add(message);
+        }
+
+        for (CommandItem node : nodeList) {
+            System.out.println("node: " + node);
+            System.out.println("  endnode: "
+                    + endNodeMap.get(node.getOption(0)));
+        }
+    }
+
+    private AbstractTextItem getUniqueNodeNameItem(AbstractItem location) {
+        AbstractTextItem result;
+        String nodeName = getUniqueNodeName();
+        result = new TextItem(location.getFile(), location.getLine(), location
+                .getLine(), nodeName);
+        return result;
+    }
+
     public static Guide createGuide(File newGuideFile) throws IOException {
         Guide result = new Guide(newGuideFile);
         result.readItems();
         result.defineMacros();
         result.resolveMacros();
+        result.collectNodes();
         return result;
     }
 
@@ -222,6 +349,17 @@ public class Guide {
             }
             result = Tag.createMacro(macroName, macroTextItem);
         }
+        return result;
+    }
+
+    private String getUniqueNodeName() {
+        String result = null;
+
+        do {
+            uniqueNodeCounter += 1;
+            result = "unnamed." + uniqueNodeCounter;
+        } while (nodeMap.containsKey(result));
+
         return result;
     }
 
