@@ -51,12 +51,11 @@ public class Guide {
 
     private void defineMacros() {
         for (AbstractItem item : items) {
-            if (item instanceof CommandItem) {
+            if (isLineCommand(item)) {
                 CommandItem possibleMacroItem = (CommandItem) item;
                 String commandName = possibleMacroItem.getCommandName();
 
-                if (!possibleMacroItem.isInline()
-                        && (commandName.equals("macro"))) {
+                if (commandName.equals("macro")) {
                     Tag macro = createMacro(possibleMacroItem);
 
                     if (macro != null) {
@@ -102,50 +101,48 @@ public class Guide {
         while (itemIndex < items.size()) {
             AbstractItem item = items.get(itemIndex);
             System.out.println("process " + item);
-            if (item instanceof CommandItem) {
+            if (isInlineCommand(item)) {
                 CommandItem tagItem = (CommandItem) item;
-                if (tagItem.isInline()) {
-                    Tag macro = tagPool.getMacro(tagItem.getCommandName());
-                    if (macro != null) {
-                        // messagePool.add(new MessageItem(tagItem, "resolving
-                        // macro @{" + macro.getName() + "}..."));
-                        // Write resolved macro to file and parse it.
-                        String resolvedMacro = resolveMacro(tagItem, macro);
-                        File macroSnippletFile = File.createTempFile("macro-",
-                                ".guide");
+                Tag macro = tagPool.getMacro(tagItem.getCommandName());
+                if (macro != null) {
+                    // messagePool.add(new MessageItem(tagItem, "resolving
+                    // macro @{" + macro.getName() + "}..."));
+                    // Write resolved macro to file and parse it.
+                    String resolvedMacro = resolveMacro(tagItem, macro);
+                    File macroSnippletFile = File.createTempFile("macro-",
+                            ".guide");
 
-                        macroSnippletFile.deleteOnExit();
-                        System.out.println("writing resolved macro to: "
-                                + tools.sourced(macroSnippletFile
-                                        .getAbsolutePath()));
-                        BufferedWriter macroSnippletWriter = new BufferedWriter(
-                                new OutputStreamWriter(new FileOutputStream(
-                                        macroSnippletFile), "ISO-8859-1"));
-                        try {
-                            macroSnippletWriter.write(resolvedMacro);
-                        } finally {
-                            macroSnippletWriter.close();
-                        }
+                    macroSnippletFile.deleteOnExit();
+                    System.out.println("writing resolved macro to: "
+                            + tools
+                                    .sourced(macroSnippletFile
+                                            .getAbsolutePath()));
+                    BufferedWriter macroSnippletWriter = new BufferedWriter(
+                            new OutputStreamWriter(new FileOutputStream(
+                                    macroSnippletFile), "ISO-8859-1"));
+                    try {
+                        macroSnippletWriter.write(resolvedMacro);
+                    } finally {
+                        macroSnippletWriter.close();
+                    }
 
-                        try {
-                            ItemReader itemReader = new ItemReader(
-                                    macroSnippletFile);
-                            itemReader.read();
-                            List<AbstractItem> macroItems = itemReader
-                                    .getItems();
+                    try {
+                        ItemReader itemReader = new ItemReader(
+                                macroSnippletFile);
+                        itemReader.read();
+                        List<AbstractItem> macroItems = itemReader.getItems();
 
-                            assert macroItems.size() > 0;
-                            assert macroItems.get(macroItems.size() - 1) instanceof NewLineItem;
-                            macroItems.remove(macroItems.size() - 1);
-                            items.remove(itemIndex);
-                            items.addAll(itemIndex, macroItems);
-                            itemIndex -= 1;
-                        } finally {
-                            // TODO: Warn if file cannot be deleted.
-                            // TODO: Keep macro snipplet file in case it
-                            // contains error.
-                            macroSnippletFile.delete();
-                        }
+                        assert macroItems.size() > 0;
+                        assert macroItems.get(macroItems.size() - 1) instanceof NewLineItem;
+                        macroItems.remove(macroItems.size() - 1);
+                        items.remove(itemIndex);
+                        items.addAll(itemIndex, macroItems);
+                        itemIndex -= 1;
+                    } finally {
+                        // TODO: Warn if file cannot be deleted.
+                        // TODO: Keep macro snipplet file in case it
+                        // contains error.
+                        macroSnippletFile.delete();
                     }
                 }
             }
@@ -207,7 +204,7 @@ public class Guide {
 
         while (i < items.size()) {
             AbstractItem item = items.get(i);
-            if (item instanceof CommandItem) {
+            if (isLineCommand(item)) {
                 CommandItem command = (CommandItem) item;
                 String commandName = command.getCommandName();
 
@@ -307,6 +304,97 @@ public class Guide {
         }
     }
 
+    private void validateCommands() {
+        boolean insideNode = false;
+        int itemIndex = 0;
+        while (itemIndex < items.size()) {
+            AbstractItem item = items.get(itemIndex);
+            if (item instanceof CommandItem) {
+                CommandItem command = (CommandItem) item;
+                if (command.getCommandName().equals("node")) {
+                    assert !insideNode;
+                    insideNode = true;
+                } else if (command.getCommandName().equals("endnode")) {
+                    assert insideNode;
+                    insideNode = false;
+                } else {
+                    int oldItemCount = items.size();
+                    Tag.Scope scope = getScopeFor(command, insideNode);
+                    if (scope == Tag.Scope.LINK) {
+                        validateLink(itemIndex, command);
+                    } else {
+                        // TODO: Validate other command types.
+                    }
+                    // Adjust itemIndex to whatever number validateXXX() has
+                    // added or removed.
+                    itemIndex += items.size() - oldItemCount;
+                }
+            }
+            itemIndex += 1;
+        }
+        assert insideNode == false;
+    }
+
+    private void validateLink(int itemIndex, CommandItem command) {
+        String linkType = command.getOption(0);
+        String reasonToReplaceLinkByText = null;
+        if (linkType != null) {
+            Tag linkTag = tagPool.getTag(linkType, Tag.Scope.LINK);
+            if (linkTag == null) {
+                reasonToReplaceLinkByText = "unknown";
+            } else {
+                // TODO: Schedule link for link target check.
+                // TODO: Validate link options.
+            }
+        } else {
+            reasonToReplaceLinkByText = "empty";
+        }
+        if (reasonToReplaceLinkByText != null) {
+            MessageItem message = new MessageItem(command, "replaced "
+                    + reasonToReplaceLinkByText + " link by its text: "
+                    + command.toPrettyAmigaguide());
+            messagePool.add(message);
+            String line = command.getOriginalCommandName();
+            // FIXME: Deconstruct line into AbstractItems (using ItemReader)
+            // before inserting it.
+            TextItem textItem = new TextItem(command.getFile(), command
+                    .getLine(), command.getColumn() + 2, line);
+            items.set(itemIndex, textItem);
+        }
+    }
+
+    private Tag.Scope getScopeFor(CommandItem command, boolean insideNode) {
+        assert command != null;
+        Tag.Scope result;
+        if (command.isInline()) {
+            if (command.getCommandName().startsWith("\"")) {
+                result = Tag.Scope.LINK;
+            } else {
+                result = Tag.Scope.INLINE;
+            }
+        } else if (insideNode) {
+            result = Tag.Scope.NODE;
+        } else {
+            result = Tag.Scope.GLOBAL;
+        }
+        return result;
+    }
+
+    /**
+     * Is <code>item</code> a line command, for example <code>@node</code>?
+     */
+    private boolean isLineCommand(AbstractItem item) {
+        return (item instanceof CommandItem)
+                && !((CommandItem) item).isInline();
+    }
+
+    /**
+     * Is <code>item</code> an inline command, for example <code>@{b}</code>?
+     */
+    private boolean isInlineCommand(AbstractItem item) {
+        return (item instanceof CommandItem) && ((CommandItem) item).isInline();
+    }
+
     private AbstractTextItem getUniqueNodeNameItem(AbstractItem location) {
         AbstractTextItem result;
         String nodeName = getUniqueNodeName();
@@ -321,6 +409,7 @@ public class Guide {
         result.defineMacros();
         result.resolveMacros();
         result.collectNodes();
+        result.validateCommands();
         return result;
     }
 
@@ -368,5 +457,12 @@ public class Guide {
 
         itemReader.read();
         items = itemReader.getItems();
+    }
+
+    /**
+     * Items the guide consists of after it has been fixed and cleaned up.
+     */
+    public List<AbstractItem> getItems() {
+        return items;
     }
 }
