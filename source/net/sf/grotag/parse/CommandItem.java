@@ -149,13 +149,13 @@ public class CommandItem extends AbstractItem {
                 getColumn(), "\"" + value + "\""));
     }
 
-    // TODO: Move to Tools.
-    private boolean containsWhiteSpace(String some) {
+    private boolean requiresQuotes(String some) {
         assert some != null;
         boolean result = false;
         int i = 0;
         while (!result && (i < some.length())) {
-            if (Character.isWhitespace(some.charAt(i))) {
+            char ch = some.charAt(i);
+            if (Character.isWhitespace(ch) || (ch == '}')) {
                 result = true;
             } else {
                 i = i + 1;
@@ -173,14 +173,21 @@ public class CommandItem extends AbstractItem {
         if (isLink()) {
             result += getOriginalCommandName();
         } else {
-            result += getCommandName();
+            String name = getCommandName();
+
+            // Make sure $VER: is rendered upper case so the AmigaOS version
+            // command can find it.
+            if (name.equals("$ver:")) {
+                name = name.toUpperCase();
+            }
+            result += name;
         }
 
         for (int optionIndex = 0; optionIndex < getOptionCount(); optionIndex += 1) {
             String option = getOption(optionIndex);
             assert option != null : "getOption(" + optionIndex
                     + ") must not be null";
-            boolean requiresQuotes = containsWhiteSpace(option);
+            boolean requiresQuotes = requiresQuotes(option);
             result += " ";
             if (requiresQuotes) {
                 result += "\"";
