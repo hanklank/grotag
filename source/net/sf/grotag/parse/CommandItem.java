@@ -41,10 +41,19 @@ public class CommandItem extends AbstractItem {
     }
 
     /**
-     * Is the command an inline command inside curly braces?
+     * Is the command an inline command inside curly braces, for example
+     * <code>@{b}</code>?
      */
     public boolean isInline() {
         return isInline;
+    }
+
+    /**
+     * Is the command a link command, for example
+     * <code>@{"Overview" LINK overview}</code>?
+     */
+    public boolean isLink() {
+        return getCommandName().startsWith("\"");
     }
 
     /**
@@ -93,14 +102,29 @@ public class CommandItem extends AbstractItem {
      * Option number <code>index</code> or <code>null</code> if there are
      * not enough options.
      */
-    public String getOption(int index) {
-        String result;
+    public AbstractTextItem getOptionItem(int index) {
+        AbstractTextItem result;
 
         if (index < getOptionCount()) {
             int optionItemIndex = getOptionItemIndex(index);
-            AbstractTextItem textItem = (AbstractTextItem) items
-                    .get(optionItemIndex);
-            result = textItem.getText();
+            result = (AbstractTextItem) items.get(optionItemIndex);
+        } else {
+            result = null;
+        }
+
+        return result;
+    }
+
+    /**
+     * Option number <code>index</code> or <code>null</code> if there are
+     * not enough options.
+     */
+    public String getOption(int index) {
+        String result;
+
+        AbstractTextItem optionItem = getOptionItem(index);
+        if (optionItem != null) {
+            result = optionItem.getText();
         } else {
             result = null;
         }
@@ -146,7 +170,11 @@ public class CommandItem extends AbstractItem {
         if (isInline()) {
             result += "{";
         }
-        result += getCommandName();
+        if (isLink()) {
+            result += getOriginalCommandName();
+        } else {
+            result += getCommandName();
+        }
 
         for (int optionIndex = 0; optionIndex < getOptionCount(); optionIndex += 1) {
             String option = getOption(optionIndex);
