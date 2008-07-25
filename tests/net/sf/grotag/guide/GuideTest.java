@@ -19,7 +19,8 @@ public class GuideTest {
     }
     @Test
     public void testMacroGuide() throws Exception {
-        Guide guide = Guide.createGuide(getTestFile("macros.guide"));
+        // Guide guide = Guide.createGuide(getTestFile("macros.guide"));
+        Guide guide = Guide.createGuide(getTestFile("nodes.guide"));
         assertNotNull(guide);
     }
 
