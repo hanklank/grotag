@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project basedir="." default="build" name="LichtTools">
+  <property name="source.dir" location="${basedir}/source"/>
+  <property name="classes.dir" location="${basedir}/classes"/>
+  <property name="Grotag.jar" location="${basedir}/Grotag.jar"/>
+  <property name="Grotag.zip" location="${basedir}/Grotag.zip"/>
+
+  <target depends="jar"
+    description="Build distribution archive Grotag.zip." name="build">
+    <zip basedir="${basedir}" destfile="${Grotag.zip}"
+      includes="Grotag.jar, *.txt" />
+  </target>
+
+  <target description="Build Grotag.jar." name="jar">
+  	<mkdir dir="${classes.dir}"/>
+    <javac debug="true" destdir="${classes.dir}" source="1.5"
+      srcdir="${source.dir}" target="1.5"/>
+    <jar basedir="${classes.dir}" destfile="${Grotag.jar}">
+      <manifest>
+        <attribute name="Implementation-Vendor" value="Thomas Aglassinger"/>
+        <attribute name="Implementation-Title" value="Grotag"/>
+    	<attribute name="Implementation-Version" value="0.0.0"/>
+    	<attribute name="Main-Class" value="net.sf.grotag.Grotag"/>
+      </manifest>
+    </jar>
+  </target>
+
+  <target description="Clean up." name="clean">
+    <delete file="${Grotag.jar}"/>
+    <delete file="${Grotag.zip}"/>
+    <delete dir="${classes.dir}/net"/>
+  </target>
+</project>
