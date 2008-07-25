@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger; 
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
@@ -29,6 +30,7 @@ import net.sf.grotag.parse.TextItem;
  * @author Thomas Aglassinger
  */
 public class Guide {
+    private Logger logger;
     private File guideFile;
     private List<AbstractItem> items;
     private TagPool tagPool;
@@ -44,6 +46,7 @@ public class Guide {
 
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
+        logger = Logger.getLogger(Guide.class.getName());
 
         guideFile = newGuideFile;
         tagPool = new TagPool();
@@ -100,7 +103,7 @@ public class Guide {
         int itemIndex = 0;
         while (itemIndex < items.size()) {
             AbstractItem item = items.get(itemIndex);
-            System.out.println("process " + item);
+            logger.fine("process " + item);
             if (isInlineCommand(item)) {
                 CommandItem tagItem = (CommandItem) item;
                 Tag macro = tagPool.getMacro(tagItem.getCommandName());
@@ -113,7 +116,7 @@ public class Guide {
                             ".guide");
 
                     macroSnippletFile.deleteOnExit();
-                    System.out.println("writing resolved macro to: "
+                    logger.fine("writing resolved macro to: "
                             + tools
                                     .sourced(macroSnippletFile
                                             .getAbsolutePath()));
@@ -176,11 +179,11 @@ public class Guide {
                 if (accessOptionIndex < caller.getItems().size()) {
                     optionText = ((AbstractTextItem) caller.getItems().get(
                             accessOptionIndex)).getText();
-                    System.out.println("  substituting $" + optionIndex
+                    logger.fine("  substituting $" + optionIndex
                             + " by: " + tools.sourced(optionText));
                 } else {
                     optionText = "";
-                    System.out.println("  substituting $" + optionIndex
+                    logger.fine("  substituting $" + optionIndex
                             + " by empty text");
                 }
                 result += optionText;
@@ -189,7 +192,7 @@ public class Guide {
             }
             i += 1;
         }
-        System.out.println("resolved macro: " + result);
+        logger.fine("resolved macro: " + result);
 
         return result;
     }
@@ -298,8 +301,8 @@ public class Guide {
         }
 
         for (CommandItem node : nodeList) {
-            System.out.println("node: " + node);
-            System.out.println("  endnode: "
+            logger.fine("node: " + node);
+            logger.fine("  endnode: "
                     + endNodeMap.get(node.getOption(0)));
         }
     }

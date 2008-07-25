@@ -13,6 +13,7 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -23,10 +24,11 @@ import org.junit.Test;
  * @author Thomas Aglassinger
  */
 public class ItemReaderTest {
+    private Logger logger;
 
     @Before
     public void setUp() throws Exception {
-        // Do nothing.
+        logger = Logger.getLogger(ItemReaderTest.class.getName());
     }
 
     private File createGuideFile(String targetName, String content)
@@ -53,7 +55,7 @@ public class ItemReaderTest {
         List<AbstractItem> items = reader.getItems();
         assertEquals(3, items.size());
         AbstractItem item = items.get(0);
-        System.out.println(item);
+        logger.info(item.toString());
         assertTrue(item instanceof SpaceItem);
         assertEquals(SPACE, ((SpaceItem) item).getSpace());
     }
@@ -66,7 +68,7 @@ public class ItemReaderTest {
         List<AbstractItem> items = reader.getItems();
         assertEquals(1, items.size());
         AbstractItem item = items.get(0);
-        System.out.println(item);
+        logger.info(item.toString());
         assertTrue(item instanceof CommandItem);
         CommandItem titleItem = (CommandItem) item;
         List<AbstractItem> options = titleItem.getItems();
@@ -84,7 +86,7 @@ public class ItemReaderTest {
         List<AbstractItem> items = reader.getItems();
         assertEquals(2, items.size());
         AbstractItem item = items.get(0);
-        System.out.println(item);
+        logger.info(item.toString());
         assertTrue(item instanceof TextItem);
         assertEquals("a\\b@", ((TextItem) item).getText());
     }
@@ -97,7 +99,7 @@ public class ItemReaderTest {
         List<AbstractItem> items = reader.getItems();
         assertEquals(2, items.size());
         AbstractItem item = items.get(0);
-        System.out.println(item);
+        logger.info(item.toString());
         assertTrue(item instanceof TextItem);
         assertEquals("@", ((TextItem) item).getText());
     }
@@ -110,7 +112,7 @@ public class ItemReaderTest {
         List<AbstractItem> items = reader.getItems();
         assertEquals(1, items.size());
         AbstractItem item = items.get(0);
-        System.out.println(item);
+        logger.info(item.toString());
         assertTrue(item instanceof CommandItem);
         CommandItem commandItem = (CommandItem) item;
         assertEquals("database", commandItem.getCommandName());
@@ -130,7 +132,7 @@ public class ItemReaderTest {
         ItemReader reader = new ItemReader(guide);
         reader.read();
         for (AbstractItem item : reader.getItems()) {
-            System.out.println(item);
+            logger.info(item.toString());
         }
 
     }
