@@ -17,4 +17,9 @@ public class NewLineItem extends AbstractItem {
     protected String toStringSuffix() {
         return "<newline>";
     }
+
+    @Override
+    public String toPrettyAmigaguide() {
+        return "\n";
+    }
 }

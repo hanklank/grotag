@@ -29,4 +29,9 @@ public class StringItem extends AbstractTextItem {
     protected String toStringSuffix() {
         return "<string>" + Tools.getInstance().sourced(getText());
     }
+
+    @Override
+    public String toPrettyAmigaguide() {
+        return "\"" + getText() + "\"";
+    }
 }

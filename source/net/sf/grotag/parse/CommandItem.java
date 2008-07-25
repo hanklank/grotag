@@ -5,6 +5,11 @@ import java.util.List;
 
 import net.sf.grotag.common.Tools;
 
+/**
+ * Item representing an Amigaguide command.
+ * 
+ * @author Thomas Aglassinger
+ */
 public class CommandItem extends AbstractItem {
     private String commandName;
     private String originalCommandName;
@@ -118,5 +123,51 @@ public class CommandItem extends AbstractItem {
         }
         items.set(optionIndex, new StringItem(getFile(), getLine(),
                 getColumn(), "\"" + value + "\""));
+    }
+
+    // TODO: Move to Tools.
+    private boolean containsWhiteSpace(String some) {
+        assert some != null;
+        boolean result = false;
+        int i = 0;
+        while (!result && (i < some.length())) {
+            if (Character.isWhitespace(some.charAt(i))) {
+                result = true;
+            } else {
+                i = i + 1;
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public String toPrettyAmigaguide() {
+        String result = "@";
+        if (isInline()) {
+            result += "{";
+        }
+        result += getCommandName();
+
+        for (int optionIndex = 0; optionIndex < getOptionCount(); optionIndex += 1) {
+            String option = getOption(optionIndex);
+            assert option != null : "getOption(" + optionIndex
+                    + ") must not be null";
+            boolean requiresQuotes = containsWhiteSpace(option);
+            result += " ";
+            if (requiresQuotes) {
+                result += "\"";
+            }
+            result += option;
+            if (requiresQuotes) {
+                result += "\"";
+            }
+        }
+
+        if (isInline()) {
+            result += "}";
+        } else {
+            result += "\n";
+        }
+        return result;
     }
 }

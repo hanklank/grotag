@@ -43,5 +43,10 @@ public abstract class AbstractItem {
         return result;
     }
 
+    /**
+     * Pretty printed Amigaguide source code representation of the item.
+     */
+    abstract public String toPrettyAmigaguide();
+
     abstract protected String toStringSuffix();
 }

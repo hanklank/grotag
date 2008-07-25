@@ -46,4 +46,20 @@ public class TextItem extends AbstractTextItem {
     protected String toStringSuffix() {
         return "<text>" + tools.sourced(getText());
     }
+
+    @Override
+    public String toPrettyAmigaguide() {
+        String result = "";
+        for (int charIndex = 0; charIndex < getText().length(); charIndex += 1) {
+            char ch = getText().charAt(charIndex);
+            if (ch == '\\') {
+                result += "\\\\";
+            } else if (ch == '@') {
+                result += "@";
+            } else {
+                result += ch;
+            }
+        }
+        return result;
+    }
 }

@@ -14,9 +14,9 @@ public class SpaceItem extends AbstractItem {
 
     public SpaceItem(File newFile, int newLine, int newColumn, String newSpace) {
         super(newFile, newLine, newColumn);
-        
+
         // Assert that every characters actually is white space.
-        // Ensuring this is the responsibility of LineTokenizer. 
+        // Ensuring this is the responsibility of LineTokenizer.
         assert newSpace != null;
         for (int i = 0; i < newSpace.length(); i += 1) {
             char ch = newSpace.charAt(i);
@@ -34,5 +34,10 @@ public class SpaceItem extends AbstractItem {
     @Override
     protected String toStringSuffix() {
         return "<space>" + Tools.getInstance().sourced(getSpace());
+    }
+
+    @Override
+    public String toPrettyAmigaguide() {
+        return getSpace();
     }
 }
