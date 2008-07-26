@@ -1,9 +1,16 @@
 package net.sf.grotag.common;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 public class Tools {
+    private static final String LOGGING_PROPERTIES = "logging.properties";
     private static final String DEFAULT_TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
     /**
@@ -24,6 +31,34 @@ public class Tools {
     }
 
     private Tools() {
+        // Attempt to setup logging.
+        String userDir = System.getProperty("user.dir");
+        String userHome = System.getProperty("user.home");
+        File[] possibleLoggingSetupFiles = new File[] { new File(userDir, LOGGING_PROPERTIES),
+                new File(new File(userHome, ".grotag"), LOGGING_PROPERTIES) };
+        boolean loggingSetup = false;
+        int fileIndex = 0;
+
+        while (!loggingSetup && (fileIndex < possibleLoggingSetupFiles.length)) {
+            File loggingSetupFilePath = possibleLoggingSetupFiles[fileIndex];
+            try {
+                FileInputStream in = new FileInputStream(loggingSetupFilePath);
+                try {
+                    LogManager.getLogManager().readConfiguration(in);
+                    Logger.getLogger(Tools.class.getName())
+                            .info("setup loggers from: \"" + loggingSetupFilePath + "\"");
+                } finally {
+                    in.close();
+                }
+            } catch (FileNotFoundException errorToIgnore) {
+                // Ignore that optional logging setup file could not be found.
+            } catch (IOException error) {
+                Logger.getLogger(Tools.class.getName()).severe(
+                        "cannot read \"" + loggingSetupFilePath + "" + "\": " + error.getMessage());
+            }
+            fileIndex += 1;
+        }
+
         escapeMap = new TreeMap<Character, String>();
         escapeMap.put(new Character('\"'), "\\\"");
         escapeMap.put(new Character('\''), "\\\'");
@@ -63,8 +98,7 @@ public class Tools {
         if (some == null) {
             result = "null";
         } else {
-            StringBuffer buffer = new StringBuffer(some.length()
-                    + ESCAPE_SLACK_COUNT);
+            StringBuffer buffer = new StringBuffer(some.length() + ESCAPE_SLACK_COUNT);
 
             buffer.append('\"');
             for (int i = 0; i < some.length(); i += 1) {
@@ -152,8 +186,7 @@ public class Tools {
         return getToken(line, startColumn, null);
     }
 
-    public String[] getToken(String line, int startColumn,
-            String continuingChars) {
+    public String[] getToken(String line, int startColumn, String continuingChars) {
         assert line != null;
         assert startColumn <= line.length();
 
@@ -166,8 +199,7 @@ public class Tools {
         while ((column < line.length()) && (result == null)) {
             // Skip white space
             space = "";
-            while ((column < line.length())
-                    && Character.isWhitespace(line.charAt(column))) {
+            while ((column < line.length()) && Character.isWhitespace(line.charAt(column))) {
                 space += line.charAt(column);
                 column += 1;
             }
@@ -175,15 +207,14 @@ public class Tools {
             if (tokenChars == null) {
                 tokenChars = DEFAULT_TOKEN_CHARS;
             }
-            
+
             if (column < line.length()) {
                 char firstChar = line.charAt(column);
-                
+
                 token = "" + firstChar;
                 if (tokenChars.indexOf(firstChar) >= 0) {
                     column += 1;
-                    while ((column < line.length())
-                            && (tokenChars.indexOf(line.charAt(column)) >= 0)) {
+                    while ((column < line.length()) && (tokenChars.indexOf(line.charAt(column)) >= 0)) {
                         token += line.charAt(column);
                         column += 1;
                     }
