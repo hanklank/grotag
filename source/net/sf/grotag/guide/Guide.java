@@ -41,6 +41,8 @@ public class Guide {
     private int uniqueNodeCounter;
     private Map<String, CommandItem> nodeMap;
     private Map<String, CommandItem> endNodeMap;
+    private Map<String, CommandItem> uniqueGlobalCommandsOccurred;
+    private Map<String, CommandItem> uniqueNodeCommandsOccurred;
 
     private Guide(File newGuideFile) {
         assert newGuideFile != null;
@@ -265,8 +267,11 @@ public class Guide {
     }
 
     private void validateCommands() {
+        uniqueGlobalCommandsOccurred = new TreeMap<String, CommandItem>();
+        uniqueNodeCommandsOccurred = new TreeMap<String, CommandItem>();
         boolean insideNode = false;
         int itemIndex = 0;
+
         while (itemIndex < items.size()) {
             AbstractItem item = items.get(itemIndex);
             if (item instanceof CommandItem) {
@@ -277,6 +282,7 @@ public class Guide {
                 } else if (command.getCommandName().equals("endnode")) {
                     assert insideNode;
                     insideNode = false;
+                    uniqueNodeCommandsOccurred.clear();
                 }
 
                 int oldItemCount = items.size();
@@ -290,6 +296,8 @@ public class Guide {
                         TagOption[] tagOptions = tag.getOptions();
                         boolean lastOptionIsAnyOrSome = false;
                         int optionIndex = 0;
+
+                        removeCommand = !isValidPossiblyUniqueCommand(command, tag);
 
                         while (!removeCommand && (tagOptions != null) && (optionIndex < tagOptions.length)) {
                             TagOption tagOption = tagOptions[optionIndex];
@@ -340,6 +348,50 @@ public class Guide {
             itemIndex += 1;
         }
         assert insideNode == false;
+
+        // No more need for those, but GC wouldn't know.
+        uniqueGlobalCommandsOccurred = null;
+        uniqueNodeCommandsOccurred = null;
+    }
+
+    /**
+     * Is <code>command</code> a non-unique command or a unique command that
+     * has not occurred so far within the scope defined by <code>tag</code>?
+     */
+    private boolean isValidPossiblyUniqueCommand(CommandItem command, Tag tag) {
+        boolean result = true;
+        if (tag.isUnique()) {
+            Tag.Scope scope = tag.getScope();
+            Map<String, CommandItem> uniqueCommandsOccurred;
+
+            if (scope == Tag.Scope.GLOBAL) {
+                uniqueCommandsOccurred = uniqueGlobalCommandsOccurred;
+            } else {
+                assert scope == Tag.Scope.NODE;
+                uniqueCommandsOccurred = uniqueNodeCommandsOccurred;
+            }
+
+            CommandItem existingUniqueCommand = uniqueCommandsOccurred.get(command.getCommandName());
+            if (existingUniqueCommand != null) {
+                String messageText = "removed duplicate " + command.toShortAmigaguide()
+                        + " because it must be unique within ";
+                if (scope == Tag.Scope.GLOBAL) {
+                    messageText += "document";
+                } else {
+                    assert scope == Tag.Scope.NODE;
+                    messageText += "node";
+                }
+
+                MessageItem message = new MessageItem(command, messageText);
+                MessageItem seeAlso = new MessageItem(existingUniqueCommand, "previous occurrence");
+                message.setSeeAlso(seeAlso);
+                messagePool.add(message);
+                result = false;
+            } else {
+                uniqueCommandsOccurred.put(command.getCommandName(), command);
+            }
+        }
+        return result;
     }
 
     private void validateLink(int itemIndex, CommandItem command) {
