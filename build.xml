@@ -15,7 +15,7 @@
   	<mkdir dir="${classes.dir}"/>
     <javac debug="true" destdir="${classes.dir}" source="1.5"
       srcdir="${source.dir}" target="1.5"/>
-    <jar basedir="${classes.dir}" destfile="${Grotag.jar}">
+    <jar basedir="${classes.dir}" destfile="${Grotag.jar}" excludes="**/*Test.class" includes="**/*.class">
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger"/>
         <attribute name="Implementation-Title" value="Grotag"/>
