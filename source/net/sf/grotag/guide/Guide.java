@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Logger; 
+import java.util.logging.Logger;
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
@@ -21,6 +21,7 @@ import net.sf.grotag.parse.MessagePool;
 import net.sf.grotag.parse.NewLineItem;
 import net.sf.grotag.parse.SpaceItem;
 import net.sf.grotag.parse.Tag;
+import net.sf.grotag.parse.TagOption;
 import net.sf.grotag.parse.TagPool;
 import net.sf.grotag.parse.TextItem;
 
@@ -63,29 +64,20 @@ public class Guide {
 
                     if (macro != null) {
                         String macroName = macro.getName();
-                        Tag existingMacro = tagPool.getTag(macroName,
-                                Tag.Scope.INLINE);
+                        Tag existingMacro = tagPool.getTag(macroName, Tag.Scope.INLINE);
 
                         if (existingMacro != null) {
                             if (existingMacro.isMacro()) {
-                                MessageItem currentMacroMessage = new MessageItem(
-                                        possibleMacroItem,
-                                        "ignored duplicate definition of macro "
-                                                + tools.sourced(macroName));
-                                MessageItem existingMacroMessage = new MessageItem(
-                                        existingMacro.getMacroTextItem(),
+                                MessageItem currentMacroMessage = new MessageItem(possibleMacroItem,
+                                        "ignored duplicate definition of macro " + tools.sourced(macroName));
+                                MessageItem existingMacroMessage = new MessageItem(existingMacro.getMacroTextItem(),
                                         "previous definition of macro");
 
-                                currentMacroMessage
-                                        .setSeeAlso(existingMacroMessage);
+                                currentMacroMessage.setSeeAlso(existingMacroMessage);
                                 messagePool.add(currentMacroMessage);
                             } else {
-                                messagePool.add(new MessageItem(
-                                        possibleMacroItem,
-                                        "replaced standard tag "
-                                                + tools.sourced(existingMacro
-                                                        .getName())
-                                                + " with macro"));
+                                messagePool.add(new MessageItem(possibleMacroItem, "replaced standard tag "
+                                        + tools.sourced(existingMacro.getName()) + " with macro"));
                             }
                         } else {
                             tagPool.addTag(macro);
@@ -112,17 +104,12 @@ public class Guide {
                     // macro @{" + macro.getName() + "}..."));
                     // Write resolved macro to file and parse it.
                     String resolvedMacro = resolveMacro(tagItem, macro);
-                    File macroSnippletFile = File.createTempFile("macro-",
-                            ".guide");
+                    File macroSnippletFile = File.createTempFile("macro-", ".guide");
 
                     macroSnippletFile.deleteOnExit();
-                    logger.fine("writing resolved macro to: "
-                            + tools
-                                    .sourced(macroSnippletFile
-                                            .getAbsolutePath()));
-                    BufferedWriter macroSnippletWriter = new BufferedWriter(
-                            new OutputStreamWriter(new FileOutputStream(
-                                    macroSnippletFile), "ISO-8859-1"));
+                    logger.fine("writing resolved macro to: " + tools.sourced(macroSnippletFile.getAbsolutePath()));
+                    BufferedWriter macroSnippletWriter = new BufferedWriter(new OutputStreamWriter(
+                            new FileOutputStream(macroSnippletFile), "ISO-8859-1"));
                     try {
                         macroSnippletWriter.write(resolvedMacro);
                     } finally {
@@ -130,8 +117,7 @@ public class Guide {
                     }
 
                     try {
-                        ItemReader itemReader = new ItemReader(
-                                macroSnippletFile);
+                        ItemReader itemReader = new ItemReader(macroSnippletFile);
                         itemReader.read();
                         List<AbstractItem> macroItems = itemReader.getItems();
 
@@ -160,31 +146,24 @@ public class Guide {
         int i = 0;
         while (i < macroText.length()) {
             char some = macroText.charAt(i);
-            if ((some == '$')
-                    && (i < (macroText.length() - 1) && Character
-                            .isDigit(macroText.charAt(i + 1)))) {
+            if ((some == '$') && (i < (macroText.length() - 1) && Character.isDigit(macroText.charAt(i + 1)))) {
                 // TODO: Check how Amigaguide handles integer overflow for macro
                 // options.
                 int optionIndex = 0;
                 String optionText;
 
-                while ((i < (macroText.length() - 1) && Character
-                        .isDigit(macroText.charAt(i + 1)))) {
+                while ((i < (macroText.length() - 1) && Character.isDigit(macroText.charAt(i + 1)))) {
                     i += 1;
-                    optionIndex = 10 * optionIndex
-                            + (macroText.charAt(i) - '0');
+                    optionIndex = 10 * optionIndex + (macroText.charAt(i) - '0');
                 }
                 int accessOptionIndex = 1 + 2 * (optionIndex - 1);
 
                 if (accessOptionIndex < caller.getItems().size()) {
-                    optionText = ((AbstractTextItem) caller.getItems().get(
-                            accessOptionIndex)).getText();
-                    logger.fine("  substituting $" + optionIndex
-                            + " by: " + tools.sourced(optionText));
+                    optionText = ((AbstractTextItem) caller.getItems().get(accessOptionIndex)).getText();
+                    logger.fine("  substituting $" + optionIndex + " by: " + tools.sourced(optionText));
                 } else {
                     optionText = "";
-                    logger.fine("  substituting $" + optionIndex
-                            + " by empty text");
+                    logger.fine("  substituting $" + optionIndex + " by empty text");
                 }
                 result += optionText;
             } else {
@@ -214,19 +193,14 @@ public class Guide {
                 if (commandName.equals("node")) {
                     if (nodeName != null) {
                         // Add missing @endnode.
-                        CommandItem endNodeItem = new CommandItem(command
-                                .getFile(), command.getLine(), command
-                                .getColumn(), "endnode", false,
-                                new ArrayList<AbstractItem>());
+                        CommandItem endNodeItem = new CommandItem(command.getFile(), command.getLine(), command
+                                .getColumn(), "endnode", false, new ArrayList<AbstractItem>());
                         items.add(i, endNodeItem);
                         endNodeMap.put(nodeName, endNodeItem);
                         i += 1;
-                        CommandItem previousNode = nodeList
-                                .get(nodeList.size() - 1);
-                        MessageItem message = new MessageItem(command,
-                                "added missing @endnode before @node");
-                        MessageItem seeAlso = new MessageItem(previousNode,
-                                "previous @node");
+                        CommandItem previousNode = nodeList.get(nodeList.size() - 1);
+                        MessageItem message = new MessageItem(command, "added missing @endnode before @node");
+                        MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
                         message.setSeeAlso(seeAlso);
                         messagePool.add(message);
                     }
@@ -235,33 +209,22 @@ public class Guide {
                         CommandItem nodeWithSameName = nodeMap.get(nodeName);
                         if (nodeWithSameName != null) {
                             // Change duplicate node name to something unique.
-                            AbstractTextItem uniqueNodeNameItem = getUniqueNodeNameItem(command
-                                    .getItems().get(1));
+                            AbstractTextItem uniqueNodeNameItem = getUniqueNodeNameItem(command.getItems().get(1));
                             command.setOption(0, uniqueNodeNameItem.getText());
-                            MessageItem message = new MessageItem(command,
-                                    "changed duplicate node name "
-                                            + tools.sourced(nodeName)
-                                            + " to "
-                                            + tools.sourced(uniqueNodeNameItem
-                                                    .getText()));
-                            MessageItem seeAlso = new MessageItem(
-                                    nodeWithSameName,
-                                    "existing node with same name");
+                            MessageItem message = new MessageItem(command, "changed duplicate node name "
+                                    + tools.sourced(nodeName) + " to " + tools.sourced(uniqueNodeNameItem.getText()));
+                            MessageItem seeAlso = new MessageItem(nodeWithSameName, "existing node with same name");
                             message.setSeeAlso(seeAlso);
                             messagePool.add(message);
                         }
                     } else {
                         nodeName = getUniqueNodeName();
                         command.getItems().add(
-                                new SpaceItem(command.getFile(), command
-                                        .getLine(), command.getColumn(), " "));
+                                new SpaceItem(command.getFile(), command.getLine(), command.getColumn(), " "));
                         command.getItems().add(
-                                new TextItem(command.getFile(), command
-                                        .getLine(), command.getColumn(),
-                                        nodeName));
-                        MessageItem message = new MessageItem(command,
-                                "assigned name " + tools.sourced(nodeName)
-                                        + " to unnamed node");
+                                new TextItem(command.getFile(), command.getLine(), command.getColumn(), nodeName));
+                        MessageItem message = new MessageItem(command, "assigned name " + tools.sourced(nodeName)
+                                + " to unnamed node");
                         messagePool.add(message);
                     }
                     nodeList.add(command);
@@ -270,8 +233,7 @@ public class Guide {
                     if (nodeName == null) {
                         items.remove(i);
                         i -= 1;
-                        messagePool.add(new MessageItem(command,
-                                "removed dangling @endnode"));
+                        messagePool.add(new MessageItem(command, "removed dangling @endnode"));
                     } else {
                         endNodeMap.put(nodeName, command);
                         nodeName = null;
@@ -284,26 +246,21 @@ public class Guide {
         if (nodeName != null) {
             // Add missing @endnode at end of file
             AbstractItem lastItem = items.get(items.size() - 1);
-            assert lastItem instanceof NewLineItem : "lastItem="
-                    + lastItem.getClass().getName();
-            CommandItem endNodeItem = new CommandItem(lastItem.getFile(),
-                    lastItem.getLine(), lastItem.getColumn(), "endnode", false,
-                    new ArrayList<AbstractItem>());
+            assert lastItem instanceof NewLineItem : "lastItem=" + lastItem.getClass().getName();
+            CommandItem endNodeItem = new CommandItem(lastItem.getFile(), lastItem.getLine(), lastItem.getColumn(),
+                    "endnode", false, new ArrayList<AbstractItem>());
             items.add(i, endNodeItem);
             endNodeMap.put(nodeName, endNodeItem);
             CommandItem previousNode = nodeMap.get(nodeName);
-            MessageItem message = new MessageItem(lastItem,
-                    "added missing @endnode at end of file");
-            MessageItem seeAlso = new MessageItem(previousNode,
-                    "previous @node");
+            MessageItem message = new MessageItem(lastItem, "added missing @endnode at end of file");
+            MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
             message.setSeeAlso(seeAlso);
             messagePool.add(message);
         }
 
         for (CommandItem node : nodeList) {
             logger.fine("node: " + node);
-            logger.fine("  endnode: "
-                    + endNodeMap.get(node.getOption(0)));
+            logger.fine("  endnode: " + endNodeMap.get(node.getOption(0)));
         }
     }
 
@@ -320,18 +277,65 @@ public class Guide {
                 } else if (command.getCommandName().equals("endnode")) {
                     assert insideNode;
                     insideNode = false;
-                } else {
-                    int oldItemCount = items.size();
-                    Tag.Scope scope = getScopeFor(command, insideNode);
-                    if (scope == Tag.Scope.LINK) {
-                        validateLink(itemIndex, command);
-                    } else {
-                        // TODO: Validate other command types.
-                    }
-                    // Adjust itemIndex to whatever number validateXXX() has
-                    // added or removed.
-                    itemIndex += items.size() - oldItemCount;
                 }
+
+                int oldItemCount = items.size();
+                Tag.Scope scope = getScopeFor(command, insideNode);
+                if (scope == Tag.Scope.LINK) {
+                    validateLink(itemIndex, command);
+                } else {
+                    boolean removeCommand = false;
+                    Tag tag = tagPool.getTag(command.getCommandName(), scope);
+                    if (tag != null) {
+                        TagOption[] tagOptions = tag.getOptions();
+                        boolean lastOptionIsAnyOrSome = false;
+                        int optionIndex = 0;
+
+                        while (!removeCommand && (tagOptions != null) && (optionIndex < tagOptions.length)) {
+                            TagOption tagOption = tagOptions[optionIndex];
+                            String optionValue = command.getOption(optionIndex);
+                            String validationError = tagOption.validationError(optionValue);
+                            if (validationError != null) {
+                                AbstractItem baseItem = command.getOptionItem(optionIndex);
+
+                                if (baseItem == null) {
+                                    baseItem = command;
+                                }
+                                MessageItem message = new MessageItem(baseItem, "removed "
+                                        + command.toShortAmigaguide() + " because option #" + (optionIndex + 1)
+                                        + " is broken: " + validationError);
+                                messagePool.add(message);
+                                removeCommand = true;
+                            } else {
+                                assert !lastOptionIsAnyOrSome : "option of type \"any\" or \"some\" must be the last: "
+                                        + tag;
+                                lastOptionIsAnyOrSome = (tagOption.getType() == TagOption.Type.ANY)
+                                        || (tagOption.getType() == TagOption.Type.SOME);
+                            }
+                            optionIndex += 1;
+                        }
+
+                        if (!removeCommand && !lastOptionIsAnyOrSome) {
+                            AbstractTextItem optionItem = command.getOptionItem(optionIndex);
+                            if (optionItem != null) {
+                                MessageItem message = new MessageItem(optionItem, "ignored unexpected option #"
+                                        + (optionIndex + 1) + " (and possible further options) for "
+                                        + command.toShortAmigaguide() + ": " + tools.sourced(optionItem.getText()));
+                                messagePool.add(message);
+                            }
+                        }
+                    } else {
+                        MessageItem message = new MessageItem(command, "removed unknown command "
+                                + command.toShortAmigaguide());
+                        messagePool.add(message);
+                        removeCommand = true;
+                    }
+
+                    // TODO: Move global commands inside node below @database.
+                }
+                // Adjust itemIndex to whatever number validateXXX() has
+                // added or removed.
+                itemIndex += items.size() - oldItemCount;
             }
             itemIndex += 1;
         }
@@ -353,15 +357,13 @@ public class Guide {
             reasonToReplaceLinkByText = "empty";
         }
         if (reasonToReplaceLinkByText != null) {
-            MessageItem message = new MessageItem(command, "replaced "
-                    + reasonToReplaceLinkByText + " link by its text: "
-                    + command.toPrettyAmigaguide());
+            MessageItem message = new MessageItem(command, "replaced " + reasonToReplaceLinkByText
+                    + " link by its text: " + command.toPrettyAmigaguide());
             messagePool.add(message);
             String line = command.getOriginalCommandName();
             // FIXME: Deconstruct line into AbstractItems (using ItemReader)
             // before inserting it.
-            TextItem textItem = new TextItem(command.getFile(), command
-                    .getLine(), command.getColumn() + 2, line);
+            TextItem textItem = new TextItem(command.getFile(), command.getLine(), command.getColumn() + 2, line);
             items.set(itemIndex, textItem);
         }
     }
@@ -387,8 +389,7 @@ public class Guide {
      * Is <code>item</code> a line command, for example <code>@node</code>?
      */
     private boolean isLineCommand(AbstractItem item) {
-        return (item instanceof CommandItem)
-                && !((CommandItem) item).isInline();
+        return (item instanceof CommandItem) && !((CommandItem) item).isInline();
     }
 
     /**
@@ -401,8 +402,7 @@ public class Guide {
     private AbstractTextItem getUniqueNodeNameItem(AbstractItem location) {
         AbstractTextItem result;
         String nodeName = getUniqueNodeName();
-        result = new TextItem(location.getFile(), location.getLine(), location
-                .getLine(), nodeName);
+        result = new TextItem(location.getFile(), location.getLine(), location.getLine(), nodeName);
         return result;
     }
 
@@ -424,17 +424,16 @@ public class Guide {
 
         if (itemCount >= 2) {
             AbstractItem firstItem = macro.getItems().get(0);
-            assert firstItem instanceof SpaceItem : "first macro item must be "
-                    + SpaceItem.class + " but is " + firstItem.getClass();
-            AbstractTextItem macroNameItem = (AbstractTextItem) macro
-                    .getItems().get(1);
+            assert firstItem instanceof SpaceItem : "first macro item must be " + SpaceItem.class + " but is "
+                    + firstItem.getClass();
+            AbstractTextItem macroNameItem = (AbstractTextItem) macro.getItems().get(1);
             macroName = macroNameItem.getText().toLowerCase();
 
             AbstractTextItem macroTextItem;
             if (itemCount >= 4) {
                 AbstractItem thirdItem = macro.getItems().get(2);
-                assert thirdItem instanceof SpaceItem : "third macro item must be "
-                        + SpaceItem.class + " but is " + firstItem.getClass();
+                assert thirdItem instanceof SpaceItem : "third macro item must be " + SpaceItem.class + " but is "
+                        + firstItem.getClass();
                 macroTextItem = (AbstractTextItem) macro.getItems().get(3);
             } else {
                 macroTextItem = null;

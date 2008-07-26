@@ -23,35 +23,34 @@ public class TagPool {
         // Amigaguide version 34 (Workbench 1.3 and 2.x)
         Tag.Version v34 = Tag.Version.V34;
         addTag(new Tag("$ver:", v34, Tag.Scope.GLOBAL, true, some));
-        addTag(new Tag("$(c)", v34, Tag.Scope.GLOBAL, true, some));
+        addTag(new Tag("(c)", v34, Tag.Scope.GLOBAL, true, some));
         addTag(new Tag("author", v34, Tag.Scope.GLOBAL, true, some));
         // TODO: Check if @database has option "some" instead of "any".
         addTag(new Tag("database", v34, Tag.Scope.GLOBAL, true, any));
         // TODO: Mark @dnode as "obsolete".
         addTag(new Tag("dnode", v34, Tag.Scope.GLOBAL, true, any));
         addTag(new Tag("endnode", v34, Tag.Scope.GLOBAL));
-        addTag(new Tag("font", v34, Tag.Scope.GLOBAL, true, new TagOption[] {
-                text, number }));
+        addTag(new Tag("font", v34, Tag.Scope.GLOBAL, true, new TagOption[] { text, number }));
         // TODO: Mark @height as "unused".
         addTag(new Tag("height", v34, Tag.Scope.GLOBAL, true, number));
         addTag(new Tag("help", v34, Tag.Scope.GLOBAL, true, node));
         addTag(new Tag("index", v34, Tag.Scope.GLOBAL, true, node));
         // TODO: Mark @master as "unused".
         addTag(new Tag("master", v34, Tag.Scope.GLOBAL, true, text));
-        addTag(new Tag("node", v34, Tag.Scope.GLOBAL, new TagOption[] { text,
-                text }));
-        addTag(new Tag("rem", v34, Tag.Scope.GLOBAL));
-        addTag(new Tag("remark", v34, Tag.Scope.GLOBAL));
+        addTag(new Tag("node", v34, Tag.Scope.GLOBAL, new TagOption[] { some }));
+        addTag(new Tag("rem", v34, Tag.Scope.GLOBAL, new TagOption[] { any }));
+        addTag(new Tag("remark", v34, Tag.Scope.GLOBAL, new TagOption[] { any }));
         // TODO: Mark @width as "unused".
         addTag(new Tag("width", v34, Tag.Scope.GLOBAL, true, number));
 
-        addTag(new Tag("font", v34, Tag.Scope.NODE, true, new TagOption[] {
-                text, number }));
+        addTag(new Tag("font", v34, Tag.Scope.NODE, true, new TagOption[] { text, number }));
         addTag(new Tag("help", v34, Tag.Scope.NODE, true, node));
         addTag(new Tag("index", v34, Tag.Scope.NODE, true, node));
         addTag(new Tag("keywords", v34, Tag.Scope.NODE, true, any));
         addTag(new Tag("next", v34, Tag.Scope.NODE, true, node));
         addTag(new Tag("prev", v34, Tag.Scope.NODE, true, node));
+        addTag(new Tag("rem", v34, Tag.Scope.NODE, new TagOption[] { any }));
+        addTag(new Tag("remark", v34, Tag.Scope.NODE, new TagOption[] { any }));
         addTag(new Tag("title", v34, Tag.Scope.NODE, true, text));
         addTag(new Tag("toc", v34, Tag.Scope.NODE, true, node));
 
@@ -151,7 +150,7 @@ public class TagPool {
         }
         return result;
     }
-    
+
     public Tag getMacro(String name) {
         Tag result = getTag(name, Tag.Scope.INLINE);
         if ((result != null) && !result.isMacro()) {

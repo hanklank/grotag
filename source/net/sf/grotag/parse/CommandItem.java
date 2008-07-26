@@ -164,6 +164,29 @@ public class CommandItem extends AbstractItem {
         return result;
     }
 
+    /**
+     * Short Amigaguide snipplet to refer to the command in error messages, excluding any options and link descriptions.
+     */
+    public String toShortAmigaguide() {
+        String result = "@";
+        if (isInline()) {
+            result += "{";
+        }
+        if (isLink()) {
+            String linkType = getOption(0);
+            result += "\"...\"";
+            if (linkType != null) {
+                result += " " + linkType.toLowerCase();
+            }
+        } else {
+            result += getCommandName();
+        }
+        if (isInline()) {
+            result += "}";
+        } 
+        return result;
+    }
+
     @Override
     public String toPrettyAmigaguide() {
         String result = "@";
