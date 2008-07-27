@@ -86,6 +86,22 @@ public class Tools {
     }
 
     /**
+     * Same as <code>sourced(String)</code>, but uses absolute file path.
+     * 
+     * @see #sourced(String)
+     */
+    public/* @ pure @ */String sourced(/* @ nullable @ */File some) {
+        String result;
+
+        if (some == null) {
+            result = sourced((String) null);
+        } else {
+            result = sourced(some.getAbsolutePath());
+        }
+        return result;
+    }
+
+    /**
      * Source code version of <code>some</code> that can be pasted into a Java
      * source. The result is embedded in two quotes, escape characters are
      * rendered where possible. Invisible characters are rendered as unicode
@@ -221,6 +237,71 @@ public class Tools {
                 }
                 result = new String[] { space, token };
             }
+        }
+        return result;
+    }
+
+    public String getRelativePath(File baseDir, File fileInBaseDir) {
+        String basePath = baseDir.getAbsolutePath();
+        String filePath = fileInBaseDir.getAbsolutePath();
+
+        assert filePath.startsWith(basePath) : "file " + sourced(filePath) + " must start with " + sourced(baseDir);
+        String result = filePath.substring(basePath.length() + 1);
+
+        return result;
+    }
+
+    public String[] getRelativePaths(File baseDir, File[] filesInBaseDir) {
+        String[] result = new String[filesInBaseDir.length];
+
+        for (int i = 0; i < filesInBaseDir.length; i += 1) {
+            result[i] = getRelativePath(baseDir, filesInBaseDir[i]);
+        }
+        return result;
+    }
+
+    /**
+     * Get the (lower case) last suffix of name (without the "."), for example:
+     * "hugo.tar.gz" yields "gz".
+     */
+    public String getSuffix(File file) {
+        assert file != null;
+        return getSuffix(file.getName());
+    }
+
+    /**
+     * Get the (lower case) last suffix of name (without the "."), for example:
+     * "hugo.tar.gz" yields "gz".
+     */
+    public String getSuffix(String name) {
+        // FIXME: handle dir.xxx/name correctly -> should be "", not
+        // "xxx/name"
+        assert name != null;
+        String result;
+        int lastDotIndex = name.lastIndexOf('.');
+
+        if (lastDotIndex == -1) {
+            result = "";
+        } else {
+            result = name.substring(lastDotIndex + 1).toLowerCase();
+        }
+        return result;
+    }
+
+    public String getWithoutLastSuffix(String fileName) {
+        assert fileName != null;
+        String result;
+        String suffix = getSuffix(fileName);
+        int length = fileName.length();
+
+        if (suffix.length() == 0) {
+            if ((length > 0) && (fileName.charAt(length - 1) == '.')) {
+                result = fileName.substring(0, length - 1);
+            } else {
+                result = fileName;
+            }
+        } else {
+            result = fileName.substring(0, length - suffix.length() - 1);
         }
         return result;
     }
