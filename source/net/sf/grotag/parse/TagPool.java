@@ -27,21 +27,26 @@ public class TagPool {
         addTag(new Tag("author", v34, Tag.Scope.GLOBAL, true, some));
         // TODO: Check if @database has option "some" instead of "any".
         addTag(new Tag("database", v34, Tag.Scope.GLOBAL, true, any));
-        // TODO: Mark @dnode as "obsolete".
-        addTag(new Tag("dnode", v34, Tag.Scope.GLOBAL, true, any));
+        Tag dnodeTag = new Tag("dnode", v34, Tag.Scope.GLOBAL, true, any);
+        dnodeTag.setObsolete(true);
+        addTag(dnodeTag);
         addTag(new Tag("endnode", v34, Tag.Scope.GLOBAL));
         addTag(new Tag("font", v34, Tag.Scope.GLOBAL, true, new TagOption[] { text, number }));
-        // TODO: Mark @height as "unused".
-        addTag(new Tag("height", v34, Tag.Scope.GLOBAL, true, number));
+        Tag heightTag = new Tag("height", v34, Tag.Scope.GLOBAL, true, number);
+        heightTag.setUnused(true);
+        addTag(heightTag);
         addTag(new Tag("help", v34, Tag.Scope.GLOBAL, true, node));
         addTag(new Tag("index", v34, Tag.Scope.GLOBAL, true, node));
-        // TODO: Mark @master as "unused".
-        addTag(new Tag("master", v34, Tag.Scope.GLOBAL, true, text));
+        Tag masterTag = new Tag("master", v34, Tag.Scope.GLOBAL, true, text);
+        masterTag.setUnused(true);
+        addTag(masterTag);
         addTag(new Tag("node", v34, Tag.Scope.GLOBAL, new TagOption[] { some }));
         addTag(new Tag("rem", v34, Tag.Scope.GLOBAL, new TagOption[] { any }));
         addTag(new Tag("remark", v34, Tag.Scope.GLOBAL, new TagOption[] { any }));
         // TODO: Mark @width as "unused".
-        addTag(new Tag("width", v34, Tag.Scope.GLOBAL, true, number));
+        Tag widthTag = new Tag("width", v34, Tag.Scope.GLOBAL, true, number);
+        widthTag.setUnused(true);
+        addTag(widthTag);
 
         addTag(new Tag("font", v34, Tag.Scope.NODE, true, new TagOption[] { text, number }));
         addTag(new Tag("help", v34, Tag.Scope.NODE, true, node));
@@ -88,7 +93,7 @@ public class TagPool {
 
         // Amigaguide version 40 (Workbench 3.1)
         Tag.Version v40 = Tag.Version.V40;
-        addTag(new Tag("macro", v40, Tag.Scope.GLOBAL, false, text));
+        addTag(new Tag("macro", v40, Tag.Scope.GLOBAL, new TagOption[] { text, text }));
         addTag(new Tag("onclose", v40, Tag.Scope.GLOBAL, true, file));
         addTag(new Tag("onopen", v40, Tag.Scope.GLOBAL, true, file));
         addTag(new Tag("smartwrap", v40, Tag.Scope.GLOBAL, true));

@@ -39,13 +39,14 @@ public class Tag implements Comparable<Tag> {
     private String name;
     private TagOption[] options;
     private Scope scope;
-    private boolean isUnique;
     private boolean isMacro;
+    private boolean isObsolete;
+    private boolean isUnique;
+    private boolean isUnused;
     private AbstractTextItem macroTextItem;
     private Version version;
 
-    public Tag(String newName, Version newVersion, Scope newScope,
-            TagOption[] newOptions) {
+    public Tag(String newName, Version newVersion, Scope newScope, TagOption[] newOptions) {
         this(newName, newVersion, newScope, false, newOptions);
     }
 
@@ -53,20 +54,16 @@ public class Tag implements Comparable<Tag> {
         this(newName, newVersion, newScope, false, (TagOption[]) null);
     }
 
-    public Tag(String newName, Version newVersion, Scope newScope,
-            TagOption newOption) {
+    public Tag(String newName, Version newVersion, Scope newScope, TagOption newOption) {
         this(newName, newVersion, newScope, false, newOption);
     }
 
-    public Tag(String newName, Version newVersion, Scope newScope,
-            boolean newUnique) {
+    public Tag(String newName, Version newVersion, Scope newScope, boolean newUnique) {
         this(newName, newVersion, newScope, newUnique, (TagOption[]) null);
     }
 
-    public Tag(String newName, Version newVersion, Scope newScope,
-            boolean newUnique, TagOption newOption) {
-        this(newName, newVersion, newScope, newUnique,
-                new TagOption[] { newOption });
+    public Tag(String newName, Version newVersion, Scope newScope, boolean newUnique, TagOption newOption) {
+        this(newName, newVersion, newScope, newUnique, new TagOption[] { newOption });
     }
 
     /**
@@ -79,8 +76,7 @@ public class Tag implements Comparable<Tag> {
         assert newName.equals(newName.toLowerCase());
         assert newName.length() > 0;
         assert newTextItem != null;
-        assert (newTextItem instanceof TextItem)
-                || (newTextItem instanceof StringItem) : "newTextItem="
+        assert (newTextItem instanceof TextItem) || (newTextItem instanceof StringItem) : "newTextItem="
                 + newTextItem.getClass().getName();
 
         // V34 because macros will be expanded anyway. @macro nevertheless is
@@ -95,8 +91,7 @@ public class Tag implements Comparable<Tag> {
         return createLink(newName, newVersion, (TagOption[]) null);
     }
 
-    public static Tag createLink(String newName, Version newVersion,
-            TagOption newOption) {
+    public static Tag createLink(String newName, Version newVersion, TagOption newOption) {
         Tag result;
         TagOption[] options;
         if (newOption != null) {
@@ -108,13 +103,11 @@ public class Tag implements Comparable<Tag> {
         return result;
     }
 
-    public static Tag createLink(String newName, Version newVersion,
-            TagOption[] newOptions) {
+    public static Tag createLink(String newName, Version newVersion, TagOption[] newOptions) {
         return new Tag(newName, newVersion, Scope.LINK, false, newOptions);
     }
 
-    public Tag(String newName, Version newVersion, Scope newScope,
-            boolean newUnique, TagOption[] newOptions) {
+    public Tag(String newName, Version newVersion, Scope newScope, boolean newUnique, TagOption[] newOptions) {
         assert newName != null;
         assert newName.equals(newName.toLowerCase());
         assert newName.length() > 0;
@@ -176,5 +169,21 @@ public class Tag implements Comparable<Tag> {
     public AbstractTextItem getMacroTextItem() {
         assert isMacro;
         return macroTextItem;
+    }
+
+    public boolean isObsolete() {
+        return isObsolete;
+    }
+
+    public void setObsolete(boolean newObsolete) {
+        this.isObsolete = newObsolete;
+    }
+
+    public boolean isUnused() {
+        return isUnused;
+    }
+
+    public void setUnused(boolean newUnused) {
+        this.isUnused = newUnused;
     }
 }
