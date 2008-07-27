@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 import net.sf.grotag.common.TestTools;
 
@@ -18,10 +19,12 @@ import org.junit.Test;
  */
 public class InfoTest {
     private TestTools testTools;
+    private Logger log;
 
     @Before
     public void setUp() throws Exception {
         testTools = TestTools.getInstance();
+        log = Logger.getLogger(InfoTest.class.getName());
     }
 
     private Guide getBasicsGuide() throws IOException {
@@ -56,5 +59,15 @@ public class InfoTest {
         assertEquals("Helvetica.font", info.getFontName());
         assertEquals(13, info.getFontSize());
         assertEquals(Wrap.SMART, info.getWrap());
+    }
+
+    @Test
+    public void testToString() throws IOException {
+        Guide guide = getBasicsGuide();
+        DatabaseInfo databaseInfo = guide.getDatabaseInfo();
+        NodeInfo nodeInfo = guide.getNodeInfo("main");
+
+        log.fine("database=" + databaseInfo.toString());
+        log.fine("node=" + nodeInfo.toString());
     }
 }

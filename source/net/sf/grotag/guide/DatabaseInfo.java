@@ -38,4 +38,10 @@ public class DatabaseInfo extends AbstractInfo {
     public void setVersion(String newVersion) {
         version = newVersion;
     }
+
+    @Override
+    public String toString() {
+        String result = "DatabaseInfo: " + getName();
+        return result;
+    }
 }

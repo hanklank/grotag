@@ -72,4 +72,10 @@ public class NodeInfo extends AbstractInfo {
         }
         return result;
     }
+
+    @Override
+    public String toString() {
+        String result = "NodeInfo " + getName() + ": start=" + getStartNode() + ", end=" + getEndNode();
+        return result;
+    }
 }
