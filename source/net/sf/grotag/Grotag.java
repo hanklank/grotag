@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 
 import net.sf.grotag.guide.Guide;
-import net.sf.grotag.parse.AbstractItem;
 
 /**
  * Grotag - Amigaguide viewer and converter.
@@ -12,20 +11,41 @@ import net.sf.grotag.parse.AbstractItem;
  * @author Thomas Aglassinger
  */
 public class Grotag {
-    public static void main(String[] args) {
-        if (args.length == 1) {
-            String guideToRead = args[0];
-            try {
-                Guide guide = Guide.createGuide(new File(guideToRead));
-                for (AbstractItem item: guide.getItems()) {
-                    System.out.print(item.toPrettyAmigaguide());
-                }
-            } catch (IOException error) {
-                System.err.println("cannot read \"" + guideToRead + "\": " + error.getMessage());
+    enum Action {
+        HELP, PRETTY, VALIDATE
+    }
+
+    public static void main(String[] args) throws IOException {
+        Action action = Action.HELP;
+        String sourceFilePath = null;
+        String targetFilePath = null;
+        
+        for (String option: args) {
+            if (option.startsWith("-")) {
+                option = option.substring(1);
+                action = Action.valueOf(option);
+            } else if (sourceFilePath == null) {
+                sourceFilePath = option;
+            } else if (targetFilePath == null) {
+                targetFilePath = option;
+            } else {
+                throw new IllegalArgumentException("cannot process additional option: " + option);
             }
-            
+        }
+        if ((sourceFilePath == null) &&  ((action == Action.PRETTY) || (action == Action.VALIDATE))) {
+            throw new IllegalArgumentException("source file must be specified");
+        }
+        if ((targetFilePath == null) &&  (action == Action.PRETTY)) {
+            throw new IllegalArgumentException("target file must be specified");
+        }
+        
+        if (action == Action.HELP) {
+            System.err.println("Usage: java -jar Grotag.jar -pretty|-validate source_file [target_file]");
         } else {
-            System.err.println("Usage: java -jar Grotag.jar <file.guide>");
+            Guide guide = Guide.createGuide(new File(sourceFilePath));
+            if (action == Action.PRETTY) {
+                guide.writePretty(new File(targetFilePath));
+            }
         }
     }
 }

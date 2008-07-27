@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,7 @@ public class Guide {
     private Map<String, CommandItem> endNodeMap;
     private Map<String, CommandItem> uniqueGlobalCommandsOccurred;
     private Map<String, CommandItem> uniqueNodeCommandsOccurred;
+    private boolean hasMacros;
 
     private Guide(File newGuideFile) {
         assert newGuideFile != null;
@@ -82,6 +84,7 @@ public class Guide {
                                         + tools.sourced(existingMacro.getName()) + " with macro"));
                             }
                         } else {
+                            hasMacros = true;
                             tagPool.addTag(macro);
                         }
                     }
@@ -299,6 +302,9 @@ public class Guide {
 
                         removeCommand = !isValidPossiblyUniqueCommand(command, tag);
 
+                        if (!removeCommand) {
+                            validateUnusedAndObsoleteCommand(command, tag);
+                        }
                         while (!removeCommand && (tagOptions != null) && (optionIndex < tagOptions.length)) {
                             TagOption tagOption = tagOptions[optionIndex];
                             String optionValue = command.getOption(optionIndex);
@@ -359,6 +365,10 @@ public class Guide {
      * has not occurred so far within the scope defined by <code>tag</code>?
      */
     private boolean isValidPossiblyUniqueCommand(CommandItem command, Tag tag) {
+        assert command != null;
+        assert tag != null;
+        assert command.getCommandName().equals(tag.getName());
+
         boolean result = true;
         if (tag.isUnique()) {
             Tag.Scope scope = tag.getScope();
@@ -392,6 +402,26 @@ public class Guide {
             }
         }
         return result;
+    }
+
+    private void validateUnusedAndObsoleteCommand(CommandItem command, Tag tag) {
+        assert command != null;
+        assert tag != null;
+        assert command.getCommandName().equals(tag.getName());
+
+        String reasonToIgnore = null;
+
+        if (tag.isObsolete()) {
+            reasonToIgnore = "obsolete";
+        } else if (tag.isUnused()) {
+            reasonToIgnore = "unused";
+        }
+
+        if (reasonToIgnore != null) {
+            MessageItem message = new MessageItem(command, "ignored " + reasonToIgnore + " command "
+                    + command.toShortAmigaguide());
+            messagePool.add(message);
+        }
     }
 
     private void validateLink(int itemIndex, CommandItem command) {
@@ -518,5 +548,31 @@ public class Guide {
      */
     public List<AbstractItem> getItems() {
         return items;
+    }
+
+    // TODO: Implement pretty printing with macros and remove
+    // checkNoMacrosHaveBeenDefined().
+    private void checkNoMacrosHaveBeenDefined() {
+        if (hasMacros) {
+            throw new IllegalStateException("pretty printing with defined macros must be implemented");
+        }
+    }
+
+    public void writePretty(Writer writer) throws IOException {
+        checkNoMacrosHaveBeenDefined();
+        for (AbstractItem item : getItems()) {
+            writer.write(item.toPrettyAmigaguide());
+        }
+    }
+
+    public void writePretty(File targetFile) throws IOException {
+        checkNoMacrosHaveBeenDefined();
+        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
+                "ISO-8859-1"));
+        try {
+            writePretty(writer);
+        } finally {
+            writer.close();
+        }
     }
 }
