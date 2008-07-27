@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="build" name="LichtTools">
   <property name="source.dir" location="${basedir}/source"/>
+  <property name="tests.dir" location="${basedir}/tests"/>
   <property name="classes.dir" location="${basedir}/classes"/>
   <property name="Grotag.jar" location="${basedir}/Grotag.jar"/>
   <property name="Grotag.zip" location="${basedir}/Grotag.zip"/>
@@ -29,5 +30,7 @@
     <delete file="${Grotag.jar}"/>
     <delete file="${Grotag.zip}"/>
     <delete dir="${classes.dir}/net"/>
+    <delete dir="${tests.dir}/actual"/>
   </target>
 </project>
+
