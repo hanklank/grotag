@@ -1,12 +1,20 @@
-@database test.guide
+@database basics.guide
+@$VER: 1.0 basics.guide (12/13/2001)
+@remark I don't intend to manually maintain the version date. This is stupid.
+@author Thomas Aglassinger
+@(c) 2008 Thomas Aglassinger
+@font Helvetica.font 13
 
-@NODE Main "LichtTools Guide 1.1 Copyright © 1995-2008 Michael Gehmair"
+@node Main "Basic Amigaguide features"
+@smartwrap
+This Guide demonstrates some of the basic featurs in Amigaguide.
 
-         Table of Contents:@hugo
-
-@font Times.font 18
-
-         Welcome to the @{b}LichtTools@{ub} AmigaGuide®.
+@{"Monospaced Node" link "monospaced"} - A node using a monospaced font.
 
 @endnode
- 
+
+
+@node MonoSpaced "Monospaced Node"
+@font Topaz.font 9
+Unlike the rest of the document, this node uses a monospaced font.
+@endnode

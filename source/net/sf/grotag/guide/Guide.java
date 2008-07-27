@@ -45,6 +45,8 @@ public class Guide {
     private Map<String, CommandItem> uniqueGlobalCommandsOccurred;
     private Map<String, CommandItem> uniqueNodeCommandsOccurred;
     private boolean hasMacros;
+    private DatabaseInfo databaseInfo;
+    private Map<String, NodeInfo> nodeInfoMap;
 
     private Guide(File newGuideFile) {
         assert newGuideFile != null;
@@ -55,6 +57,7 @@ public class Guide {
 
         guideFile = newGuideFile;
         tagPool = new TagPool();
+        nodeInfoMap = new TreeMap<String, NodeInfo>();
     }
 
     private void defineMacros() {
@@ -249,18 +252,7 @@ public class Guide {
             i += 1;
         }
         if (nodeName != null) {
-            // Add missing @endnode at end of file
-            AbstractItem lastItem = items.get(items.size() - 1);
-            assert lastItem instanceof NewLineItem : "lastItem=" + lastItem.getClass().getName();
-            CommandItem endNodeItem = new CommandItem(lastItem.getFile(), lastItem.getLine(), lastItem.getColumn(),
-                    "endnode", false, new ArrayList<AbstractItem>());
-            items.add(i, endNodeItem);
-            endNodeMap.put(nodeName, endNodeItem);
-            CommandItem previousNode = nodeMap.get(nodeName);
-            MessageItem message = new MessageItem(lastItem, "added missing @endnode at end of file");
-            MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
-            message.setSeeAlso(seeAlso);
-            messagePool.add(message);
+            appendMissingEndnodeAtEndOfFile(nodeName);
         }
 
         for (CommandItem node : nodeList) {
@@ -269,10 +261,26 @@ public class Guide {
         }
     }
 
+    private void appendMissingEndnodeAtEndOfFile(String nodeName) {
+        AbstractItem lastItem = items.get(items.size() - 1);
+        assert lastItem instanceof NewLineItem : "lastItem=" + lastItem.getClass().getName();
+        CommandItem endNodeItem = new CommandItem(lastItem.getFile(), lastItem.getLine(), lastItem.getColumn(),
+                "endnode", false, new ArrayList<AbstractItem>());
+        items.add(endNodeItem);
+        endNodeMap.put(nodeName, endNodeItem);
+
+        // FIXME: Add set start/end for last NodeInfo.
+        CommandItem previousNode = nodeMap.get(nodeName);
+        MessageItem message = new MessageItem(lastItem, "added missing @endnode at end of file");
+        MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
+        message.setSeeAlso(seeAlso);
+        messagePool.add(message);
+    }
+
     private void validateCommands() {
         uniqueGlobalCommandsOccurred = new TreeMap<String, CommandItem>();
         uniqueNodeCommandsOccurred = new TreeMap<String, CommandItem>();
-        boolean insideNode = false;
+        NodeInfo currentNodeInfo = null;
         int itemIndex = 0;
 
         while (itemIndex < items.size()) {
@@ -280,16 +288,20 @@ public class Guide {
             if (item instanceof CommandItem) {
                 CommandItem command = (CommandItem) item;
                 if (command.getCommandName().equals("node")) {
-                    assert !insideNode;
-                    insideNode = true;
+                    assert currentNodeInfo == null;
+                    String nodeName = command.getOption(0).toLowerCase();
+                    String nodeTitle = command.getOption(1);
+                    currentNodeInfo = new NodeInfo(getDatabaseInfo(), nodeName, nodeTitle);
+                    assert !nodeInfoMap.containsKey(nodeName);
+                    nodeInfoMap.put(nodeName, currentNodeInfo);
                 } else if (command.getCommandName().equals("endnode")) {
-                    assert insideNode;
-                    insideNode = false;
+                    assert currentNodeInfo != null;
+                    currentNodeInfo = null;
                     uniqueNodeCommandsOccurred.clear();
                 }
 
                 int oldItemCount = items.size();
-                Tag.Scope scope = getScopeFor(command, insideNode);
+                Tag.Scope scope = getScopeFor(command, (currentNodeInfo != null));
                 if (scope == Tag.Scope.LINK) {
                     validateLink(itemIndex, command);
                 } else {
@@ -338,6 +350,37 @@ public class Guide {
                                 messagePool.add(message);
                             }
                         }
+
+                        // Validate and process special commands.
+                        if (!removeCommand) {
+                            String commandName = command.getCommandName();
+                            AbstractInfo scopedInfo;
+
+                            if (currentNodeInfo == null) {
+                                scopedInfo = getDatabaseInfo();
+                            } else {
+                                scopedInfo = currentNodeInfo;
+                            }
+
+                            if (commandName.equals("author")) {
+                                databaseInfo.setAuthor(command.getAllOptionsText());
+                            } else if (commandName.equals("font")) {
+                                removeCommand = !isValidFont(command);
+                                if (!removeCommand) {
+                                    String fontName = command.getOption(0);
+                                    int fontSize = Integer.parseInt(command.getOption(1));
+                                    scopedInfo.setFont(fontName, fontSize);
+                                }
+                            } else if (commandName.equals("smartwrap")) {
+                                scopedInfo.setWrap(Wrap.SMART);
+                            } else if (commandName.equals("wordwrap")) {
+                                scopedInfo.setWrap(Wrap.WORD);
+                            } else if (commandName.equals("$ver:")) {
+                                databaseInfo.setVersion(command.getAllOptionsText());
+                            } else if (commandName.equals("(c)")) {
+                                databaseInfo.setCopyright(command.getAllOptionsText());
+                            }
+                        }
                     } else {
                         MessageItem message = new MessageItem(command, "removed unknown command "
                                 + command.toShortAmigaguide());
@@ -353,11 +396,38 @@ public class Guide {
             }
             itemIndex += 1;
         }
-        assert insideNode == false;
+
+        // At this point, a possible missing @endnode should have been fixed
+        // already.
+        assert currentNodeInfo == null;
 
         // No more need for those, but GC wouldn't know.
         uniqueGlobalCommandsOccurred = null;
         uniqueNodeCommandsOccurred = null;
+    }
+
+    private boolean isValidFont(CommandItem command) {
+        boolean result = false;
+        String fontSizeText = command.getOption(1);
+        if (fontSizeText != null) {
+            try {
+                int fontSize = Integer.parseInt(fontSizeText);
+                result = (fontSize > 0);
+            } catch (NumberFormatException error) {
+                logger.fine("detected invalid font size: " + fontSizeText);
+            }
+        }
+        // Report broken font size.
+        if (!result) {
+            AbstractItem location = command.getOptionItem(1);
+            if (location == null) {
+                location = command;
+            }
+            MessageItem message = new MessageItem(location, "removed " + command.toShortAmigaguide()
+                    + " because font size must be a number greater than 0");
+            messagePool.add(message);
+        }
+        return result;
     }
 
     /**
@@ -541,6 +611,36 @@ public class Guide {
 
         itemReader.read();
         items = itemReader.getItems();
+
+        // Setup initial @database information.
+        if (items.size() > 0) {
+            AbstractItem firstItem = items.get(0);
+            if (firstItem instanceof CommandItem) {
+                CommandItem firstCommand = (CommandItem) firstItem;
+                if (firstCommand.getCommandName().equals("database")) {
+                    String databaseName = firstCommand.getOption(0);
+                    if (databaseName == null) {
+                        databaseName = guideFile.getName();
+                        MessageItem message = new MessageItem(guideFile, 0, 0, "Changed missing database name to "
+                                + tools.sourced(databaseName));
+                        messagePool.add(message);
+                    }
+                    databaseInfo = new DatabaseInfo(databaseName);
+                } else {
+                    logger.info("first command is: " + firstItem);
+                }
+            } else {
+                logger.info("first item is: " + firstItem);
+            }
+        } else {
+            logger.info("guide is empty: " + guideFile);
+        }
+
+        if (getDatabaseInfo() == null) {
+            items.clear();
+            MessageItem message = new MessageItem(guideFile, 0, 0, "Amigaguide must start with @database.");
+            messagePool.add(message);
+        }
     }
 
     /**
@@ -548,6 +648,39 @@ public class Guide {
      */
     public List<AbstractItem> getItems() {
         return items;
+    }
+
+    /**
+     * Information about this guide.
+     */
+    public DatabaseInfo getDatabaseInfo() {
+        return databaseInfo;
+    }
+
+    public NodeInfo getNodeInfo(String nodeName) {
+        assert nodeName != null;
+        assert nodeName.equals(nodeName.toLowerCase()) : "node name must be all lower case: " + nodeName;
+        return nodeInfoMap.get(nodeName);
+    }
+
+    /**
+     * List of <code>NodeInfo</code>s in the same order as the nodes occurred
+     * in the guide.
+     */
+    public List<NodeInfo> getNodeInfos() {
+        List<NodeInfo> result = new ArrayList<NodeInfo>(nodeList.size());
+        for (CommandItem nodeCommand : nodeList) {
+            String nodeName = nodeCommand.getOption(0);
+            assert nodeName != null;
+            NodeInfo nodeInfo = getNodeInfo(nodeName);
+            assert nodeInfo != null;
+            assert nodeInfo.getName().equals(nodeName);
+            result.add(nodeInfo);
+        }
+        assert result.size() == nodeList.size();
+        assert result.size() == nodeInfoMap.size();
+
+        return result;
     }
 
     // TODO: Implement pretty printing with macros and remove

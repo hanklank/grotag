@@ -16,8 +16,7 @@ public class CommandItem extends AbstractItem {
     private boolean isInline;
     private List<AbstractItem> items;
 
-    public CommandItem(File newFile, int newLine, int newColumn,
-            String newCommandName, boolean newIsInline,
+    public CommandItem(File newFile, int newLine, int newColumn, String newCommandName, boolean newIsInline,
             List<AbstractItem> newItems) {
         super(newFile, newLine, newColumn);
 
@@ -145,8 +144,7 @@ public class CommandItem extends AbstractItem {
             }
             items.add(filler);
         }
-        items.set(optionIndex, new StringItem(getFile(), getLine(),
-                getColumn(), "\"" + value + "\""));
+        items.set(optionIndex, new StringItem(getFile(), getLine(), getColumn(), "\"" + value + "\""));
     }
 
     private boolean requiresQuotes(String some) {
@@ -165,7 +163,8 @@ public class CommandItem extends AbstractItem {
     }
 
     /**
-     * Short Amigaguide snipplet to refer to the command in error messages, excluding any options and link descriptions.
+     * Short Amigaguide snipplet to refer to the command in error messages,
+     * excluding any options and link descriptions.
      */
     public String toShortAmigaguide() {
         String result = "@";
@@ -183,7 +182,7 @@ public class CommandItem extends AbstractItem {
         }
         if (isInline()) {
             result += "}";
-        } 
+        }
         return result;
     }
 
@@ -208,8 +207,7 @@ public class CommandItem extends AbstractItem {
 
         for (int optionIndex = 0; optionIndex < getOptionCount(); optionIndex += 1) {
             String option = getOption(optionIndex);
-            assert option != null : "getOption(" + optionIndex
-                    + ") must not be null";
+            assert option != null : "getOption(" + optionIndex + ") must not be null";
             boolean requiresQuotes = requiresQuotes(option);
             result += " ";
             if (requiresQuotes) {
@@ -226,6 +224,25 @@ public class CommandItem extends AbstractItem {
         } else {
             result += "\n";
         }
+        return result;
+    }
+
+    /**
+     * A single string containing all white space and options passed to the
+     * command except for leading and trailing white space.
+     */
+    public String getAllOptionsText() {
+        String result = "";
+        for (AbstractItem item : getItems()) {
+            if (item instanceof AbstractTextItem) {
+                result += ((AbstractTextItem) item).getText();
+            } else if (item instanceof SpaceItem) {
+                result += ((SpaceItem) item).getSpace();
+            } else {
+                assert false : "cannot append item: " + item;
+            }
+        }
+        result = result.trim();
         return result;
     }
 }
