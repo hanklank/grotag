@@ -19,7 +19,7 @@ public class TestTools {
     }
 
     public static final synchronized TestTools getInstance() {
-        if (instance != null) {
+        if (instance == null) {
             instance = new TestTools();
         }
         return instance;
