@@ -213,7 +213,7 @@ public class Guide {
                         message.setSeeAlso(seeAlso);
                         messagePool.add(message);
                     }
-                    nodeName = command.getOption(0).toLowerCase();
+                    nodeName = getNodeName(command);
                     if (nodeName != null) {
                         CommandItem nodeWithSameName = nodeMap.get(nodeName);
                         if (nodeWithSameName != null) {
@@ -258,8 +258,20 @@ public class Guide {
 
         for (CommandItem node : nodeList) {
             logger.fine("node: " + node);
-            logger.fine("  endnode: " + endNodeMap.get(node.getOption(0)));
+            logger.fine("  endnode: " + endNodeMap.get(getNodeName(node)));
         }
+    }
+
+    /**
+     * All lower case name of <code>node</code> item.
+     */
+    private String getNodeName(CommandItem node) {
+        assert node != null;
+        assert node.getCommandName().equals("node");
+        String result = node.getOption(0);
+        assert result != null;
+        result = result.toLowerCase();
+        return result;
     }
 
     private void appendMissingEndnodeAtEndOfFile(String nodeName) {
@@ -285,7 +297,7 @@ public class Guide {
         assert nodeList.size() == nodeInfoMap.size() : "nls=" + nodeList.size() + ", nims=" + nodeInfoMap.size();
 
         for (CommandItem nodeItem : nodeList) {
-            String nodeName = nodeItem.getOption(0).toLowerCase();
+            String nodeName = getNodeName(nodeItem);
             assert nodeName != null;
             assert nodeMap.get(nodeName) != null;
             assert endNodeMap.get(nodeName) != null;
@@ -308,7 +320,7 @@ public class Guide {
                 CommandItem command = (CommandItem) item;
                 if (command.getCommandName().equals("node")) {
                     assert currentNodeInfo == null;
-                    String nodeName = command.getOption(0).toLowerCase();
+                    String nodeName = getNodeName(command);
                     String nodeTitle = command.getOption(1);
                     CommandItem matchingEndNode = endNodeMap.get(nodeName);
 
