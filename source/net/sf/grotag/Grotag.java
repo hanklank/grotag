@@ -23,7 +23,7 @@ public class Grotag {
         for (String option: args) {
             if (option.startsWith("-")) {
                 option = option.substring(1);
-                action = Action.valueOf(option);
+                action = Action.valueOf(option.toUpperCase());
             } else if (sourceFilePath == null) {
                 sourceFilePath = option;
             } else if (targetFilePath == null) {
