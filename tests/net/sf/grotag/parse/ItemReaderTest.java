@@ -15,6 +15,8 @@ import java.io.Writer;
 import java.util.List;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.TestTools;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,16 +27,16 @@ import org.junit.Test;
  */
 public class ItemReaderTest {
     private Logger logger;
+    private TestTools testTools;
 
     @Before
     public void setUp() throws Exception {
+        testTools = TestTools.getInstance();
         logger = Logger.getLogger(ItemReaderTest.class.getName());
     }
 
-    private File createGuideFile(String targetName, String content)
-            throws UnsupportedEncodingException, IOException {
-        File target = File.createTempFile("ItemReaderTest." + targetName,
-                ".guide");
+    private File createGuideFile(String targetName, String content) throws UnsupportedEncodingException, IOException {
+        File target = File.createTempFile("ItemReaderTest." + targetName, ".guide");
         target.deleteOnExit();
         OutputStream targetStream = new FileOutputStream(target);
         Writer writer = new OutputStreamWriter(targetStream, "ISO-8859-1");
@@ -122,13 +124,9 @@ public class ItemReaderTest {
         assertEquals(2, commandItem.getItems().size());
     }
 
-    private File getTestGuide(String relativeName) {
-        return new File(new File("tests", "guides"), relativeName);
-    }
-
     @Test
     public void testLichtTools() throws Exception {
-        File guide = getTestGuide("LichtTools.guide");
+        File guide = testTools.getTestGuideFile("LichtTools.guide");
         ItemReader reader = new ItemReader(guide);
         reader.read();
         for (AbstractItem item : reader.getItems()) {
