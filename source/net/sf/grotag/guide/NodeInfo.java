@@ -34,10 +34,10 @@ public class NodeInfo extends AbstractInfo {
     }
 
     public void setStartAndEndNode(CommandItem newStartNode, CommandItem newEndNode) {
-        assert startNode != null;
-        assert startNode.getCommandName().equals("node");
-        assert endNode != null;
-        assert endNode.getCommandName().equals("endnode");
+        assert newStartNode != null;
+        assert newStartNode.getCommandName().equals("node");
+        assert newEndNode != null;
+        assert newEndNode.getCommandName().equals("endnode");
         startNode = newStartNode;
         endNode = newEndNode;
     }
@@ -51,6 +51,15 @@ public class NodeInfo extends AbstractInfo {
         String result = super.getFontName();
         if (result == null) {
             result = databaseInfo.getFontName();
+        }
+        return result;
+    }
+
+    @Override
+    public Wrap getWrap() {
+        Wrap result = super.getWrap();
+        if (result == Wrap.DEFAULT) {
+            result = databaseInfo.getWrap();
         }
         return result;
     }

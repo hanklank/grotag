@@ -206,13 +206,14 @@ public class Guide {
                         items.add(i, endNodeItem);
                         endNodeMap.put(nodeName, endNodeItem);
                         i += 1;
-                        CommandItem previousNode = nodeList.get(nodeList.size() - 1);
+                        CommandItem startNodeItem = nodeList.get(nodeList.size() - 1);
+
                         MessageItem message = new MessageItem(command, "added missing @endnode before @node");
-                        MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
+                        MessageItem seeAlso = new MessageItem(startNodeItem, "previous @node");
                         message.setSeeAlso(seeAlso);
                         messagePool.add(message);
                     }
-                    nodeName = command.getOption(0);
+                    nodeName = command.getOption(0).toLowerCase();
                     if (nodeName != null) {
                         CommandItem nodeWithSameName = nodeMap.get(nodeName);
                         if (nodeWithSameName != null) {
@@ -262,6 +263,7 @@ public class Guide {
     }
 
     private void appendMissingEndnodeAtEndOfFile(String nodeName) {
+        // Create and add the missing @endnode.
         AbstractItem lastItem = items.get(items.size() - 1);
         assert lastItem instanceof NewLineItem : "lastItem=" + lastItem.getClass().getName();
         CommandItem endNodeItem = new CommandItem(lastItem.getFile(), lastItem.getLine(), lastItem.getColumn(),
@@ -269,12 +271,29 @@ public class Guide {
         items.add(endNodeItem);
         endNodeMap.put(nodeName, endNodeItem);
 
-        // FIXME: Add set start/end for last NodeInfo.
-        CommandItem previousNode = nodeMap.get(nodeName);
-        MessageItem message = new MessageItem(lastItem, "added missing @endnode at end of file");
-        MessageItem seeAlso = new MessageItem(previousNode, "previous @node");
+        // Now report what we just did.
+        CommandItem startNodeItem = nodeMap.get(nodeName);
+        MessageItem message = new MessageItem(lastItem, "added missing" + endNodeItem.toShortAmigaguide() + " at end");
+        MessageItem seeAlso = new MessageItem(startNodeItem, "matching " + startNodeItem.toShortAmigaguide());
         message.setSeeAlso(seeAlso);
         messagePool.add(message);
+    }
+
+    private void assertNodeConsistency() {
+        assert nodeList.size() == nodeMap.size();
+        assert nodeList.size() == endNodeMap.size();
+        assert nodeList.size() == nodeInfoMap.size() : "nls=" + nodeList.size() + ", nims=" + nodeInfoMap.size();
+
+        for (CommandItem nodeItem : nodeList) {
+            String nodeName = nodeItem.getOption(0).toLowerCase();
+            assert nodeName != null;
+            assert nodeMap.get(nodeName) != null;
+            assert endNodeMap.get(nodeName) != null;
+            NodeInfo nodeInfo = nodeInfoMap.get(nodeName);
+            assert nodeInfo != null;
+            assert nodeInfo.getStartNode() != null;
+            assert nodeInfo.getEndNode() != null;
+        }
     }
 
     private void validateCommands() {
@@ -291,9 +310,13 @@ public class Guide {
                     assert currentNodeInfo == null;
                     String nodeName = command.getOption(0).toLowerCase();
                     String nodeTitle = command.getOption(1);
+                    CommandItem matchingEndNode = endNodeMap.get(nodeName);
+
                     currentNodeInfo = new NodeInfo(getDatabaseInfo(), nodeName, nodeTitle);
+                    currentNodeInfo.setStartAndEndNode(command, matchingEndNode);
                     assert !nodeInfoMap.containsKey(nodeName);
                     nodeInfoMap.put(nodeName, currentNodeInfo);
+                    
                 } else if (command.getCommandName().equals("endnode")) {
                     assert currentNodeInfo != null;
                     currentNodeInfo = null;
@@ -400,6 +423,8 @@ public class Guide {
         // At this point, a possible missing @endnode should have been fixed
         // already.
         assert currentNodeInfo == null;
+
+        assertNodeConsistency();
 
         // No more need for those, but GC wouldn't know.
         uniqueGlobalCommandsOccurred = null;
@@ -595,6 +620,9 @@ public class Guide {
         return result;
     }
 
+    /**
+     * Unique (all lower case) name for a node.
+     */
     private String getUniqueNodeName() {
         String result = null;
 
