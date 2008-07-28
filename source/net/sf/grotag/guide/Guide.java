@@ -328,7 +328,7 @@ public class Guide {
                     currentNodeInfo.setStartAndEndNode(command, matchingEndNode);
                     assert !nodeInfoMap.containsKey(nodeName);
                     nodeInfoMap.put(nodeName, currentNodeInfo);
-                    
+
                 } else if (command.getCommandName().equals("endnode")) {
                     assert currentNodeInfo != null;
                     currentNodeInfo = null;
@@ -710,7 +710,7 @@ public class Guide {
     public List<NodeInfo> getNodeInfos() {
         List<NodeInfo> result = new ArrayList<NodeInfo>(nodeList.size());
         for (CommandItem nodeCommand : nodeList) {
-            String nodeName = nodeCommand.getOption(0);
+            String nodeName = getNodeName(nodeCommand);
             assert nodeName != null;
             NodeInfo nodeInfo = getNodeInfo(nodeName);
             assert nodeInfo != null;
