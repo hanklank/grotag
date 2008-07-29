@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -38,14 +40,33 @@ public class DocBookWriter {
     private Document dom;
     private Element bookElement;
     private Logger log;
+    private Tools tools;
+
+    /**
+     * Mapping of Amigaguide node names to DocBook node names. DocBook node
+     * names must conform to the NCName definition, which means the name has to
+     * start with a letter and then must use only certain characters.
+     */
+    private Map<String, String> agNodeToDbNodeMap;
 
     private DocBookWriter(Guide newGuide, Writer newWriter) {
         assert newGuide != null;
         assert newWriter != null;
 
         log = Logger.getLogger(DocBookWriter.class.getName());
+        tools = Tools.getInstance();
         guide = newGuide;
         writer = newWriter;
+
+        agNodeToDbNodeMap = new HashMap<String, String>();
+        int nodeCounter = 1;
+        for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+            String agNodeName = nodeInfo.getName();
+            String dbNodeName = "n" + nodeCounter;
+
+            agNodeToDbNodeMap.put(agNodeName, dbNodeName);
+            nodeCounter += 1;
+        }
     }
 
     private void createDom() throws ParserConfigurationException {
@@ -85,7 +106,7 @@ public class DocBookWriter {
 
     private Element createSection(NodeInfo nodeInfo) {
         Element result = dom.createElement("section");
-        result.setAttribute("id", nodeInfo.getName());
+        result.setAttribute("id", agNodeToDbNodeMap.get(nodeInfo.getName()));
 
         // Create title.
         Element title = dom.createElement("title");
@@ -130,7 +151,7 @@ public class DocBookWriter {
 
                             if (isLocalLink) {
                                 Element link = dom.createElement("link");
-                                link.setAttribute("linkend", command.getOption(1));
+                                link.setAttribute("linkend", agNodeToDbNodeMap.get(command.getOption(1)));
                                 link.appendChild(linkDescriptionText);
                                 paragraph.appendChild(link);
                             } else {
@@ -138,7 +159,7 @@ public class DocBookWriter {
                             }
                         }
                     }
-                    log.fine(Tools.getInstance().sourced(text));
+                    log.fine(tools.sourced(text));
                 }
             } else {
                 assert parserState == NodeParserState.AFTER_NODE : "parserState=" + parserState;
