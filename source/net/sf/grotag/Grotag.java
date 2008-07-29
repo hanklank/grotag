@@ -41,7 +41,7 @@ public class Grotag {
         }
 
         if (action == Action.HELP) {
-            System.err.println("Usage: java -jar Grotag.jar -pretty|-validate source_file [target_file]");
+            System.err.println("Usage: java -jar Grotag.jar -docbook|-pretty|-validate source_file [target_file]");
         } else {
             Guide guide = Guide.createGuide(new File(sourceFilePath));
             File targetFile = new File(targetFilePath);
