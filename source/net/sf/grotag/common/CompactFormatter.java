@@ -28,7 +28,7 @@ public class CompactFormatter extends Formatter {
         Date recordTime = new Date(record.getMillis());
         String loggerName = record.getLoggerName();
 
-        if (loggerName.startsWith(BORING_LOGGER_PREFIX)) {
+        if ((loggerName != null) && (loggerName.startsWith(BORING_LOGGER_PREFIX))) {
             loggerName = loggerName.substring(BORING_LOGGER_PREFIX.length());
         }
 
@@ -38,7 +38,7 @@ public class CompactFormatter extends Formatter {
         result.append(' ');
         result.append(loggerName);
         result.append(": ");
-        result.append(record.getMessage());
+        result.append(formatMessage(record));
         result.append('\n');
         return result.toString();
     }

@@ -6,30 +6,37 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
+
+import net.sf.grotag.common.Tools;
 
 public class ItemReader {
     private LineTokenizer tokenizer;
     private File guideFile;
     private List<AbstractItem> items;
     private int lineNumber;
+    private Logger log;
+    private Tools tools;
 
     public ItemReader(File newGuideFile) {
         assert newGuideFile != null;
+        log = Logger.getLogger(ItemReader.class.getName());
+        tools = Tools.getInstance();
         guideFile = newGuideFile;
-        items = new LinkedList<AbstractItem>();
+        items = new ArrayList<AbstractItem>();
     }
 
     public void read() throws IOException {
         InputStream guideStream = new FileInputStream(guideFile);
-        BufferedReader guideReader = new BufferedReader(new InputStreamReader(
-                guideStream, "ISO-8859-1"));
+        BufferedReader guideReader = new BufferedReader(new InputStreamReader(guideStream, "ISO-8859-1"));
         int columnNumber;
         String line;
 
+        log.info("read items from " + tools.sourced(guideFile));
         lineNumber = 0;
-        items = new LinkedList<AbstractItem>();
+        items = new ArrayList<AbstractItem>();
         try {
             do {
                 line = guideReader.readLine();
@@ -39,16 +46,14 @@ public class ItemReader {
                         columnNumber = tokenizer.getColumn();
                         tokenizer.advance();
                         if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
-                            items.add(new SpaceItem(guideFile, lineNumber,
-                                    columnNumber, tokenizer.getToken()));
+                            items.add(new SpaceItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
                         } else if (tokenizer.getType() == LineTokenizer.TYPE_COMMAND) {
                             readCommand();
                         } else {
-                            items.add(new TextItem(guideFile, lineNumber,
-                                    columnNumber, tokenizer.getToken()));
+                            items.add(new TextItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
                         }
                     }
-                    
+
                     // Add newline unless the last item is a line command.
                     AbstractItem lastItem = items.get(items.size() - 1);
                     boolean addNewLine = !(lastItem instanceof CommandItem);
@@ -57,8 +62,7 @@ public class ItemReader {
                         addNewLine = lastCommand.isInline();
                     }
                     if (addNewLine) {
-                        items.add(new NewLineItem(guideFile, lineNumber,
-                                tokenizer.getColumn()));
+                        items.add(new NewLineItem(guideFile, lineNumber, tokenizer.getColumn()));
                     }
 
                     lineNumber += 1;
@@ -71,7 +75,7 @@ public class ItemReader {
 
     private void readCommand() {
         int commandColumnNumber = tokenizer.getColumn();
-        List<AbstractItem> commandItems = new LinkedList<AbstractItem>();
+        List<AbstractItem> commandItems = new ArrayList<AbstractItem>();
         String commandName;
 
         assert tokenizer.getType() == LineTokenizer.TYPE_COMMAND;
@@ -88,23 +92,19 @@ public class ItemReader {
         assert tokenizer.getType() != LineTokenizer.TYPE_SPACE : "\"@{\" with white space must have been handled by "
                 + LineTokenizer.class;
         commandName = tokenizer.getToken();
-        while (tokenizer.hasNext()
-                && !(isInlineCommand && tokenizer.getType() == LineTokenizer.TYPE_CLOSE_BRACE)) {
+        while (tokenizer.hasNext() && !(isInlineCommand && tokenizer.getType() == LineTokenizer.TYPE_CLOSE_BRACE)) {
             int columnNumber = tokenizer.getColumn();
             tokenizer.advance();
             if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
-                commandItems.add(new SpaceItem(guideFile, lineNumber,
-                        columnNumber, tokenizer.getToken()));
+                commandItems.add(new SpaceItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
             } else if (tokenizer.getType() == LineTokenizer.TYPE_STRING) {
-                commandItems.add(new StringItem(guideFile, lineNumber,
-                        columnNumber, tokenizer.getToken()));
+                commandItems.add(new StringItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
             } else {
-                commandItems.add(new TextItem(guideFile, lineNumber,
-                        columnNumber, tokenizer.getToken()));
+                commandItems.add(new TextItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
             }
         }
-        items.add(new CommandItem(guideFile, lineNumber, commandColumnNumber,
-                commandName, isInlineCommand, commandItems));
+        items.add(new CommandItem(guideFile, lineNumber, commandColumnNumber, commandName, isInlineCommand,
+                commandItems));
     }
 
     /** Items in the Amigaguide. */

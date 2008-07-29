@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -70,6 +71,7 @@ public class DocBookWriter {
     }
 
     private void createDom() throws ParserConfigurationException {
+        log.info("create dom");
         DocumentBuilderFactory domBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder domBuilder = domBuilderFactory.newDocumentBuilder();
         dom = domBuilder.newDocument();
@@ -79,6 +81,7 @@ public class DocBookWriter {
     }
 
     private void writeDom() throws TransformerException {
+        log.info("write dom");
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         // set all necessary features for your transformer -> see OutputKeys
         Transformer transformer = transformerFactory.newTransformer();
@@ -91,10 +94,12 @@ public class DocBookWriter {
 
     private Element createChapter() {
         Element result = dom.createElement("chapter");
+        String chapterTitle = guide.getDatabaseInfo().getName();
 
+        log.info("create chapter " + tools.sourced(chapterTitle));
         // Create chapter title.
         Element title = dom.createElement("title");
-        Text titleText = dom.createTextNode(guide.getDatabaseInfo().getName());
+        Text titleText = dom.createTextNode(chapterTitle);
         title.appendChild(titleText);
         result.appendChild(title);
 
@@ -120,11 +125,16 @@ public class DocBookWriter {
 
     private Element createSection(NodeInfo nodeInfo) {
         Element result = dom.createElement("section");
-        result.setAttribute("id", agNodeToDbNodeMap.get(nodeInfo.getName()));
+        String sectionId = agNodeToDbNodeMap.get(nodeInfo.getName());
+        String sectionTitle = nodeInfo.getTitle();
+
+        log.log(Level.INFO, "create section with id={0} from node {1}: {2}", new Object[] { tools.sourced(sectionId),
+                tools.sourced(nodeInfo.getName()), tools.sourced(sectionTitle) });
+        result.setAttribute("id", sectionId);
 
         // Create title.
         Element title = dom.createElement("title");
-        Text titleText = dom.createTextNode(nodeInfo.getTitle());
+        Text titleText = dom.createTextNode(sectionTitle);
         title.appendChild(titleText);
         result.appendChild(title);
 
@@ -136,16 +146,16 @@ public class DocBookWriter {
         boolean lastTextWasNewLine = false;
 
         for (AbstractItem item : guide.getItems()) {
-            log.fine("parserState=" + parserState);
+            log.log(Level.FINER, "parserState={0}: {1}", new Object[] { parserState, item });
             if (parserState == NodeParserState.BEFORE_NODE) {
                 if (item == nodeInfo.getStartNode()) {
                     parserState = NodeParserState.INSIDE_NODE;
-                    log.fine("found start node" + item);
+                    log.log(Level.FINER, "found start node: {0}", item);
                 }
             } else if (parserState == NodeParserState.INSIDE_NODE) {
                 if (item == nodeInfo.getEndNode()) {
                     parserState = NodeParserState.AFTER_NODE;
-                    log.fine("found end node" + item);
+                    log.log(Level.FINER, "found end node: {0}", item);
                 } else {
                     boolean flushText = false;
                     boolean flushParagraph = false;
@@ -195,7 +205,7 @@ public class DocBookWriter {
                         flushText = true;
                     }
                     if (flushText) {
-                        log.fine("append text: " + tools.sourced(text));
+                        log.log(Level.FINER, "append text: {0}", tools.sourced(text));
                         if (text.length() > 0) {
                             paragraph.appendChild(dom.createTextNode(withoutPossibleTrailingNewLine(text)));
                         }
