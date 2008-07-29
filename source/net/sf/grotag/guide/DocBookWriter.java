@@ -104,6 +104,20 @@ public class DocBookWriter {
         return result;
     }
 
+    private Element createElementForWrap(Wrap wrap) {
+        Element result;
+        String tagName;
+
+        if (wrap == Wrap.NONE) {
+            tagName = "literallayout";
+        } else {
+            tagName = "para";
+            assert wrap != Wrap.DEFAULT;
+        }
+        result = dom.createElement(tagName);
+        return result;
+    }
+
     private Element createSection(NodeInfo nodeInfo) {
         Element result = dom.createElement("section");
         result.setAttribute("id", agNodeToDbNodeMap.get(nodeInfo.getName()));
@@ -116,8 +130,10 @@ public class DocBookWriter {
 
         // Traverse node items.
         NodeParserState parserState = NodeParserState.BEFORE_NODE;
-        Element paragraph = dom.createElement("literallayout");
+        Wrap wrap = nodeInfo.getWrap();
+        Element paragraph = createElementForWrap(wrap);
         String text = "";
+        boolean lastTextWasNewLine = false;
 
         for (AbstractItem item : guide.getItems()) {
             log.fine("parserState=" + parserState);
@@ -131,35 +147,67 @@ public class DocBookWriter {
                     parserState = NodeParserState.AFTER_NODE;
                     log.fine("found end node" + item);
                 } else {
+                    boolean flushText = false;
+                    boolean flushParagraph = false;
+                    Element linkToAppend = null;
+
                     if (item instanceof SpaceItem) {
                         text += ((SpaceItem) item).getSpace();
+                        lastTextWasNewLine = false;
                     } else if (item instanceof AbstractTextItem) {
                         text += ((AbstractTextItem) item).getText();
+                        lastTextWasNewLine = false;
                     } else if (item instanceof NewLineItem) {
-                        text += "\n";
+                        if (wrap == Wrap.NONE) {
+                            text += "\n";
+                        } else if (wrap == Wrap.SMART) {
+                            if (lastTextWasNewLine) {
+                                flushText = true;
+                                flushParagraph = true;
+                                lastTextWasNewLine = false;
+                            } else {
+                                text += "\n";
+                                lastTextWasNewLine = true;
+                            }
+                        } else if (wrap == Wrap.WORD) {
+                            flushText = true;
+                            flushParagraph = true;
+                        } else {
+                            assert false : "wrap=" + wrap;
+                        }
                     } else if (item instanceof CommandItem) {
                         CommandItem command = (CommandItem) item;
                         if (command.isLink()) {
                             boolean isLocalLink = command.getOption(0).toLowerCase().equals("link");
-                            // Append current text so far.
-                            paragraph.appendChild(dom.createTextNode(text));
-                            text = "";
                             // Create and append link.
                             String linkDescription = command.getOriginalCommandName();
                             linkDescription = linkDescription.substring(1, linkDescription.length() - 1);
                             Text linkDescriptionText = dom.createTextNode(linkDescription);
 
                             if (isLocalLink) {
-                                Element link = dom.createElement("link");
-                                link.setAttribute("linkend", agNodeToDbNodeMap.get(command.getOption(1)));
-                                link.appendChild(linkDescriptionText);
-                                paragraph.appendChild(link);
+                                linkToAppend = dom.createElement("link");
+                                linkToAppend.setAttribute("linkend", agNodeToDbNodeMap.get(command.getOption(1)));
+                                linkToAppend.appendChild(linkDescriptionText);
                             } else {
-                                paragraph.appendChild(linkDescriptionText);
+                                text += linkDescriptionText;
                             }
                         }
+                        flushText = true;
                     }
-                    log.fine(tools.sourced(text));
+                    if (flushText) {
+                        log.fine("append text: " + tools.sourced(text));
+                        if (text.length() > 0) {
+                            paragraph.appendChild(dom.createTextNode(withoutPossibleTrailingNewLine(text)));
+                        }
+                        text = "";
+                    }
+                    if (linkToAppend != null) {
+                        paragraph.appendChild(linkToAppend);
+                    }
+                    if (flushParagraph) {
+                        result.appendChild(paragraph);
+                        paragraph = createElementForWrap(wrap);
+                    }
                 }
             } else {
                 assert parserState == NodeParserState.AFTER_NODE : "parserState=" + parserState;
@@ -170,15 +218,26 @@ public class DocBookWriter {
         assert parserState != NodeParserState.INSIDE_NODE : "parserState=" + parserState;
 
         if (text.length() > 0) {
-            // Remove last newline because it is inserted anyway by <paragraph>
-            // or <literallayout>.
-            if (text.endsWith("\n")) {
-                text = text.substring(0, text.length() - 1);
-            }
-            paragraph.appendChild(dom.createTextNode(text));
+            paragraph.appendChild(dom.createTextNode(withoutPossibleTrailingNewLine(text)));
             result.appendChild(paragraph);
         }
 
+        return result;
+    }
+
+    /**
+     * Same as <code>some</code> except if the last character is a new line
+     * ("\n") in which case it will be removed. This is useful at the end of a
+     * paragraph because &lt;literallayout&gt; or &lt;para&gt; insert a newline
+     * anyway.
+     */
+    private String withoutPossibleTrailingNewLine(String some) {
+        String result;
+        if (some.endsWith("\n")) {
+            result = some.substring(0, some.length() - 1);
+        } else {
+            result = some;
+        }
         return result;
     }
 
