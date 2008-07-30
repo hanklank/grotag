@@ -59,6 +59,8 @@ public class DocBookWriter {
         guide = newGuide;
         writer = newWriter;
 
+        // Map the Amigaguide node names to DocBook id's that conform to the
+        // NCName definition.
         agNodeToDbNodeMap = new HashMap<String, String>();
         int nodeCounter = 1;
         for (NodeInfo nodeInfo : guide.getNodeInfos()) {
@@ -83,11 +85,11 @@ public class DocBookWriter {
     private void writeDom() throws TransformerException {
         log.info("write dom");
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        // set all necessary features for your transformer -> see OutputKeys
         Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.1.2//EN");
+        transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.5//EN");
         transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
-                "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd");
+                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd");
+        transformer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(dom), new StreamResult(writer));
     }
