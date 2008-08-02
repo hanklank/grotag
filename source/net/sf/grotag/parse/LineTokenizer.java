@@ -1,7 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 import net.sf.grotag.common.Tools;
 
 /** Tokenizer for a single line of an AmigaGuide document */
@@ -32,7 +30,7 @@ public class LineTokenizer {
     private char type;
     private Tools tools;
     private boolean insertCloseBrace;
-    private File sourceFile;
+    private AbstractSource source;
     private MessagePool messagePool;
 
     /**
@@ -51,14 +49,14 @@ public class LineTokenizer {
      *                the number of the line when read from the input file,
      *                starting with 0
      */
-    public LineTokenizer(File newFile, int newLineNumber, String newText) {
-        assert newFile != null;
+    public LineTokenizer(AbstractSource newSource, int newLineNumber, String newText) {
+        assert newSource != null;
         assert newLineNumber >= 0;
         assert newText != null;
 
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
-        sourceFile = newFile;
+        source = newSource;
         lineNumber = newLineNumber;
         text = tools.withoutTrailingWhiteSpace(newText);
         column = 0;
@@ -88,7 +86,7 @@ public class LineTokenizer {
     private void fireWarning(String message, int messageColumn) {
         assert message != null;
         assert messageColumn >= 0;
-        messagePool.add(sourceFile, getLine(), getColumn(), message);
+        messagePool.add(source, getLine(), getColumn(), message);
     }
 
     private boolean atSignIsCommand(int atSignColumn) {

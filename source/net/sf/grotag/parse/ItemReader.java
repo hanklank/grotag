@@ -1,11 +1,7 @@
 package net.sf.grotag.parse;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -14,43 +10,49 @@ import net.sf.grotag.common.Tools;
 
 public class ItemReader {
     private LineTokenizer tokenizer;
-    private File guideFile;
     private List<AbstractItem> items;
     private int lineNumber;
     private Logger log;
     private Tools tools;
+    private AbstractSource source;
 
-    public ItemReader(File newGuideFile) {
-        assert newGuideFile != null;
+    public ItemReader(AbstractSource newSource) {
+        assert newSource != null;
         log = Logger.getLogger(ItemReader.class.getName());
         tools = Tools.getInstance();
-        guideFile = newGuideFile;
+        source = newSource;
         items = new ArrayList<AbstractItem>();
     }
 
+    /**
+     * The source from which the items are read.
+     */
+    public AbstractSource getSource() {
+        return source;
+    }
+
     public void read() throws IOException {
-        InputStream guideStream = new FileInputStream(guideFile);
-        BufferedReader guideReader = new BufferedReader(new InputStreamReader(guideStream, "ISO-8859-1"));
+        BufferedReader guideReader = source.createBufferedReader();
         int columnNumber;
         String line;
 
-        log.info("read items from " + tools.sourced(guideFile));
-        lineNumber = 0;
-        items = new ArrayList<AbstractItem>();
         try {
+            log.info("read items from " + tools.sourced(source.getFullName()));
+            lineNumber = 0;
+            items = new ArrayList<AbstractItem>();
             do {
                 line = guideReader.readLine();
                 if (line != null) {
-                    tokenizer = new LineTokenizer(guideFile, lineNumber, line);
+                    tokenizer = new LineTokenizer(source, lineNumber, line);
                     while (tokenizer.hasNext()) {
                         columnNumber = tokenizer.getColumn();
                         tokenizer.advance();
                         if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
-                            items.add(new SpaceItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
+                            items.add(new SpaceItem(source, lineNumber, columnNumber, tokenizer.getToken()));
                         } else if (tokenizer.getType() == LineTokenizer.TYPE_COMMAND) {
                             readCommand();
                         } else {
-                            items.add(new TextItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
+                            items.add(new TextItem(source, lineNumber, columnNumber, tokenizer.getToken()));
                         }
                     }
 
@@ -62,7 +64,7 @@ public class ItemReader {
                         addNewLine = lastCommand.isInline();
                     }
                     if (addNewLine) {
-                        items.add(new NewLineItem(guideFile, lineNumber, tokenizer.getColumn()));
+                        items.add(new NewLineItem(source, lineNumber, tokenizer.getColumn()));
                     }
 
                     lineNumber += 1;
@@ -96,15 +98,14 @@ public class ItemReader {
             int columnNumber = tokenizer.getColumn();
             tokenizer.advance();
             if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
-                commandItems.add(new SpaceItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
+                commandItems.add(new SpaceItem(source, lineNumber, columnNumber, tokenizer.getToken()));
             } else if (tokenizer.getType() == LineTokenizer.TYPE_STRING) {
-                commandItems.add(new StringItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
+                commandItems.add(new StringItem(source, lineNumber, columnNumber, tokenizer.getToken()));
             } else {
-                commandItems.add(new TextItem(guideFile, lineNumber, columnNumber, tokenizer.getToken()));
+                commandItems.add(new TextItem(source, lineNumber, columnNumber, tokenizer.getToken()));
             }
         }
-        items.add(new CommandItem(guideFile, lineNumber, commandColumnNumber, commandName, isInlineCommand,
-                commandItems));
+        items.add(new CommandItem(source, lineNumber, commandColumnNumber, commandName, isInlineCommand, commandItems));
     }
 
     /** Items in the Amigaguide. */

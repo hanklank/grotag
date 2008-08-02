@@ -36,8 +36,9 @@ public class NodeInfo extends AbstractInfo {
     public void setStartAndEndNode(CommandItem newStartNode, CommandItem newEndNode) {
         assert newStartNode != null;
         assert newStartNode.getCommandName().equals("node");
-        assert newEndNode != null;
-        assert newEndNode.getCommandName().equals("endnode");
+        assert newEndNode != null : "@endnode must exist for: " + newStartNode;
+        assert newEndNode.getCommandName().equals("endnode") : "name of @node and @endnode must match: @node="
+                + newStartNode + ", @endnode=" + newEndNode;
         startNode = newStartNode;
         endNode = newEndNode;
     }

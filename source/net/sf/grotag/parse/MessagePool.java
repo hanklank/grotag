@@ -1,6 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -35,8 +34,9 @@ public class MessagePool {
         items.add(newItem);
     }
 
-    public void add(File file, int line, int column, String text) {
-        MessageItem newMessage = new MessageItem(file, line, column, text);
+    public void add(AbstractSource source, int line, int column, String text) {
+        // FIXME: Use AbstractSource in MessageItem instead of File.
+        MessageItem newMessage = new MessageItem(source, line, column, text);
         add(newMessage);
     }
 }

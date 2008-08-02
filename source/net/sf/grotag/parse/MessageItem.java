@@ -1,6 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
 
 /**
  * A message generated during parsing.
@@ -8,20 +7,20 @@ import java.io.File;
  * @author Thomas Aglassinger
  */
 public class MessageItem implements Comparable<MessageItem> {
-    private File file;
+    private AbstractSource source;
     private int line;
     private int column;
     private String text;
     private MessageItem seeAlso;
 
-    public MessageItem(File newFile, int newLine, int newColumn, String newText) {
-        assert newFile != null;
+    public MessageItem(AbstractSource newSource, int newLine, int newColumn, String newText) {
+        assert newSource != null;
         assert newLine >= 0;
         assert newColumn >= 0;
         assert newText != null;
         assert newText.length() > 0;
 
-        file = newFile;
+        source = newSource;
         line = newLine;
         column = newColumn;
         text = newText;
@@ -31,8 +30,9 @@ public class MessageItem implements Comparable<MessageItem> {
         this(baseItem.getFile(), baseItem.getLine(), baseItem.getColumn(), newText);
     }
     
-    public File getFile() {
-        return file;
+    // FIXME: Rename to getSource().
+    public AbstractSource getFile() {
+        return source;
     }
 
     public int getLine() {
@@ -51,13 +51,13 @@ public class MessageItem implements Comparable<MessageItem> {
         return seeAlso;
     }
 
-    public void setSeeAlso(MessageItem newSeeAlso1) {
-        seeAlso = newSeeAlso1;
+    public void setSeeAlso(MessageItem newSeeAlso) {
+        seeAlso = newSeeAlso;
     }
 
     @Override
     public String toString() {
-        String result = getFile().getName() + "[" + getLine() + ":" + getColumn()
+        String result = getFile().getShortName() + "[" + getLine() + ":" + getColumn()
                 + "]: " + getText();
         if (getSeeAlso() != null) {
             result += "; see also: " + getSeeAlso().toString();
@@ -70,8 +70,8 @@ public class MessageItem implements Comparable<MessageItem> {
         if (other == null) {
             result = -1;
         } else {
-            result = getFile().getAbsolutePath().compareTo(
-                    other.getFile().getAbsolutePath());
+            result = getFile().getFullName().compareTo(
+                    other.getFile().getFullName());
             if (result == 0) {
                 result = getLine() - other.getLine();
                 if (result == 0) {

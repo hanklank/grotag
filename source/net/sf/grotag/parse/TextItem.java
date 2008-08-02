@@ -1,7 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 import net.sf.grotag.common.Tools;
 
 /**
@@ -16,8 +14,8 @@ public class TextItem extends AbstractTextItem {
      * Create text item from <code>newText</code>, resolving escape sequences
      * in the text.
      */
-    public TextItem(File newFile, int newLine, int newColumn, String newText) {
-        super(newFile, newLine, newColumn);
+    public TextItem(AbstractSource newSource, int newLine, int newColumn, String newText) {
+        super(newSource, newLine, newColumn);
 
         boolean afterBackslash = false;
         String textWithResolvedEscapes;

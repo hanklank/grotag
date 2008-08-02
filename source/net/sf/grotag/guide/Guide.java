@@ -14,13 +14,16 @@ import java.util.logging.Logger;
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
+import net.sf.grotag.parse.AbstractSource;
 import net.sf.grotag.parse.AbstractTextItem;
 import net.sf.grotag.parse.CommandItem;
+import net.sf.grotag.parse.FileSource;
 import net.sf.grotag.parse.ItemReader;
 import net.sf.grotag.parse.MessageItem;
 import net.sf.grotag.parse.MessagePool;
 import net.sf.grotag.parse.NewLineItem;
 import net.sf.grotag.parse.SpaceItem;
+import net.sf.grotag.parse.StringSource;
 import net.sf.grotag.parse.Tag;
 import net.sf.grotag.parse.TagOption;
 import net.sf.grotag.parse.TagPool;
@@ -33,7 +36,7 @@ import net.sf.grotag.parse.TextItem;
  */
 public class Guide {
     private Logger logger;
-    private File guideFile;
+    private AbstractSource guideSource;
     private List<AbstractItem> items;
     private TagPool tagPool;
     private MessagePool messagePool;
@@ -48,14 +51,14 @@ public class Guide {
     private DatabaseInfo databaseInfo;
     private Map<String, NodeInfo> nodeInfoMap;
 
-    private Guide(File newGuideFile) {
-        assert newGuideFile != null;
+    private Guide(AbstractSource newGuideSource) {
+        assert newGuideSource != null;
 
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
         logger = Logger.getLogger(Guide.class.getName());
 
-        guideFile = newGuideFile;
+        guideSource = newGuideSource;
         tagPool = new TagPool();
         nodeInfoMap = new TreeMap<String, NodeInfo>();
     }
@@ -112,35 +115,19 @@ public class Guide {
                     // macro @{" + macro.getName() + "}..."));
                     // Write resolved macro to file and parse it.
                     String resolvedMacro = resolveMacro(tagItem, macro);
-                    File macroSnippletFile = File.createTempFile("macro-", ".guide");
+                    StringSource macroSource = new StringSource(guideSource.getShortName() + "@macro-"
+                            + macro.getName(), resolvedMacro);
 
-                    macroSnippletFile.deleteOnExit();
-                    logger.fine("writing resolved macro to: " + tools.sourced(macroSnippletFile.getAbsolutePath()));
-                    BufferedWriter macroSnippletWriter = new BufferedWriter(new OutputStreamWriter(
-                            new FileOutputStream(macroSnippletFile), "ISO-8859-1"));
-                    try {
-                        macroSnippletWriter.write(resolvedMacro);
-                    } finally {
-                        macroSnippletWriter.close();
-                    }
+                    ItemReader itemReader = new ItemReader(macroSource);
+                    itemReader.read();
+                    List<AbstractItem> macroItems = itemReader.getItems();
 
-                    try {
-                        ItemReader itemReader = new ItemReader(macroSnippletFile);
-                        itemReader.read();
-                        List<AbstractItem> macroItems = itemReader.getItems();
-
-                        assert macroItems.size() > 0;
-                        assert macroItems.get(macroItems.size() - 1) instanceof NewLineItem;
-                        macroItems.remove(macroItems.size() - 1);
-                        items.remove(itemIndex);
-                        items.addAll(itemIndex, macroItems);
-                        itemIndex -= 1;
-                    } finally {
-                        // TODO: Warn if file cannot be deleted.
-                        // TODO: Keep macro snipplet file in case it
-                        // contains error.
-                        macroSnippletFile.delete();
-                    }
+                    assert macroItems.size() > 0;
+                    assert macroItems.get(macroItems.size() - 1) instanceof NewLineItem;
+                    macroItems.remove(macroItems.size() - 1);
+                    items.remove(itemIndex);
+                    items.addAll(itemIndex, macroItems);
+                    itemIndex -= 1;
                 }
             }
             itemIndex += 1;
@@ -213,15 +200,16 @@ public class Guide {
                         message.setSeeAlso(seeAlso);
                         messagePool.add(message);
                     }
-                    nodeName = getNodeName(command);
+                    nodeName = getNodeNameOrNull(command);
                     if (nodeName != null) {
                         CommandItem nodeWithSameName = nodeMap.get(nodeName);
                         if (nodeWithSameName != null) {
                             // Change duplicate node name to something unique.
                             AbstractTextItem uniqueNodeNameItem = getUniqueNodeNameItem(command.getItems().get(1));
-                            command.setOption(0, uniqueNodeNameItem.getText());
+                            nodeName = uniqueNodeNameItem.getText();
+                            command.setOption(0, nodeName);
                             MessageItem message = new MessageItem(command, "changed duplicate node name "
-                                    + tools.sourced(nodeName) + " to " + tools.sourced(uniqueNodeNameItem.getText()));
+                                    + tools.sourced(nodeName) + " to " + tools.sourced(nodeName));
                             MessageItem seeAlso = new MessageItem(nodeWithSameName, "existing node with same name");
                             message.setSeeAlso(seeAlso);
                             messagePool.add(message);
@@ -269,8 +257,21 @@ public class Guide {
         assert node != null;
         assert node.getCommandName().equals("node");
         String result = node.getOption(0);
-        assert result != null;
+        assert result != null : "node must have name: " + node;
         result = result.toLowerCase();
+        return result;
+    }
+
+    /**
+     * All lower case name of <code>node</code> item, or <code>null</code> if no name was passed..
+     */
+    private String getNodeNameOrNull(CommandItem node) {
+        String result;
+        if (node.getOption(0) != null) {
+            result = getNodeName(node);
+        } else {
+            result = null;
+        }
         return result;
     }
 
@@ -596,7 +597,7 @@ public class Guide {
     }
 
     public static Guide createGuide(File newGuideFile) throws IOException {
-        Guide result = new Guide(newGuideFile);
+        Guide result = new Guide(new FileSource(newGuideFile));
         result.readItems();
         result.defineMacros();
         result.resolveMacros();
@@ -643,11 +644,13 @@ public class Guide {
             result = "unnamed." + uniqueNodeCounter;
         } while (nodeMap.containsKey(result));
 
+        assert result.equals(result.toLowerCase());
+
         return result;
     }
 
     private void readItems() throws IOException {
-        ItemReader itemReader = new ItemReader(guideFile);
+        ItemReader itemReader = new ItemReader(guideSource);
 
         itemReader.read();
         items = itemReader.getItems();
@@ -660,8 +663,8 @@ public class Guide {
                 if (firstCommand.getCommandName().equals("database")) {
                     String databaseName = firstCommand.getOption(0);
                     if (databaseName == null) {
-                        databaseName = guideFile.getName();
-                        MessageItem message = new MessageItem(guideFile, 0, 0, "Changed missing database name to "
+                        databaseName = guideSource.getShortName();
+                        MessageItem message = new MessageItem(guideSource, 0, 0, "changed missing database name to "
                                 + tools.sourced(databaseName));
                         messagePool.add(message);
                     }
@@ -673,12 +676,12 @@ public class Guide {
                 logger.info("first item is: " + firstItem);
             }
         } else {
-            logger.info("guide is empty: " + guideFile);
+            logger.info("guide is empty: " + guideSource);
         }
 
         if (getDatabaseInfo() == null) {
             items.clear();
-            MessageItem message = new MessageItem(guideFile, 0, 0, "Amigaguide must start with @database.");
+            MessageItem message = new MessageItem(guideSource, 0, 0, "Amigaguide must start with @database.");
             messagePool.add(message);
         }
     }

@@ -1,16 +1,14 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 /**
  * Item representing a new line of text. This is particular important for
- * paragraphs in <code>@@smartwrap</code> or <code>@@worddrap</code>.
+ * paragraphs in <code>@smartwrap</code> or <code>@worddrap</code>.
  * @author Thomas Aglassinger
  * 
  */
 public class NewLineItem extends AbstractItem {
-    public NewLineItem(File newFile, int newLine, int newColumn) {
-        super(newFile, newLine, newColumn);
+    public NewLineItem(AbstractSource newSource, int newLine, int newColumn) {
+        super(newSource, newLine, newColumn);
     }
 
     @Override

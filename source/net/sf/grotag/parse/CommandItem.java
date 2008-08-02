@@ -1,6 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
 import java.util.List;
 
 import net.sf.grotag.common.Tools;
@@ -16,9 +15,9 @@ public class CommandItem extends AbstractItem {
     private boolean isInline;
     private List<AbstractItem> items;
 
-    public CommandItem(File newFile, int newLine, int newColumn, String newCommandName, boolean newIsInline,
+    public CommandItem(AbstractSource newSource, int newLine, int newColumn, String newCommandName, boolean newIsInline,
             List<AbstractItem> newItems) {
-        super(newFile, newLine, newColumn);
+        super(newSource, newLine, newColumn);
 
         assert newCommandName != null;
         assert newItems != null;

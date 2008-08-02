@@ -23,7 +23,7 @@ public class DocBookWriterTest {
 
     @Test
     public void testWriteGuideFile() throws IOException, ParserConfigurationException, TransformerException {
-        File inFile = testTools.getTestInputFile("basics.guide");
+        File inFile = testTools.getTestInputFile("ascii-art.guide");
         File outFile = testTools.getTestActualFile("basics.xml");
         Guide guide = Guide.createGuide(inFile);
         DocBookWriter.write(guide, outFile);

@@ -1,7 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 import net.sf.grotag.common.Tools;
 
 /**
@@ -12,8 +10,8 @@ import net.sf.grotag.common.Tools;
  */
 public class StringItem extends AbstractTextItem {
 
-    public StringItem(File newFile, int newLine, int newColumn, String newString) {
-        super(newFile, newLine, newColumn);
+    public StringItem(AbstractSource newSource, int newLine, int newColumn, String newString) {
+        super(newSource, newLine, newColumn);
 
         // Assert that the text actually is a string embedded between quotes.
         // Ensuring this is the responsibility of LineTokenizer.

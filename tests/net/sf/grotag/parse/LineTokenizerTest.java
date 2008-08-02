@@ -138,8 +138,8 @@ public class LineTokenizerTest {
     }
 
     private void testTokenizer(String text, String[] expectedTokens) {
-        LineTokenizer tokenizer = new LineTokenizer(new File("<dummy>.guide"),
-                3, text);
+        AbstractSource source = new StringSource(LineTokenizer.class.getName() + File.separator + "testTokenizer", text);
+        LineTokenizer tokenizer = new LineTokenizer(source, 3, text);
         int expectedTokenCount = expectedTokens.length;
 
         for (int i = 0; i < expectedTokenCount; i += 1) {

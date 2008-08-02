@@ -1,29 +1,27 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 /**
  * Abstract item in an Amigaguide token stream.
  * 
  * @author Thomas Aglassinger
  */
 public abstract class AbstractItem {
-    private File file;
+    private AbstractSource source;
     private int line;
     private int column;
 
-    protected AbstractItem(File newFile, int newLine, int newColumn) {
-        assert newFile != null;
+    protected AbstractItem(AbstractSource newSource, int newLine, int newColumn) {
+        assert newSource != null;
         assert newLine >= 0;
         assert newColumn >= 0;
 
-        file = newFile;
+        source = newSource;
         line = newLine;
         column = newColumn;
     }
 
-    public File getFile() {
-        return file;
+    public AbstractSource getFile() {
+        return source;
     }
 
     public int getLine() {
@@ -36,7 +34,7 @@ public abstract class AbstractItem {
 
     @Override
     public String toString() {
-        String result = file.getName();
+        String result = source.getShortName();
 
         result += " [" + getLine() + ":" + getColumn() + "]";
         result += toStringSuffix();

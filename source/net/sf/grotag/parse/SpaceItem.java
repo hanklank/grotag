@@ -1,7 +1,5 @@
 package net.sf.grotag.parse;
 
-import java.io.File;
-
 import net.sf.grotag.common.Tools;
 
 /**
@@ -12,8 +10,8 @@ import net.sf.grotag.common.Tools;
 public class SpaceItem extends AbstractItem {
     private String space;
 
-    public SpaceItem(File newFile, int newLine, int newColumn, String newSpace) {
-        super(newFile, newLine, newColumn);
+    public SpaceItem(AbstractSource newSource, int newLine, int newColumn, String newSpace) {
+        super(newSource, newLine, newColumn);
 
         // Assert that every characters actually is white space.
         // Ensuring this is the responsibility of LineTokenizer.
