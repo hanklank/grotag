@@ -1,0 +1,15 @@
+@database yellow_leave.guide
+@smartwrap
+
+
+@node Main "Yellow Leave"
+
+This is the yellow leave, which is used to test link validation in a GuidePile.
+
+Go to:
+@{"Root" link "root.guide/Main"}
+@{"Green leave" link "green_leave.guide/Main"}
+@{"Broken Link" link "non_existent.guide/blah"}
+
+Nothing else to see here.
+@endnode

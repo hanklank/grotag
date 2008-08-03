@@ -2,6 +2,7 @@ package net.sf.grotag.guide;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -10,8 +11,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
 import net.sf.grotag.parse.AbstractSource;
@@ -35,6 +38,7 @@ import net.sf.grotag.parse.TextItem;
  * @author Thomas Aglassinger
  */
 public class Guide {
+    private static final String GUIDE_ID = "@database";
     private Logger logger;
     private AbstractSource guideSource;
     private List<AbstractItem> items;
@@ -50,6 +54,7 @@ public class Guide {
     private boolean hasMacros;
     private DatabaseInfo databaseInfo;
     private Map<String, NodeInfo> nodeInfoMap;
+    private List<Link> links;
 
     private Guide(AbstractSource newGuideSource) {
         assert newGuideSource != null;
@@ -171,6 +176,53 @@ public class Guide {
         return result;
     }
 
+    private void collectLinks() {
+        links = new ArrayList<Link>();
+        for (AbstractItem item : items) {
+            if (item instanceof CommandItem) {
+                CommandItem command = (CommandItem) item;
+                if (command.isLink()) {
+                    String label = command.getOriginalCommandName();
+                    label = label.substring(1, label.length() - 1);
+                    String type = command.getOption(0);
+                    Tag linkTag = tagPool.getTag(type, Tag.Scope.LINK);
+
+                    if (linkTag != null) {
+                        if (type.equals("link")) {
+                            String target = command.getOption(1);
+                            assert target != null: "empty target: " + command;
+                            if (target.length() > 0) {
+                                String lineText = command.getOption(2);
+                                int lineNumber = Link.NO_LINE;
+                                if (lineText != null) {
+                                    // Link with line number, for example
+                                    // @{"label" link "node" 17}
+                                    try {
+                                        lineNumber = Integer.parseInt(lineText);
+                                    } catch (NumberFormatException error) {
+                                        logger.log(Level.INFO, "ignored broken line number: ", error);
+                                    }
+                                }
+                                Link link = new Link(command, type, target, lineNumber);
+                                links.add(link);
+                            } else {
+                                // Empty link, for example @{"label" link ""}.
+                                MessageItem message = new MessageItem(command.getOptionItem(1),
+                                        "ignored empty link target");
+                                messagePool.add(message);
+                            }
+                        }
+                    } else {
+                        // Unknown link type, for example: @{"label" oops}.
+                        MessageItem message = new MessageItem(command.getOptionItem(0), "ignored unknown link type "
+                                + tools.sourced(type) + ", valid types are: " + tagPool.getValidLinkTypes());
+                        messagePool.add(message);
+                    }
+                }
+            }
+        }
+    }
+
     private void collectNodes() {
         nodeList = new ArrayList<CommandItem>();
         nodeMap = new TreeMap<String, CommandItem>();
@@ -263,7 +315,8 @@ public class Guide {
     }
 
     /**
-     * All lower case name of <code>node</code> item, or <code>null</code> if no name was passed..
+     * All lower case name of <code>node</code> item, or <code>null</code>
+     * if no name was passed..
      */
     private String getNodeNameOrNull(CommandItem node) {
         String result;
@@ -596,13 +649,37 @@ public class Guide {
         return result;
     }
 
+    /**
+     * Validate that guide starts with <code>@database</code>.
+     * @throws IllegalArgumentException
+     *                 if the file does not start with the expected header
+     */
+    private void checkForGuideId(File newGuideFile) throws IOException {
+        FileInputStream in = new FileInputStream(newGuideFile);
+        try {
+            byte[] first9Bytes = new byte[GUIDE_ID.length()];
+            in.read(first9Bytes);
+            String id = new String(first9Bytes, AmigaTools.ENCODING);
+            if (!id.toLowerCase().equals(GUIDE_ID)) {
+                throw new IllegalArgumentException("Amigaguide document must start with " + tools.sourced(GUIDE_ID)
+                        + " instead of " + tools.sourced(id) + ": ");
+            }
+        } finally {
+            in.close();
+        }
+    }
+
     public static Guide createGuide(File newGuideFile) throws IOException {
+
         Guide result = new Guide(new FileSource(newGuideFile));
+        result.checkForGuideId(newGuideFile);
         result.readItems();
         result.defineMacros();
         result.resolveMacros();
         result.collectNodes();
         result.validateCommands();
+        result.collectLinks();
+
         return result;
     }
 
@@ -744,11 +821,19 @@ public class Guide {
     public void writePretty(File targetFile) throws IOException {
         checkNoMacrosHaveBeenDefined();
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
-                "ISO-8859-1"));
+                AmigaTools.ENCODING));
         try {
             writePretty(writer);
         } finally {
             writer.close();
         }
+    }
+
+    /**
+     * Links to nodes or other files. This does not include pseudo links like
+     * "beep" or "rx".
+     */
+    public List<Link> getLinks() {
+        return links;
     }
 }

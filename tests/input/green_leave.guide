@@ -1,0 +1,19 @@
+@database green_leave.guide
+@smartwrap
+
+
+@node Main "Green Leave"
+This is the green leave, which is used to test link validation in a GuidePile.
+
+Go to:
+@{"Root" link "root.guide/Main"}
+@{"Green leave" link "green_leave.guide/Main"}
+@{"Yellow leave" link "yellown_leave.guide/Main"}
+@{"Local leave" link "Local"}
+@endnode
+
+
+@node local "Local Leave"
+This is the local leave.
+@endnode
+

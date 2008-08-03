@@ -1,6 +1,5 @@
 package net.sf.grotag.parse;
 
-
 /**
  * A message generated during parsing.
  * 
@@ -25,11 +24,15 @@ public class MessageItem implements Comparable<MessageItem> {
         column = newColumn;
         text = newText;
     }
-    
+
     public MessageItem(AbstractItem baseItem, String newText) {
         this(baseItem.getFile(), baseItem.getLine(), baseItem.getColumn(), newText);
     }
-    
+
+    public MessageItem(AbstractSource newSource, String newText) {
+        this(newSource, 0, 0, newText);
+    }
+
     // FIXME: Rename to getSource().
     public AbstractSource getFile() {
         return source;
@@ -57,8 +60,7 @@ public class MessageItem implements Comparable<MessageItem> {
 
     @Override
     public String toString() {
-        String result = getFile().getShortName() + "[" + getLine() + ":" + getColumn()
-                + "]: " + getText();
+        String result = getFile().getShortName() + "[" + getLine() + ":" + getColumn() + "]: " + getText();
         if (getSeeAlso() != null) {
             result += "; see also: " + getSeeAlso().toString();
         }
@@ -70,8 +72,7 @@ public class MessageItem implements Comparable<MessageItem> {
         if (other == null) {
             result = -1;
         } else {
-            result = getFile().getFullName().compareTo(
-                    other.getFile().getFullName());
+            result = getFile().getFullName().compareTo(other.getFile().getFullName());
             if (result == 0) {
                 result = getLine() - other.getLine();
                 if (result == 0) {
@@ -82,4 +83,3 @@ public class MessageItem implements Comparable<MessageItem> {
         return result;
     }
 }
- 

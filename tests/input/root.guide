@@ -1,0 +1,15 @@
+@database root.guide
+@smartwrap
+
+
+@node Main "Root"
+This is the root, which is used to test link validation in a GuidePile.
+
+
+@{"Root" link "root.guide/Main"}
+
+@{"Green leave" link "green_leave.guide/Main"}
+
+@{"Yellow leave" link "yellow_leave.guide/Main"}
+@endnode
+
