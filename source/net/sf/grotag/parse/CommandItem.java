@@ -1,5 +1,6 @@
 package net.sf.grotag.parse;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.grotag.common.Tools;
@@ -15,8 +16,8 @@ public class CommandItem extends AbstractItem {
     private boolean isInline;
     private List<AbstractItem> items;
 
-    public CommandItem(AbstractSource newSource, int newLine, int newColumn, String newCommandName, boolean newIsInline,
-            List<AbstractItem> newItems) {
+    public CommandItem(AbstractSource newSource, int newLine, int newColumn, String newCommandName,
+            boolean newIsInline, List<AbstractItem> newItems) {
         super(newSource, newLine, newColumn);
 
         assert newCommandName != null;
@@ -25,7 +26,12 @@ public class CommandItem extends AbstractItem {
         originalCommandName = newCommandName;
         commandName = newCommandName.toLowerCase();
         isInline = newIsInline;
-        items = newItems;
+        if (isInline) {
+            // Strip trailing "}".
+            items = new ArrayList<AbstractItem>(newItems.subList(0, Math.max(0, newItems.size() - 1)));
+        } else {
+            items = newItems;
+        }
     }
 
     /** Command name in all lower case for easy comparison. */
@@ -87,40 +93,54 @@ public class CommandItem extends AbstractItem {
     }
 
     private int getOptionItemIndex(int itemIndex) {
+        // FIXME: Skip SpaceItems properly.
         return 1 + 2 * itemIndex;
     }
 
-    private int getOptionCount() {
-        int itemCount = getItems().size();
-        int result = itemCount / 2;
+    int getOptionCount() {
+        int result = 0;
+        for (AbstractItem item : getItems()) {
+            if (!(item instanceof SpaceItem)) {
+                result += 1;
+                assert item instanceof AbstractTextItem;
+            }
+        }
         return result;
     }
 
     /**
-     * Option number <code>index</code> or <code>null</code> if there are
-     * not enough options.
+     * Option number <code>optionIndex</code> or <code>null</code> if there
+     * are not enough options.
      */
-    public AbstractTextItem getOptionItem(int index) {
-        AbstractTextItem result;
+    public AbstractTextItem getOptionItem(int optionIndex) {
+        AbstractTextItem result = null;
+        int itemIndex = 0;
+        int optionsPassed = 0;
 
-        if (index < getOptionCount()) {
-            int optionItemIndex = getOptionItemIndex(index);
-            result = (AbstractTextItem) items.get(optionItemIndex);
-        } else {
-            result = null;
+        while ((result == null) && (itemIndex < getItems().size())) {
+            AbstractItem item = items.get(itemIndex);
+            if (!(item instanceof SpaceItem)) {
+                assert item instanceof AbstractTextItem;
+                if (optionsPassed == optionIndex) {
+                    result = (AbstractTextItem) item;
+                } else {
+                    optionsPassed += 1;
+                }
+            }
+            itemIndex += 1;
         }
 
         return result;
     }
 
     /**
-     * Option number <code>index</code> or <code>null</code> if there are
-     * not enough options.
+     * Option number <code>optionIndex</code> or <code>null</code> if there
+     * are not enough options.
      */
-    public String getOption(int index) {
+    public String getOption(int optionIndex) {
         String result;
 
-        AbstractTextItem optionItem = getOptionItem(index);
+        AbstractTextItem optionItem = getOptionItem(optionIndex);
         if (optionItem != null) {
             result = optionItem.getText();
         } else {

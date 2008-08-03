@@ -3,9 +3,11 @@ package net.sf.grotag.parse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -49,7 +51,7 @@ public class ItemReaderTest {
         assertEquals(SPACE, ((SpaceItem) item).getSpace());
     }
 
-    // @Test
+    @Test
     public void testString() throws Exception {
         StringSource guide = createStringSource("testText", "@title \"hugo\"");
         ItemReader reader = new ItemReader(guide);
@@ -67,7 +69,7 @@ public class ItemReaderTest {
         assertEquals("hugo", ((StringItem) options.get(1)).getText());
     }
 
-    // @Test
+    @Test
     public void testText() throws Exception {
         StringSource guide = createStringSource("testText", "a\\\\b\\@");
         ItemReader reader = new ItemReader(guide);
@@ -80,7 +82,7 @@ public class ItemReaderTest {
         assertEquals("a\\b@", ((TextItem) item).getText());
     }
 
-    // @Test
+    @Test
     public void testDanglingAtSign() throws Exception {
         StringSource guide = createStringSource("testDanglingAtSign", "@");
         ItemReader reader = new ItemReader(guide);
@@ -93,7 +95,7 @@ public class ItemReaderTest {
         assertEquals("@", ((TextItem) item).getText());
     }
 
-    // @Test
+    @Test
     public void testCommand() throws Exception {
         AbstractSource guide = createStringSource("testDanglingAtSign", "@dAtAbAsE hugo");
         ItemReader reader = new ItemReader(guide);
@@ -109,6 +111,58 @@ public class ItemReaderTest {
         assertFalse(commandItem.isInline());
         assertNotNull(commandItem.getItems());
         assertEquals(2, commandItem.getItems().size());
+    }
+
+    private CommandItem createCommandItem(String testName, String commandDefinition) throws IOException {
+        assert testName != null;
+        assert commandDefinition != null;
+        CommandItem result;
+        AbstractSource guide = createStringSource(testName, commandDefinition);
+        ItemReader reader = new ItemReader(guide);
+        reader.read();
+        List<AbstractItem> items = reader.getItems();
+        int itemCount = items.size();
+        assert (itemCount >= 1) && (itemCount <= 2) : "itemCount=" + itemCount + ", items=" + items;
+        AbstractItem firstItem = items.get(0);
+        assert firstItem instanceof CommandItem : "broken command=" + firstItem;
+        result = (CommandItem) firstItem;
+        logger.fine("created command: " + result);
+        return result;
+    }
+
+    @Test
+    public void testCommandOptions() throws Exception {
+        CommandItem command;
+        List<AbstractItem> items;
+
+        command = createCommandItem("testNoOptions", "@wordwrap");
+        items = command.getItems();
+        assertEquals(0, items.size());
+        assertNull(command.getOption(0));
+
+        // A command with space between all options.
+        command = createCommandItem("testSomeOptions", "@{\"Introduction\" link \"intro\"}");
+        items = command.getItems();
+        assertEquals(4, items.size());
+        assertTrue(items.get(0) instanceof SpaceItem);
+        assertTrue(items.get(1) instanceof TextItem);
+        assertTrue(items.get(2) instanceof SpaceItem);
+        assertTrue(items.get(3) instanceof StringItem);
+        assertEquals(2, command.getOptionCount());
+        assertEquals("link", command.getOption(0));
+        String secondOption = command.getOption(1);
+        assertEquals("intro", secondOption);
+
+        // A command without space between a String and a normal text option.
+        command = createCommandItem("testSomeOptions", "@{\"Introduction\"link \"intro\"}");
+        items = command.getItems();
+        assertEquals(3, items.size());
+        assertTrue(items.get(0) instanceof TextItem);
+        assertTrue(items.get(1) instanceof SpaceItem);
+        assertTrue(items.get(2) instanceof StringItem);
+        assertEquals(2, command.getOptionCount());
+        assertEquals("link", command.getOption(0));
+        assertEquals("intro", secondOption);
     }
 
     @Test
