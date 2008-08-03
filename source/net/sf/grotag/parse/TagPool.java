@@ -1,13 +1,22 @@
 package net.sf.grotag.parse;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import net.sf.grotag.common.Tools;
+
 public class TagPool {
+    private Tools tools;
     private Map<String, Tag> tagMap;
     private Map<String, Tag> linkMap;
+    private String validLinkTypes;
 
     public TagPool() {
+        tools = Tools.getInstance();
+
         TagOption any = new TagOption(TagOption.Type.ANY);
         TagOption color = new TagOption(TagOption.Type.COLOR);
         TagOption file = new TagOption(TagOption.Type.FILE);
@@ -121,6 +130,24 @@ public class TagPool {
         addTag(new Tag("plain", v40, Tag.Scope.INLINE));
         addTag(new Tag("settabs", v40, Tag.Scope.INLINE, some));
         addTag(new Tag("tab", v40, Tag.Scope.INLINE));
+
+        // Collect valid link types.
+        List<String> linkTypes = new ArrayList<String>();
+        for (Tag tag : linkMap.values()) {
+            linkTypes.add(tag.getName());
+        }
+        Collections.sort(linkTypes);
+        validLinkTypes = "";
+        boolean atFirst = true;
+
+        for (String linkType : linkTypes) {
+            if (atFirst) {
+                atFirst = false;
+            } else {
+                validLinkTypes += ", ";
+            }
+            validLinkTypes += tools.sourced(linkType);
+        }
     }
 
     private String tagKey(String name, Tag.Scope scope) {
@@ -162,5 +189,13 @@ public class TagPool {
             result = null;
         }
         return result;
+    }
+
+    /**
+     * Comma separated list of all link types supported (for use in error
+     * messages).
+     */
+    public String getValidLinkTypes() {
+        return validLinkTypes;
     }
 }
