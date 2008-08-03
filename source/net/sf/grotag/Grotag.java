@@ -44,13 +44,15 @@ public class Grotag {
             System.err.println("Usage: java -jar Grotag.jar -docbook|-pretty|-validate source_file [target_file]");
         } else {
             Guide guide = Guide.createGuide(new File(sourceFilePath));
-            File targetFile = new File(targetFilePath);
-            if (action == Action.DOCBOOK) {
-                DocBookWriter.write(guide, targetFile);
-            } else if (action == Action.PRETTY) {
-                guide.writePretty(targetFile);
-            } else {
-                assert false: "action=" + action;
+            if (action != Action.VALIDATE) {
+                File targetFile = new File(targetFilePath);
+                if (action == Action.DOCBOOK) {
+                    DocBookWriter.write(guide, targetFile);
+                } else if (action == Action.PRETTY) {
+                    guide.writePretty(targetFile);
+                } else {
+                    assert false : "action=" + action;
+                }
             }
         }
     }
