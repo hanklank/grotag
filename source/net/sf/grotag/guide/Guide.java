@@ -190,7 +190,7 @@ public class Guide {
                     if (linkTag != null) {
                         if (type.equals("link")) {
                             String target = command.getOption(1);
-                            assert target != null: "empty target: " + command;
+                            assert target != null : "empty target: " + command;
                             if (target.length() > 0) {
                                 String lineText = command.getOption(2);
                                 int lineNumber = Link.NO_LINE;
@@ -588,20 +588,41 @@ public class Guide {
     private void validateLink(int itemIndex, CommandItem command) {
         String linkType = command.getOption(0);
         String reasonToReplaceLinkByText = null;
+        MessageItem seeAlso = null;
+
         if (linkType != null) {
             Tag linkTag = tagPool.getTag(linkType, Tag.Scope.LINK);
             if (linkTag == null) {
-                reasonToReplaceLinkByText = "unknown";
+                reasonToReplaceLinkByText = "unknown link";
             } else {
-                // TODO: Schedule link for link target check.
-                // TODO: Validate link options.
+                AbstractItem lastExistingItem = command.getOptionItem(0);
+                int optionIndex = 0;
+                while ((reasonToReplaceLinkByText == null) && (optionIndex < linkTag.getOptions().length)) {
+                    TagOption tagOption = linkTag.getOptions()[optionIndex];
+                    AbstractItem linkOptionItem = command.getOptionItem(1 + optionIndex);
+                    String linkOption = command.getOption(1 + optionIndex);
+                    if (linkOptionItem != null) {
+                        lastExistingItem = linkOptionItem;
+                    }
+                    String validationError = tagOption.validationError(linkOption);
+                    if (validationError != null) {
+                        reasonToReplaceLinkByText = "link with broken option";
+                        seeAlso = new MessageItem(lastExistingItem, validationError);
+                    } else {
+                        optionIndex += 1;
+                    }
+                }
+                // TODO: Detect and remove additional link options.
             }
         } else {
-            reasonToReplaceLinkByText = "empty";
+            reasonToReplaceLinkByText = "empty link";
         }
         if (reasonToReplaceLinkByText != null) {
-            MessageItem message = new MessageItem(command, "replaced " + reasonToReplaceLinkByText
-                    + " link by its text: " + command.toPrettyAmigaguide());
+            MessageItem message = new MessageItem(command, "replaced " + reasonToReplaceLinkByText + " by its text: "
+                    + command.toPrettyAmigaguide());
+            if (seeAlso != null) {
+                message.setSeeAlso(seeAlso);
+            }
             messagePool.add(message);
             String line = command.getOriginalCommandName();
             // FIXME: Deconstruct line into AbstractItems (using ItemReader)
