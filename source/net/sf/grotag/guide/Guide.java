@@ -618,17 +618,13 @@ public class Guide {
             reasonToReplaceLinkByText = "empty link";
         }
         if (reasonToReplaceLinkByText != null) {
-            MessageItem message = new MessageItem(command, "replaced " + reasonToReplaceLinkByText + " by its text: "
+            MessageItem message = new MessageItem(command, "replaced " + reasonToReplaceLinkByText + " by its label: "
                     + command.toPrettyAmigaguide());
             if (seeAlso != null) {
                 message.setSeeAlso(seeAlso);
             }
             messagePool.add(message);
-            String line = command.getOriginalCommandName();
-            // FIXME: Deconstruct line into AbstractItems (using ItemReader)
-            // before inserting it.
-            TextItem textItem = new TextItem(command.getFile(), command.getLine(), command.getColumn() + 2, line);
-            items.set(itemIndex, textItem);
+            items.set(itemIndex, command.toTextItem());
         }
     }
 

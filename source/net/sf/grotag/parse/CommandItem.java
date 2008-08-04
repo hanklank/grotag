@@ -3,6 +3,7 @@ package net.sf.grotag.parse;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 
 /**
@@ -65,6 +66,24 @@ public class CommandItem extends AbstractItem {
      */
     public List<AbstractItem> getItems() {
         return items;
+    }
+
+    /**
+     * Yield a <code>TextItem</code> that contains the text of this link
+     * command.
+     */
+    public TextItem toTextItem() {
+        assert isLink();
+        TextItem result;
+        AmigaTools amigaTools = AmigaTools.getInstance();
+        String linkLabel = getOriginalCommandName();
+        assert linkLabel.startsWith("\"");
+        assert linkLabel.endsWith("\"");
+        assert linkLabel.length() >= 2;
+        linkLabel = linkLabel.substring(1, linkLabel.length() - 1);
+        linkLabel = amigaTools.escapedForAmigaguide(linkLabel);
+        result = new TextItem(getFile(), getLine(), getColumn() + 2, linkLabel);
+        return result;
     }
 
     @Override

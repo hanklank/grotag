@@ -75,7 +75,7 @@ public class GuidePile {
                         messagePool.add(message);
                     } catch (IllegalArgumentException errorToIgnore) {
                         link.setState(Link.State.VALID_OTHER_FILE);
-                        log.log(Level.WARNING, "skipped non-guide", errorToIgnore);
+                        log.log(Level.WARNING, "skipped non-guide: " + tools.sourced(linkFile), errorToIgnore);
                     }
                 } else {
                     // Local link, no need to check the file.

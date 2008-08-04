@@ -88,4 +88,21 @@ public class AmigaTools {
         // file system.
         return new File(result);
     }
+
+    public String escapedForAmigaguide(String some) {
+        assert some != null;
+        String result = "";
+        for (int charIndex = 0; charIndex < some.length(); charIndex += 1) {
+            char ch = some.charAt(charIndex);
+            if (ch == '\\') {
+                result += "\\\\";
+            } else if (ch == '@') {
+                result += "\\@";
+            } else {
+                result += ch;
+            }
+        }
+        return result;
+    }
+
 }
