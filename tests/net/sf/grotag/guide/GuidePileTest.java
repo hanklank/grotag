@@ -15,7 +15,7 @@ import org.junit.Test;
 public class GuidePileTest {
     private TestTools testTools;
     private Logger log;
-    
+
     @Before
     public void setUp() throws Exception {
         testTools = TestTools.getInstance();
@@ -32,9 +32,9 @@ public class GuidePileTest {
 
     @Test
     public void testRkrm() throws IOException {
-        File rkrmDevicesFolder =testTools.getTestGuideFile("reference_library");
+        File rkrmDevicesFolder = testTools.getTestGuideFile("reference_library");
         File rkrmDevicesGuide = new File(new File(rkrmDevicesFolder, "devices"), "Dev_1");
-        
+
         if (rkrmDevicesGuide.exists()) {
             GuidePile pile = new GuidePile();
             pile.addRecursive(rkrmDevicesGuide);
