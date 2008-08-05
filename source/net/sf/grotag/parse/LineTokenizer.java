@@ -73,8 +73,7 @@ public class LineTokenizer {
      */
     public char getType() {
         if (type == TYPE_INVALID) {
-            throw new IllegalStateException(
-                    "getType() must be called only when there is a token available");
+            throw new IllegalStateException("getType() must be called only when there is a token available");
         }
         return type;
     }
@@ -96,8 +95,7 @@ public class LineTokenizer {
         char atSign = text.charAt(atSignColumn);
         int textLength = text.length();
 
-        assert atSign == '@' : "character at column " + atSignColumn
-                + " must be " + tools.sourced("@") + " but is "
+        assert atSign == '@' : "character at column " + atSignColumn + " must be " + tools.sourced("@") + " but is "
                 + tools.sourced(atSign);
 
         if (atSignColumn < textLength - 1) {
@@ -105,8 +103,7 @@ public class LineTokenizer {
             boolean charAfterAtSignIsOpenBrace = (charAfterAtSign == '{');
 
             if ((atSignColumn > 0) || charAfterAtSignIsOpenBrace) {
-                if (charAfterAtSignIsOpenBrace
-                        && (atSignColumn < textLength - 2)) {
+                if (charAfterAtSignIsOpenBrace && (atSignColumn < textLength - 2)) {
                     char charAfterOpenBrace = text.charAt(atSignColumn + 2);
                     result = !Character.isWhitespace(charAfterOpenBrace);
                 }
@@ -119,15 +116,14 @@ public class LineTokenizer {
 
     public void advance() {
         if (!hasNext()) {
-            throw new IllegalStateException(
-                    "cannot advance past end of line number " + getLine());
+            throw new IllegalStateException("cannot advance past end of line number " + getLine());
         }
 
         char some;
 
         if (insertCloseBrace) {
-            assert parserState == IN_COMMAND_BRACE : "parserState must be "
-                    + IN_COMMAND_BRACE + " but is " + parserState;
+            assert parserState == IN_COMMAND_BRACE : "parserState must be " + IN_COMMAND_BRACE + " but is "
+                    + parserState;
             insertCloseBrace = false;
             some = '}';
         } else {
@@ -144,12 +140,12 @@ public class LineTokenizer {
             }
             type = TYPE_SPACE;
         } else if ((parserState == IN_TEXT) && (some < 32)) {
-            // Get rid of invisible characters, especially because they are invalid in XML. 
+            // Get rid of invisible characters, especially because they are
+            // invalid in XML.
             token = "?";
             type = TYPE_TEXT;
             fireWarning("replaced invisible character with code " + ((int) some) + " by " + tools.sourced(token));
-        } else if ((parserState == IN_TEXT) && (some == '@')
-                && atSignIsCommand(column - 1)) {
+        } else if ((parserState == IN_TEXT) && (some == '@') && atSignIsCommand(column - 1)) {
             // Parse @ indicating a command.
             parserState = IN_COMMAND;
             type = TYPE_COMMAND;
@@ -158,8 +154,7 @@ public class LineTokenizer {
             columnOpenBrace = column;
             parserState = IN_COMMAND_BRACE;
             type = TYPE_OPEN_BRACE;
-        } else if (((parserState == IN_COMMAND) || (parserState == IN_COMMAND_BRACE))
-                && (some == '"')) {
+        } else if (((parserState == IN_COMMAND) || (parserState == IN_COMMAND_BRACE)) && (some == '"')) {
             // Parse quoted text within a command.
             int quoteColumn = column;
 
@@ -200,15 +195,12 @@ public class LineTokenizer {
             }
             while (hasChars()
                     && (text.charAt(column) > 32)
-                    && !((parserState == IN_COMMAND_BRACE) && (text
-                            .charAt(column) == '}'))
-                    && !((parserState == IN_TEXT)
-                            && (text.charAt(column) == '@') && !afterBackslash && atSignIsCommand(column))) {
+                    && !((parserState == IN_COMMAND_BRACE) && (text.charAt(column) == '}'))
+                    && !((parserState == IN_TEXT) && (text.charAt(column) == '@') && !afterBackslash && atSignIsCommand(column))) {
                 some = text.charAt(column);
                 if (afterBackslash) {
                     if ((some != '\\') && (some != '@')) {
-                        fireWarning("inserted backslash before dangling backslash with "
-                                + tools.sourced(some)
+                        fireWarning("inserted backslash before dangling backslash with " + tools.sourced(some)
                                 + " instead of \"\\\" or \"@\"");
                         token += '\\';
                     }
