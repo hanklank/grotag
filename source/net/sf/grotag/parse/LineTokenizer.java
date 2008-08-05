@@ -89,6 +89,14 @@ public class LineTokenizer {
         messagePool.add(source, getLine(), getColumn(), message);
     }
 
+    /**
+     * Similar to <code>Character.isWhitespace</code> but does not consider
+     * formfeed (decimal ASCII 12) to be whitespace.
+     */
+    private boolean isWhitespace(char some) {
+        return ((some == ' ') || (some == '\t'));
+    }
+
     private boolean atSignIsCommand(int atSignColumn) {
         assert atSignColumn >= 0;
         boolean result = false;
@@ -105,10 +113,10 @@ public class LineTokenizer {
             if ((atSignColumn > 0) || charAfterAtSignIsOpenBrace) {
                 if (charAfterAtSignIsOpenBrace && (atSignColumn < textLength - 2)) {
                     char charAfterOpenBrace = text.charAt(atSignColumn + 2);
-                    result = !Character.isWhitespace(charAfterOpenBrace);
+                    result = !isWhitespace(charAfterOpenBrace);
                 }
             } else {
-                result = !Character.isWhitespace(charAfterAtSign);
+                result = !isWhitespace(charAfterAtSign);
             }
         }
         return result;
@@ -132,9 +140,9 @@ public class LineTokenizer {
         }
         token = "" + some;
         type = TYPE_INVALID;
-        if (Character.isWhitespace(some)) {
+        if (isWhitespace(some)) {
             // Parse sequence of white spaces.
-            while (hasChars() && Character.isWhitespace(text.charAt(column))) {
+            while (hasChars() && isWhitespace(text.charAt(column))) {
                 token += text.charAt(column);
                 column += 1;
             }

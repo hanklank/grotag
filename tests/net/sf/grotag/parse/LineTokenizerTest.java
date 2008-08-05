@@ -142,6 +142,11 @@ public class LineTokenizerTest {
         testTokenizer("hello\u0012hugo", new String[] { "hello", "?", "hugo" });
     }
 
+    @Test
+    public void testFormFeedInMiddleOfLine() {
+        testTokenizer("\u000cx", new String[] { "?", "x" });
+    }
+
     private void testTokenizer(String text, String[] expectedTokens) {
         AbstractSource source = new StringSource(LineTokenizer.class.getName() + File.separator + "testTokenizer", text);
         LineTokenizer tokenizer = new LineTokenizer(source, 3, text);
@@ -149,7 +154,7 @@ public class LineTokenizerTest {
 
         for (int i = 0; i < expectedTokenCount; i += 1) {
             assertTrue("number of tokens must be " + expectedTokenCount
-                    + " but is " + (i + 1), tokenizer.hasNext());
+                    + " but is " + i, tokenizer.hasNext());
             tokenizer.advance();
             assertEquals(expectedTokens[i], tokenizer.getToken());
             System.out.println("token: " + tools.sourced(tokenizer.getToken()));
