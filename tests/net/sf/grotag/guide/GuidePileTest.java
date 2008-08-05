@@ -28,6 +28,7 @@ public class GuidePileTest {
         GuidePile pile = new GuidePile();
         pile.addRecursive(rootGuideFile);
         assertEquals(3, pile.getGuides().size());
+        pile.validateLinks();
     }
 
     @Test
@@ -38,14 +39,10 @@ public class GuidePileTest {
         if (rkrmDevicesGuide.exists()) {
             GuidePile pile = new GuidePile();
             pile.addRecursive(rkrmDevicesGuide);
-            assertEquals(14, pile.getGuides().size());
+            assertEquals(29, pile.getGuides().size());
+            pile.validateLinks();
         } else {
             log.warning("skipped test for " + Tools.getInstance().sourced(rkrmDevicesGuide));
         }
-    }
-
-    @Test
-    public void testValidateLinks() {
-        fail("Not yet implemented");
     }
 }

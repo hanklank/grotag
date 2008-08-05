@@ -14,7 +14,7 @@ public class NodeInfo extends AbstractInfo {
     private String title;
 
     public NodeInfo(DatabaseInfo newDatabaseInfo, String newName, String newTitle) {
-        super(newName);
+        super(newName.toLowerCase());
         assert newDatabaseInfo != null;
 
         databaseInfo = newDatabaseInfo;

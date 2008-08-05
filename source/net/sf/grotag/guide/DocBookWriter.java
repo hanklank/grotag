@@ -36,7 +36,7 @@ public class DocBookWriter {
         BEFORE_NODE, INSIDE_NODE, AFTER_NODE;
     }
 
-    private Guide guide;
+    private GuidePile pile;
     private Writer writer;
     private Document dom;
     private Element bookElement;
@@ -50,26 +50,45 @@ public class DocBookWriter {
      */
     private Map<String, String> agNodeToDbNodeMap;
 
-    private DocBookWriter(Guide newGuide, Writer newWriter) {
-        assert newGuide != null;
+    private DocBookWriter(GuidePile newPile, Writer newWriter) {
+        assert newPile != null;
         assert newWriter != null;
 
         log = Logger.getLogger(DocBookWriter.class.getName());
         tools = Tools.getInstance();
-        guide = newGuide;
+        pile = newPile;
         writer = newWriter;
 
         // Map the Amigaguide node names to DocBook id's that conform to the
         // NCName definition.
         agNodeToDbNodeMap = new HashMap<String, String>();
         int nodeCounter = 1;
-        for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-            String agNodeName = nodeInfo.getName();
-            String dbNodeName = "n" + nodeCounter;
+        for (Guide guide : pile.getGuides()) {
+            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+                String agNodeName = nodeKey(guide, nodeInfo);
+                String dbNodeName = "n" + nodeCounter;
 
-            agNodeToDbNodeMap.put(agNodeName, dbNodeName);
-            nodeCounter += 1;
+                log.log(Level.INFO, "add mapped node {0} from {1}", new Object[] { dbNodeName, agNodeName });
+
+                assert !agNodeToDbNodeMap.containsKey(agNodeName) : "duplicate agNode: " + tools.sourced(agNodeName);
+                assert !agNodeToDbNodeMap.containsValue(dbNodeName) : "duplicate dbNode: " + tools.sourced(dbNodeName);
+
+                agNodeToDbNodeMap.put(agNodeName, dbNodeName);
+                nodeCounter += 1;
+            }
         }
+    }
+
+    private String nodeKey(Guide guideContainingNode, String nodeName) {
+        assert guideContainingNode != null;
+        assert nodeName != null;
+
+        String result = nodeName + "@" + guideContainingNode.getSource().getFullName().replaceAll("\\@", "@@");
+        return result;
+    }
+
+    private String nodeKey(Guide guideContainingNode, NodeInfo nodeInfo) {
+        return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 
     private void createDom() throws ParserConfigurationException {
@@ -79,7 +98,9 @@ public class DocBookWriter {
         dom = domBuilder.newDocument();
         bookElement = dom.createElement("book");
         dom.appendChild(bookElement);
-        bookElement.appendChild(createChapter());
+        for (Guide guide : pile.getGuides()) {
+            bookElement.appendChild(createChapter(guide));
+        }
     }
 
     private void writeDom() throws TransformerException {
@@ -94,7 +115,9 @@ public class DocBookWriter {
         transformer.transform(new DOMSource(dom), new StreamResult(writer));
     }
 
-    private Element createChapter() {
+    private Element createChapter(Guide guide) {
+        assert guide != null;
+
         Element result = dom.createElement("chapter");
         String chapterTitle = guide.getDatabaseInfo().getName();
 
@@ -106,7 +129,7 @@ public class DocBookWriter {
         result.appendChild(title);
 
         for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-            result.appendChild(createSection(nodeInfo));
+            result.appendChild(createSection(guide, nodeInfo));
         }
         return result;
     }
@@ -125,9 +148,12 @@ public class DocBookWriter {
         return result;
     }
 
-    private Element createSection(NodeInfo nodeInfo) {
+    private Element createSection(Guide guide, NodeInfo nodeInfo) {
+        assert guide != null;
+        assert nodeInfo != null;
+
         Element result = dom.createElement("section");
-        String sectionId = agNodeToDbNodeMap.get(nodeInfo.getName());
+        String sectionId = agNodeToDbNodeMap.get(nodeKey(guide, nodeInfo));
         String sectionTitle = nodeInfo.getTitle();
 
         log.log(Level.INFO, "create section with id={0} from node {1}: {2}", new Object[] { tools.sourced(sectionId),
@@ -190,17 +216,27 @@ public class DocBookWriter {
                     } else if (item instanceof CommandItem) {
                         CommandItem command = (CommandItem) item;
                         if (command.isLink()) {
-                            boolean isLocalLink = command.getOption(0).toLowerCase().equals("link");
                             // Create and append link.
-                            String linkDescription = command.getOriginalCommandName();
-                            linkDescription = linkDescription.substring(1, linkDescription.length() - 1);
-                            Text linkDescriptionText = dom.createTextNode(linkDescription);
+                            String linkType = command.getOption(0).toLowerCase();
+                            String targetNode = command.getOption(1).toLowerCase();
+                            boolean isLocalLink = linkType.equals("link");
+                            String linkLabel = command.getLinkLabel();
+                            Text linkDescriptionText = dom.createTextNode(linkLabel);
+                            String mappedNode = agNodeToDbNodeMap.get(nodeKey(guide, targetNode));
 
                             if (isLocalLink) {
-                                linkToAppend = dom.createElement("link");
-                                linkToAppend.setAttribute("linkend", agNodeToDbNodeMap.get(command.getOption(1)));
-                                linkToAppend.appendChild(linkDescriptionText);
-                            } else {
+                                if (mappedNode != null) {
+                                    linkToAppend = dom.createElement("link");
+                                    linkToAppend.setAttribute("linkend", mappedNode);
+                                    linkToAppend.appendChild(linkDescriptionText);
+                                } else {
+                                    log.warning("skipped link to unknown node: " + command.toPrettyAmigaguide());
+                                }
+                            }
+
+                            // Link was not appended for some reason, so at
+                            // least make sure the link label shows up.
+                            if (linkToAppend == null) {
                                 text += linkDescriptionText;
                             }
                         }
@@ -253,23 +289,23 @@ public class DocBookWriter {
         return result;
     }
 
-    public static void write(Guide sourceGuide, Writer targetWriter) throws ParserConfigurationException,
+    public static void write(GuidePile pile, Writer targetWriter) throws ParserConfigurationException,
             TransformerException {
-        assert sourceGuide != null;
+        assert pile != null;
         assert targetWriter != null;
-        DocBookWriter docBookWriter = new DocBookWriter(sourceGuide, targetWriter);
+        DocBookWriter docBookWriter = new DocBookWriter(pile, targetWriter);
         docBookWriter.createDom();
         docBookWriter.writeDom();
     }
 
-    public static void write(Guide sourceGuide, File targetFile) throws IOException, ParserConfigurationException,
+    public static void write(GuidePile pile, File targetFile) throws IOException, ParserConfigurationException,
             TransformerException {
-        assert sourceGuide != null;
+        assert pile != null;
         assert targetFile != null;
 
         Writer targetWriter = new BufferedWriter(new FileWriter(targetFile));
         try {
-            write(sourceGuide, targetWriter);
+            write(pile, targetWriter);
         } finally {
             targetWriter.close();
         }

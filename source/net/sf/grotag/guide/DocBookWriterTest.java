@@ -22,11 +22,22 @@ public class DocBookWriterTest {
     }
 
     @Test
-    public void testWriteGuideFile() throws IOException, ParserConfigurationException, TransformerException {
-        File inFile = testTools.getTestInputFile("ascii-art.guide");
+    public void testWriteBasicsGuide() throws IOException, ParserConfigurationException, TransformerException {
+        File inFile = testTools.getTestInputFile("basics.guide");
         File outFile = testTools.getTestActualFile("basics.xml");
-        Guide guide = Guide.createGuide(inFile);
-        DocBookWriter.write(guide, outFile);
+        GuidePile pile = new GuidePile();
+        pile.addRecursive(inFile);
+        DocBookWriter.write(pile, outFile);
+        assertTrue(outFile.exists());
+    }
+
+    @Test
+    public void testWriteRootGuide() throws IOException, ParserConfigurationException, TransformerException {
+        File inFile = testTools.getTestInputFile("root.guide");
+        File outFile = testTools.getTestActualFile("root.xml");
+        GuidePile pile = new GuidePile();
+        pile.addRecursive(inFile);
+        DocBookWriter.write(pile, outFile);
         assertTrue(outFile.exists());
     }
 }

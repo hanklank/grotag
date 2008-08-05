@@ -58,7 +58,20 @@ public class CommandItem extends AbstractItem {
      * <code>@{"Overview" LINK overview}</code>?
      */
     public boolean isLink() {
-        return getCommandName().startsWith("\"");
+        boolean result = getCommandName().startsWith("\"");
+        assert !result || getCommandName().endsWith("\"");
+        return result;
+    }
+
+    /**
+     * Interpret the command as a link label and yield it without the enclosing
+     * quotes.
+     */
+    public String getLinkLabel() {
+        assert isLink();
+        String result = getOriginalCommandName();
+        result = result.substring(1, result.length() - 1);
+        return result;
     }
 
     /**

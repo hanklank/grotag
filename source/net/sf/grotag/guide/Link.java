@@ -1,8 +1,12 @@
 package net.sf.grotag.guide;
 
 import java.io.File;
+import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaTools;
+import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
+import net.sf.grotag.parse.FileSource;
 
 public class Link {
     /**
@@ -36,31 +40,53 @@ public class Link {
     private State state;
     private File targetFile;
     private String targetNode;
-    private CommandItem sourceItem;
+    private CommandItem linkCommand;
 
     /**
      * Create a new link. This has package visibility only, use
      * <code>Guide.createLink</code> to create a link from a class outside of
      * this package.
      */
-    Link(CommandItem newSource, String newType, String newTarget, int newLineNumber) {
-        assert newSource != null;
-        assert newSource.getCommandName().startsWith("\"");
-        assert newSource.getCommandName().endsWith("\"");
-        assert newSource.getOption(0) != null;
+    Link(CommandItem newLinkCommand, String newType, String newTarget, int newLineNumber) {
+        assert newLinkCommand != null;
+        assert newLinkCommand.isLink();
+        assert newLinkCommand.getOption(0) != null;
         assert newType != null;
         assert newType.length() > 0;
         assert newTarget != null;
         assert newTarget.length() > 0;
         assert (newLineNumber > 0) || (newLineNumber == NO_LINE);
 
-        sourceItem = newSource;
-        label = newSource.getOriginalCommandName();
+        Tools tools = Tools.getInstance();
+        AmigaTools amigaTools = AmigaTools.getInstance();
+        Logger log = Logger.getLogger(Link.class.getName());
+
+        linkCommand = newLinkCommand;
+        label = newLinkCommand.getOriginalCommandName();
         label = label.substring(1, label.length() - 1);
         state = State.UNCHECKED;
-        type = newType;
+        type = newType.toLowerCase();
         target = newTarget;
         line = newLineNumber;
+        if (type.equals("link")) {
+            // FIXME: Handle non-FileSource properly by using original file.
+            // (For example from macros expanding to links.)
+            assert newLinkCommand.getFile() instanceof FileSource;
+            File guideFile = ((FileSource) newLinkCommand.getFile()).getFile();
+            int slashIndex = target.lastIndexOf('/');
+            if (slashIndex >= 0) {
+                String linkAmigaPath = target.substring(0, slashIndex);
+                File baseFolder = guideFile.getParentFile();
+                targetFile = amigaTools.getFileFor(linkAmigaPath, baseFolder);
+                targetNode = target.substring(slashIndex + 1);
+                log.fine("mapping link: " + tools.sourced(linkAmigaPath) + " -> " + tools.sourced(targetFile) + ", "
+                        + tools.sourced(targetNode));
+            } else {
+                // Link to node in same file..
+                targetFile = guideFile;
+                targetNode = target;
+            }
+        }
     }
 
     public int getLine() {
@@ -112,20 +138,11 @@ public class Link {
         return targetNode;
     }
 
-    public void setResolvedTarget(File newTargetFile, String newTargetNode) {
-        assert newTargetFile != null;
-        assert newTargetNode != null;
-        assert newTargetNode.length() > 0;
-        assert isLinkType() : "type=" + getType();
-        targetFile = newTargetFile;
-        targetNode = newTargetNode;
-    }
-
     /**
      * The command from which this link originates.
      */
-    public CommandItem getSourceItem() {
-        return sourceItem;
+    public CommandItem getLinkCommand() {
+        return linkCommand;
     }
 
     public State getState() {

@@ -853,4 +853,11 @@ public class Guide {
     public List<Link> getLinks() {
         return links;
     }
+
+    /**
+     * The source the guide was created from.
+     */
+    public AbstractSource getSource() {
+        return guideSource;
+    }
 }
