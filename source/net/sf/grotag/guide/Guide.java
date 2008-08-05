@@ -372,6 +372,7 @@ public class Guide {
             AbstractItem item = items.get(itemIndex);
             if (item instanceof CommandItem) {
                 CommandItem command = (CommandItem) item;
+                logger.log(Level.FINE, "validate {0}", item.toPrettyAmigaguide());
                 if (command.getCommandName().equals("node")) {
                     assert currentNodeInfo == null;
                     String nodeName = getNodeName(command);
@@ -538,7 +539,7 @@ public class Guide {
             if (scope == Tag.Scope.GLOBAL) {
                 uniqueCommandsOccurred = uniqueGlobalCommandsOccurred;
             } else {
-                assert scope == Tag.Scope.NODE;
+                assert scope == Tag.Scope.NODE : "scope=" + scope;
                 uniqueCommandsOccurred = uniqueNodeCommandsOccurred;
             }
 
