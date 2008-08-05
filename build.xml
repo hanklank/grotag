@@ -57,8 +57,23 @@
       <arg value="-docbook" />
       <arg value="${guides.dir}/LhA.guide" />
       <arg value="${actual.dir}/lha.xml" />
+      <assertions>
+        <enable />
+      </assertions>
     </java>
     <docBookToHtml html="${actual.dir}/lha.html" xml="${actual.dir}/lha.xml" />
+  </target>
+
+  <target name="dev.html" depends="jar">
+    <java jar="${Grotag.jar}" fork="true" failonerror="true">
+      <arg value="-docbook" />
+      <arg value="${guides.dir}/reference_library/devices/Dev_1" />
+      <arg value="${actual.dir}/dev.xml" />
+      <assertions>
+        <enable />
+      </assertions>
+    </java>
+    <docBookToHtml html="${actual.dir}/dev.html" xml="${actual.dir}/dev.xml" />
   </target>
 
   <target name="user-guide">
