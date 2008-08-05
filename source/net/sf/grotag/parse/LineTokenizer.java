@@ -4,6 +4,7 @@ import net.sf.grotag.common.Tools;
 
 /** Tokenizer for a single line of an AmigaGuide document */
 public class LineTokenizer {
+    // TODO: Use enum instead of constants.
     public static final char TYPE_SPACE = '_';
     public static final char TYPE_TEXT = 'a';
     public static final char TYPE_STRING = '$';
@@ -142,6 +143,11 @@ public class LineTokenizer {
                 column += 1;
             }
             type = TYPE_SPACE;
+        } else if ((parserState == IN_TEXT) && (some < 32)) {
+            // Get rid of invisible characters, especially because they are invalid in XML. 
+            token = "?";
+            type = TYPE_TEXT;
+            fireWarning("replaced invisible character with code " + ((int) some) + " by " + tools.sourced(token));
         } else if ((parserState == IN_TEXT) && (some == '@')
                 && atSignIsCommand(column - 1)) {
             // Parse @ indicating a command.
@@ -193,7 +199,7 @@ public class LineTokenizer {
                 token = "\\@";
             }
             while (hasChars()
-                    && !Character.isWhitespace(text.charAt(column))
+                    && (text.charAt(column) > 32)
                     && !((parserState == IN_COMMAND_BRACE) && (text
                             .charAt(column) == '}'))
                     && !((parserState == IN_TEXT)

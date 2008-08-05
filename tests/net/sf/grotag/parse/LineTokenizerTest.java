@@ -137,6 +137,11 @@ public class LineTokenizerTest {
                 "here." });
     }
 
+    @Test
+    public void testInvisibleChar() {
+        testTokenizer("hello\u0012hugo", new String[] { "hello", "?", "hugo" });
+    }
+
     private void testTokenizer(String text, String[] expectedTokens) {
         AbstractSource source = new StringSource(LineTokenizer.class.getName() + File.separator + "testTokenizer", text);
         LineTokenizer tokenizer = new LineTokenizer(source, 3, text);
