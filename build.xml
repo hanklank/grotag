@@ -64,6 +64,18 @@
     <docBookToHtml html="${actual.dir}/lha.html" xml="${actual.dir}/lha.xml" />
   </target>
 
+  <target name="agr_test.html" depends="jar">
+    <java jar="${Grotag.jar}" fork="true" failonerror="true">
+      <arg value="-docbook" />
+      <arg value="${guides.dir}/agr_test.guide" />
+      <arg value="${actual.dir}/agr_test.xml" />
+      <assertions>
+        <enable />
+      </assertions>
+    </java>
+    <docBookToHtml html="${actual.dir}/agr_test.html" xml="${actual.dir}/agr_test.xml" />
+  </target>
+
   <target name="dev.html" depends="jar">
     <java jar="${Grotag.jar}" fork="true" failonerror="true">
       <arg value="-docbook" />
