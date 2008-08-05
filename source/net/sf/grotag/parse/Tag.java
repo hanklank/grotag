@@ -111,6 +111,7 @@ public class Tag implements Comparable<Tag> {
         assert newName != null;
         assert newName.equals(newName.toLowerCase());
         assert newName.length() > 0;
+        assert !newUnique || (newScope != Scope.INLINE);
 
         name = newName;
         version = newVersion;

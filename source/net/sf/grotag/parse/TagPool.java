@@ -68,8 +68,8 @@ public class TagPool {
         addTag(new Tag("title", v34, Tag.Scope.NODE, true, text));
         addTag(new Tag("toc", v34, Tag.Scope.NODE, true, node));
 
-        addTag(new Tag("bg", v34, Tag.Scope.INLINE, true, color));
-        addTag(new Tag("fg", v34, Tag.Scope.INLINE, true, color));
+        addTag(new Tag("bg", v34, Tag.Scope.INLINE, false, color));
+        addTag(new Tag("fg", v34, Tag.Scope.INLINE, false, color));
 
         // TODO: Use optional "number" instead of "any" for @{alink}
         addTag(Tag.createLink("alink", v34, new TagOption[] { node, any }));
