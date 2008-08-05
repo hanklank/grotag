@@ -90,14 +90,12 @@ public class LineTokenizerTest {
 
     @Test
     public void testCommandWithString() {
-        testTokenizer("@node \"hugo\"", new String[] { "@", "node", " ",
-                "\"hugo\"" });
+        testTokenizer("@node \"hugo\"", new String[] { "@", "node", " ", "\"hugo\"" });
     }
 
     @Test
     public void testCommandWithString2() {
-        testTokenizer("@NODE M \"L G\"", new String[] { "@", "NODE", " ", "M",
-                " ", "\"L G\"" });
+        testTokenizer("@NODE M \"L G\"", new String[] { "@", "NODE", " ", "M", " ", "\"L G\"" });
     }
 
     @Test
@@ -107,8 +105,7 @@ public class LineTokenizerTest {
 
     @Test
     public void testFixedMissingQuote() {
-        testTokenizer("@node \"hugo", new String[] { "@", "node", " ",
-                "\"hugo\"" });
+        testTokenizer("@node \"hugo", new String[] { "@", "node", " ", "\"hugo\"" });
     }
 
     @Test
@@ -133,8 +130,7 @@ public class LineTokenizerTest {
 
     @Test
     public void testSimple() {
-        testTokenizer("hugo was here.", new String[] { "hugo", " ", "was", " ",
-                "here." });
+        testTokenizer("hugo was here.", new String[] { "hugo", " ", "was", " ", "here." });
     }
 
     @Test
@@ -153,8 +149,7 @@ public class LineTokenizerTest {
         int expectedTokenCount = expectedTokens.length;
 
         for (int i = 0; i < expectedTokenCount; i += 1) {
-            assertTrue("number of tokens must be " + expectedTokenCount
-                    + " but is " + i, tokenizer.hasNext());
+            assertTrue("number of tokens must be " + expectedTokenCount + " but is " + i, tokenizer.hasNext());
             tokenizer.advance();
             assertEquals(expectedTokens[i], tokenizer.getToken());
             System.out.println("token: " + tools.sourced(tokenizer.getToken()));
