@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -82,6 +84,10 @@ public class DocBookWriter {
     private String nodeKey(Guide guideContainingNode, String nodeName) {
         assert guideContainingNode != null;
         assert nodeName != null;
+        assert nodeName.equals(nodeName.toLowerCase()) : "nodeName must be lower case but is: "
+                + tools.sourced(nodeName);
+        assert guideContainingNode.getNodeInfo(nodeName) != null : "guide must contain node " + tools.sourced(nodeName)
+                + ": " + guideContainingNode.getSource().getFullName();
 
         String result = nodeName + "@" + guideContainingNode.getSource().getFullName().replaceAll("\\@", "@@");
         return result;
@@ -217,30 +223,54 @@ public class DocBookWriter {
                         CommandItem command = (CommandItem) item;
                         if (command.isLink()) {
                             // Create and append link.
-                            String linkType = command.getOption(0).toLowerCase();
-                            String targetNode = command.getOption(1).toLowerCase();
+                            log.log(Level.INFO, "connect link: {0}", command);
+                            Link link = new Link(command);
+                            String linkType = link.getType();
+                            String targetNode = link.getTargetNode();
                             boolean isLocalLink = linkType.equals("link");
-                            String linkLabel = command.getLinkLabel();
+                            String linkLabel = link.getLabel();
                             Text linkDescriptionText = dom.createTextNode(linkLabel);
-                            String mappedNode = agNodeToDbNodeMap.get(nodeKey(guide, targetNode));
+                            File linkedFile = link.getTargetFile();
+                            Guide targetGuide = pile.getGuide(linkedFile);
 
-                            if (isLocalLink) {
-                                if (mappedNode != null) {
-                                    linkToAppend = dom.createElement("link");
-                                    linkToAppend.setAttribute("linkend", mappedNode);
-                                    linkToAppend.appendChild(linkDescriptionText);
-                                } else {
-                                    log.warning("skipped link to unknown node: " + command.toPrettyAmigaguide());
+                            if (targetGuide != null) {
+                                // Link within DocBook document.
+                                String mappedNode = agNodeToDbNodeMap.get(nodeKey(targetGuide, targetNode));
+
+                                if (isLocalLink) {
+                                    if (mappedNode != null) {
+                                        linkToAppend = dom.createElement("link");
+                                        linkToAppend.setAttribute("linkend", mappedNode);
+                                        linkToAppend.appendChild(linkDescriptionText);
+                                    } else {
+                                        log.warning("skipped link to unknown node: " + command.toPrettyAmigaguide());
+                                    }
                                 }
+                            } else if (linkedFile.exists()) {
+                                try {
+                                    // TODO: Copy linked file to same folder as
+                                    // target document.
+                                    URL linkedUrl = new URL("file", "localhost", linkedFile.getAbsolutePath());
+                                    linkToAppend = dom.createElement("ulink");
+                                    linkToAppend.setAttribute("url", linkedUrl.toExternalForm());
+                                    linkToAppend.appendChild(linkDescriptionText);
+                                } catch (MalformedURLException error) {
+                                    IllegalArgumentException wrapperError = new IllegalArgumentException(
+                                            "cannot create file URL for " + tools.sourced(linkedFile), error);
+                                    throw wrapperError;
+                                }
+                            } else {
+                                log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                             }
 
                             // Link was not appended for some reason, so at
                             // least make sure the link label shows up.
                             if (linkToAppend == null) {
-                                text += linkDescriptionText;
+                                text += linkLabel;
+                            } else {
+                                flushText = true;
                             }
                         }
-                        flushText = true;
                     }
                     if (flushText) {
                         log.log(Level.FINER, "append text: {0}", tools.sourced(text));

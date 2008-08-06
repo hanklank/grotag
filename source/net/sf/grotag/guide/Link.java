@@ -31,6 +31,8 @@ public class Link {
         BROKEN, VALID, VALID_GUIDE_BROKEN_NODE, VALID_GUIDE_UNCHECKED_NODE, VALID_OTHER_FILE, UNCHECKED, UNSUPPORTED
     }
 
+    // TODO: public enum Type.
+
     public static final int NO_LINE = -1;
 
     private int line;
@@ -43,19 +45,12 @@ public class Link {
     private CommandItem linkCommand;
 
     /**
-     * Create a new link. This has package visibility only, use
-     * <code>Guide.createLink</code> to create a link from a class outside of
-     * this package.
+     * Create a new link.
      */
-    Link(CommandItem newLinkCommand, String newType, String newTarget, int newLineNumber) {
+    public Link(CommandItem newLinkCommand) {
         assert newLinkCommand != null;
         assert newLinkCommand.isLink();
         assert newLinkCommand.getOption(0) != null;
-        assert newType != null;
-        assert newType.length() > 0;
-        assert newTarget != null;
-        assert newTarget.length() > 0;
-        assert (newLineNumber > 0) || (newLineNumber == NO_LINE);
 
         Tools tools = Tools.getInstance();
         AmigaTools amigaTools = AmigaTools.getInstance();
@@ -65,9 +60,14 @@ public class Link {
         label = newLinkCommand.getOriginalCommandName();
         label = label.substring(1, label.length() - 1);
         state = State.UNCHECKED;
-        type = newType.toLowerCase();
-        target = newTarget;
-        line = newLineNumber;
+        type = linkCommand.getOption(0).toLowerCase();
+        target = linkCommand.getOption(1);
+        String lineText = linkCommand.getOption(2);
+        if (lineText != null) {
+            line = Integer.parseInt(lineText);
+        } else {
+            line = NO_LINE;
+        }
         if (type.equals("link")) {
             // FIXME: Handle non-FileSource properly by using original file.
             // (For example from macros expanding to links.)
@@ -82,10 +82,11 @@ public class Link {
                 log.fine("mapping link: " + tools.sourced(linkAmigaPath) + " -> " + tools.sourced(targetFile) + ", "
                         + tools.sourced(targetNode));
             } else {
-                // Link to node in same file..
+                // Link to node in same file.
                 targetFile = guideFile;
                 targetNode = target;
             }
+            targetNode = targetNode.toLowerCase();
         }
     }
 

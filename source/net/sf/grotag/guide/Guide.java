@@ -192,19 +192,20 @@ public class Guide {
                             String target = command.getOption(1);
                             assert target != null : "empty target: " + command;
                             if (target.length() > 0) {
-                                String lineText = command.getOption(2);
-                                int lineNumber = Link.NO_LINE;
-                                if (lineText != null) {
-                                    // Link with line number, for example
-                                    // @{"label" link "node" 17}
-                                    try {
-                                        lineNumber = Integer.parseInt(lineText);
-                                    } catch (NumberFormatException error) {
-                                        logger.log(Level.INFO, "ignored broken line number: ", error);
-                                    }
+                                try {
+                                    Link link = new Link(command);
+                                    links.add(link);
+                                } catch (NumberFormatException error) {
+                                    String lineText = command.getOption(2);
+                                    logger.log(Level.INFO, "ignored broken line number: " + tools.sourced(lineText),
+                                            error);
+                                    MessageItem message = new MessageItem(command.getOptionItem(2),
+                                            "ignored broken line number: " + tools.sourced(lineText));
+                                    messagePool.add(message);
+                                    command.cutOptionsAt(2);
+                                    Link link = new Link(command);
+                                    links.add(link);
                                 }
-                                Link link = new Link(command, type, target, lineNumber);
-                                links.add(link);
                             } else {
                                 // Empty link, for example @{"label" link ""}.
                                 MessageItem message = new MessageItem(command.getOptionItem(1),
@@ -633,7 +634,7 @@ public class Guide {
         assert command != null;
         Tag.Scope result;
         if (command.isInline()) {
-            if (command.getCommandName().startsWith("\"")) {
+            if (command.isLink()) {
                 result = Tag.Scope.LINK;
             } else {
                 result = Tag.Scope.INLINE;

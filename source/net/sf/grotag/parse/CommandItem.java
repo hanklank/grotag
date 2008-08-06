@@ -12,6 +12,8 @@ import net.sf.grotag.common.Tools;
  * @author Thomas Aglassinger
  */
 public class CommandItem extends AbstractItem {
+    private static final int NO_OPTION_INDEX = -1;
+
     private String commandName;
     private String originalCommandName;
     private boolean isInline;
@@ -82,6 +84,23 @@ public class CommandItem extends AbstractItem {
     }
 
     /**
+     * Cut options beginning with <code>firstOptionToCutIndex</code> and all
+     * following options.
+     */
+    public void cutOptionsAt(int firstOptionToCutIndex) {
+        // Remove options to cut.
+        int firstItemToCutIndex = getOptionItemIndex(firstOptionToCutIndex);
+        while (getItems().size() > firstItemToCutIndex) {
+            getItems().remove(firstItemToCutIndex);
+        }
+
+        // Remove trailing SpaceItems
+        while ((getItems().size() > 0) && (getItems().get(getItems().size() - 1) instanceof SpaceItem)) {
+            getItems().remove(getItems().size() - 1);
+        }
+    }
+
+    /**
      * Yield a <code>TextItem</code> that contains the text of this link
      * command.
      */
@@ -124,9 +143,31 @@ public class CommandItem extends AbstractItem {
         return result;
     }
 
-    private int getOptionItemIndex(int itemIndex) {
-        // FIXME: Skip SpaceItems properly.
-        return 1 + 2 * itemIndex;
+    private int getOptionItemIndex(int optionIndex) {
+        int result = 0;
+        int optionsPassed = 0;
+        boolean optionFound = false;
+
+        while (!optionFound && (result < getItems().size())) {
+            AbstractItem item = items.get(result);
+            if (!(item instanceof SpaceItem)) {
+                assert item instanceof AbstractTextItem;
+                if (optionsPassed == optionIndex) {
+                    optionFound = true;
+                } else {
+                    optionsPassed += 1;
+                }
+            }
+            result += 1;
+        }
+
+        if (optionFound) {
+            result -= 1;
+        } else {
+            result = NO_OPTION_INDEX;
+        }
+
+        return result;
     }
 
     int getOptionCount() {
@@ -145,21 +186,13 @@ public class CommandItem extends AbstractItem {
      * are not enough options.
      */
     public AbstractTextItem getOptionItem(int optionIndex) {
-        AbstractTextItem result = null;
-        int itemIndex = 0;
-        int optionsPassed = 0;
+        AbstractTextItem result;
+        int itemIndex = getOptionItemIndex(optionIndex);
 
-        while ((result == null) && (itemIndex < getItems().size())) {
-            AbstractItem item = items.get(itemIndex);
-            if (!(item instanceof SpaceItem)) {
-                assert item instanceof AbstractTextItem;
-                if (optionsPassed == optionIndex) {
-                    result = (AbstractTextItem) item;
-                } else {
-                    optionsPassed += 1;
-                }
-            }
-            itemIndex += 1;
+        if (itemIndex != NO_OPTION_INDEX) {
+            result = (AbstractTextItem) getItems().get(itemIndex);
+        } else {
+            result = null;
         }
 
         return result;

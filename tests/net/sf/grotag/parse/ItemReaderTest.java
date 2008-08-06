@@ -154,15 +154,21 @@ public class ItemReaderTest {
         assertEquals("intro", secondOption);
 
         // A command without space between a String and a normal text option.
-        command = createCommandItem("testSomeOptions", "@{\"Introduction\"link \"intro\"}");
+        command = createCommandItem("testSomeOptions", "@{\"Introduction\"link \"intro\" 17}");
         items = command.getItems();
-        assertEquals(3, items.size());
+        assertEquals(5, items.size());
         assertTrue(items.get(0) instanceof TextItem);
         assertTrue(items.get(1) instanceof SpaceItem);
         assertTrue(items.get(2) instanceof StringItem);
-        assertEquals(2, command.getOptionCount());
+        assertTrue(items.get(3) instanceof SpaceItem);
+        assertTrue(items.get(4) instanceof TextItem);
+        assertEquals(3, command.getOptionCount());
         assertEquals("link", command.getOption(0));
-        assertEquals("intro", secondOption);
+        assertEquals("intro", command.getOption(1));
+        assertEquals("17", command.getOption(2));
+        command.cutOptionsAt(2);
+        assertNotNull(command.getOption(1));
+        assertNull(command.getOption(2));
     }
 
     @Test

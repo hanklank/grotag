@@ -37,6 +37,18 @@ public class GuidePile {
         return guideList;
     }
 
+    /**
+     * The guide in the pile stored in <code>guideFile</code> or
+     * <code>null</code> if no such guide exists. Note that this still is
+     * <code>null</code> if the file exists but is not a guide.
+     */
+    public Guide getGuide(File guideFile) {
+        Guide result;
+        String guidePath = guideFile.getAbsolutePath();
+        result = guideMap.get(guidePath);
+        return result;
+    }
+
     public void add(File guideFile) throws IOException {
         assert guideFile != null;
         String guidePath = guideFile.getAbsolutePath();
