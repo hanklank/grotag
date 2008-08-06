@@ -52,6 +52,7 @@ public class Grotag {
             File sourceFile = new File(sourceFilePath);
             GuidePile pile = new GuidePile();
             pile.addRecursive(sourceFile);
+            pile.validateLinks();
             if (action != Action.VALIDATE) {
                 File targetFile = new File(targetFilePath);
                 if (action == Action.DOCBOOK) {

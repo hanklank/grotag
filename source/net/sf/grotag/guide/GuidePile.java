@@ -11,14 +11,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.grotag.common.Tools;
+import net.sf.grotag.parse.CommandItem;
 import net.sf.grotag.parse.FileSource;
 import net.sf.grotag.parse.MessageItem;
 import net.sf.grotag.parse.MessagePool;
 
+/**
+ * A "pile" of related Amigaguide documents.
+ * 
+ * @author Thomas Aglassinger
+ */
 public class GuidePile {
     private Map<String, Guide> guideMap;
     private List<Guide> guideList;
     private List<Link> linksToValidate;
+    private Map<CommandItem, Link> linkMap;
     private Logger log;
     private MessagePool messagePool;
     private Tools tools;
@@ -31,6 +38,7 @@ public class GuidePile {
         guideMap = new TreeMap<String, Guide>();
         guideList = new ArrayList<Guide>();
         linksToValidate = new ArrayList<Link>();
+        linkMap = new TreeMap<CommandItem, Link>();
     }
 
     public List<Guide> getGuides() {
@@ -43,10 +51,18 @@ public class GuidePile {
      * <code>null</code> if the file exists but is not a guide.
      */
     public Guide getGuide(File guideFile) {
+        assert guideFile != null;
+
         Guide result;
         String guidePath = guideFile.getAbsolutePath();
         result = guideMap.get(guidePath);
         return result;
+    }
+
+    public Link getLink(CommandItem command) {
+        assert command != null;
+        assert command.isLink();
+        return linkMap.get(command);
     }
 
     public void add(File guideFile) throws IOException {
@@ -70,6 +86,7 @@ public class GuidePile {
         if (!guideMap.containsKey(guidePath)) {
             add(guideFile);
             for (Link link : guideMap.get(guidePath).getLinks()) {
+                linkMap.put(link.getLinkCommand(), link);
                 if (link.getType().equals("link")) {
                     File linkFile = link.getTargetFile();
                     assert linkFile != null;
@@ -102,16 +119,19 @@ public class GuidePile {
     public void validateLinks() {
         for (Link link : linksToValidate) {
             Link.State linkState = link.getState();
-            if ((linkState == Link.State.UNCHECKED) && (linkState == Link.State.VALID_GUIDE_UNCHECKED_NODE)) {
+            if ((linkState == Link.State.UNCHECKED) || (linkState == Link.State.VALID_GUIDE_UNCHECKED_NODE)) {
                 File linkedFile = link.getTargetFile();
                 String linkedNodeName = link.getTargetNode();
                 Guide guideContainingNode = guideMap.get(linkedFile.getAbsolutePath());
                 assert guideContainingNode != null;
                 NodeInfo nodeInfo = guideContainingNode.getNodeInfo(linkedNodeName);
                 if (nodeInfo == null) {
+                    link.setState(Link.State.VALID_GUIDE_BROKEN_NODE);
                     MessageItem message = new MessageItem(link.getLinkCommand(), "cannot find node "
                             + tools.sourced(linkedNodeName) + " in " + tools.sourced(linkedFile));
                     messagePool.add(message);
+                } else {
+                    link.setState(Link.State.VALID);
                 }
             }
         }

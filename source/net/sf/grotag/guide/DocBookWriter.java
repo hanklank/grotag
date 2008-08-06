@@ -224,43 +224,55 @@ public class DocBookWriter {
                         if (command.isLink()) {
                             // Create and append link.
                             log.log(Level.INFO, "connect link: {0}", command);
-                            Link link = new Link(command);
-                            String linkType = link.getType();
-                            String targetNode = link.getTargetNode();
-                            boolean isLocalLink = linkType.equals("link");
-                            String linkLabel = link.getLabel();
-                            Text linkDescriptionText = dom.createTextNode(linkLabel);
-                            File linkedFile = link.getTargetFile();
-                            Guide targetGuide = pile.getGuide(linkedFile);
+                            Link link = pile.getLink(command);
+                            String linkLabel = command.getLinkLabel();
+                            if (link != null) {
+                                if (link.getState() == Link.State.VALID) {
+                                    String linkType = link.getType();
+                                    String targetNode = link.getTargetNode();
+                                    boolean isLocalLink = linkType.equals("link");
+                                    Text linkDescriptionText = dom.createTextNode(linkLabel);
+                                    File linkedFile = link.getTargetFile();
+                                    Guide targetGuide = pile.getGuide(linkedFile);
 
-                            if (targetGuide != null) {
-                                // Link within DocBook document.
-                                String mappedNode = agNodeToDbNodeMap.get(nodeKey(targetGuide, targetNode));
+                                    if (targetGuide != null) {
+                                        // Link within DocBook document.
+                                        String mappedNode = agNodeToDbNodeMap.get(nodeKey(targetGuide, targetNode));
 
-                                if (isLocalLink) {
-                                    if (mappedNode != null) {
-                                        linkToAppend = dom.createElement("link");
-                                        linkToAppend.setAttribute("linkend", mappedNode);
-                                        linkToAppend.appendChild(linkDescriptionText);
+                                        if (isLocalLink) {
+                                            if (mappedNode != null) {
+                                                linkToAppend = dom.createElement("link");
+                                                linkToAppend.setAttribute("linkend", mappedNode);
+                                                linkToAppend.appendChild(linkDescriptionText);
+                                            } else {
+                                                log.warning("skipped link to unknown node: "
+                                                        + command.toPrettyAmigaguide());
+                                            }
+                                        }
+                                    } else if (linkedFile.exists()) {
+                                        try {
+                                            // TODO: Copy linked file to same
+                                            // folder
+                                            // as
+                                            // target document.
+                                            URL linkedUrl = new URL("file", "localhost", linkedFile.getAbsolutePath());
+                                            linkToAppend = dom.createElement("ulink");
+                                            linkToAppend.setAttribute("url", linkedUrl.toExternalForm());
+                                            linkToAppend.appendChild(linkDescriptionText);
+                                        } catch (MalformedURLException error) {
+                                            IllegalArgumentException wrapperError = new IllegalArgumentException(
+                                                    "cannot create file URL for " + tools.sourced(linkedFile), error);
+                                            throw wrapperError;
+                                        }
                                     } else {
-                                        log.warning("skipped link to unknown node: " + command.toPrettyAmigaguide());
+                                        log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                                     }
-                                }
-                            } else if (linkedFile.exists()) {
-                                try {
-                                    // TODO: Copy linked file to same folder as
-                                    // target document.
-                                    URL linkedUrl = new URL("file", "localhost", linkedFile.getAbsolutePath());
-                                    linkToAppend = dom.createElement("ulink");
-                                    linkToAppend.setAttribute("url", linkedUrl.toExternalForm());
-                                    linkToAppend.appendChild(linkDescriptionText);
-                                } catch (MalformedURLException error) {
-                                    IllegalArgumentException wrapperError = new IllegalArgumentException(
-                                            "cannot create file URL for " + tools.sourced(linkedFile), error);
-                                    throw wrapperError;
+                                } else {
+                                    log.warning("skipped link with state=" + link.getState() + ": "
+                                            + command.toPrettyAmigaguide());
                                 }
                             } else {
-                                log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
+                                log.warning("skipped invalid link: " + command.toPrettyAmigaguide());
                             }
 
                             // Link was not appended for some reason, so at

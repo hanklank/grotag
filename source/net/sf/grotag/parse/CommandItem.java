@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.grotag.common.AmigaTools;
+import net.sf.grotag.common.HashCodeTools;
 import net.sf.grotag.common.Tools;
 
 /**
@@ -11,7 +12,7 @@ import net.sf.grotag.common.Tools;
  * 
  * @author Thomas Aglassinger
  */
-public class CommandItem extends AbstractItem {
+public class CommandItem extends AbstractItem implements Comparable<CommandItem> {
     private static final int NO_OPTION_INDEX = -1;
 
     private String commandName;
@@ -327,6 +328,51 @@ public class CommandItem extends AbstractItem {
             }
         }
         result = result.trim();
+        return result;
+    }
+
+    public int compareTo(CommandItem other) {
+        assert other != null;
+        int result = getLine() - other.getLine();
+        if (result == 0) {
+            result = getColumn() - other.getColumn();
+            if (result == 0) {
+                result = getCommandName().compareTo(other.getCommandName());
+                if (result == 0) {
+                    result = getFile().getFullName().compareTo(other.getFile().getFullName());
+                }
+            }
+        }
+        assert (result != 0) || (this.equals(other));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object aThat) {
+        boolean result;
+
+        if (this == aThat) {
+            result = true;
+        } else if (!(aThat instanceof CommandItem)) {
+            result = false;
+        } else {
+            CommandItem that = (CommandItem) aThat;
+            result = (getLine() == that.getLine()) && (getColumn() == that.getColumn())
+                    && (getCommandName().equals(that.getCommandName()))
+                    && (getFile().getFullName().equals(that.getFile().getFullName()));
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        // A class that overrides equals must also override hashCode.
+        int result = HashCodeTools.SEED;
+        HashCodeTools hashCodeTools = HashCodeTools.getInstance();
+        result = hashCodeTools.hash(result, getLine());
+        result = hashCodeTools.hash(result, getColumn());
+        result = hashCodeTools.hash(result, getCommandName());
+        result = hashCodeTools.hash(result, getFile().getFullName());
         return result;
     }
 }
