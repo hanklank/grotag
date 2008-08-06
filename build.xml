@@ -75,11 +75,15 @@
   </target>
 
   <target name="agr_test.html" depends="jar">
-    <grotagDocBookToHtml guide="${guides.dir}/agr_test.guide" html="${actual.dir}/agr_test.html" xml="${actual.dir}/agr_test.xml" />
+    <grotagDocBookToHtml guide="${guides.dir}/agr_test.guide"
+                         html="${actual.dir}/agr_test.html"
+                         xml="${actual.dir}/agr_test.xml" />
   </target>
 
   <target name="dev.html" depends="jar">
-    <grotagDocBookToHtml guide="${guides.dir}/reference_library/devices/Dev_1" html="${actual.dir}/dev.html" xml="${actual.dir}/dev.xml" />
+    <grotagDocBookToHtml guide="${guides.dir}/reference_library/devices/Dev_1"
+                         html="${actual.dir}/dev.html"
+                         xml="${actual.dir}/dev.xml" />
   </target>
 
   <target name="root.html" depends="jar">
