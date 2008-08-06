@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project basedir="." default="build" name="LichtTools">
+<project basedir="." default="build" name="Grotag">
   <property name="source.dir" location="${basedir}/source" />
   <property name="site.dir" location="${basedir}/site" />
   <property name="tests.dir" location="${basedir}/tests" />
   <property name="guides.dir" location="${tests.dir}/guides" />
   <property name="actual.dir" location="${tests.dir}/actual" />
+  <property name="input.dir" location="${tests.dir}/input" />
   <property name="classes.dir" location="${basedir}/classes" />
   <property name="external.dir" location="${basedir}/external" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
@@ -86,6 +87,18 @@
       </assertions>
     </java>
     <docBookToHtml html="${actual.dir}/dev.html" xml="${actual.dir}/dev.xml" />
+  </target>
+
+  <target name="root.html" depends="jar">
+    <java jar="${Grotag.jar}" fork="true" failonerror="true">
+      <arg value="-docbook" />
+      <arg value="${input.dir}/root.guide" />
+      <arg value="${actual.dir}/root.xml" />
+      <assertions>
+        <enable />
+      </assertions>
+    </java>
+    <docBookToHtml html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
   </target>
 
   <target name="user-guide">
