@@ -8,6 +8,12 @@ import java.util.logging.Logger;
 
 import net.sf.grotag.common.Tools;
 
+/**
+ * Reader to dissect an Amigaguide document into a list of
+ * <code>AbstractItem</code>s.
+ * 
+ * @author Thomas Aglassinger
+ */
 public class ItemReader {
     private LineTokenizer tokenizer;
     private List<AbstractItem> items;
@@ -47,9 +53,9 @@ public class ItemReader {
                     while (tokenizer.hasNext()) {
                         columnNumber = tokenizer.getColumn();
                         tokenizer.advance();
-                        if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
+                        if (tokenizer.getType() == LineTokenizer.Type.SPACE) {
                             items.add(new SpaceItem(source, lineNumber, columnNumber, tokenizer.getToken()));
-                        } else if (tokenizer.getType() == LineTokenizer.TYPE_COMMAND) {
+                        } else if (tokenizer.getType() == LineTokenizer.Type.COMMAND) {
                             readCommand();
                         } else {
                             items.add(new TextItem(source, lineNumber, columnNumber, tokenizer.getToken()));
@@ -80,10 +86,10 @@ public class ItemReader {
         List<AbstractItem> commandItems = new ArrayList<AbstractItem>();
         String commandName;
 
-        assert tokenizer.getType() == LineTokenizer.TYPE_COMMAND;
+        assert tokenizer.getType() == LineTokenizer.Type.COMMAND;
         assert tokenizer.hasNext();
         tokenizer.advance();
-        boolean isInlineCommand = tokenizer.getType() == LineTokenizer.TYPE_OPEN_BRACE;
+        boolean isInlineCommand = tokenizer.getType() == LineTokenizer.Type.OPEN_BRACE;
 
         // Skip possible "{".
         if (isInlineCommand) {
@@ -91,15 +97,15 @@ public class ItemReader {
             tokenizer.advance();
         }
 
-        assert tokenizer.getType() != LineTokenizer.TYPE_SPACE : "\"@{\" with white space must have been handled by "
+        assert tokenizer.getType() != LineTokenizer.Type.SPACE : "\"@{\" with white space must have been handled by "
                 + LineTokenizer.class;
         commandName = tokenizer.getToken();
-        while (tokenizer.hasNext() && !(isInlineCommand && tokenizer.getType() == LineTokenizer.TYPE_CLOSE_BRACE)) {
+        while (tokenizer.hasNext() && !(isInlineCommand && tokenizer.getType() == LineTokenizer.Type.CLOSE_BRACE)) {
             int columnNumber = tokenizer.getColumn();
             tokenizer.advance();
-            if (tokenizer.getType() == LineTokenizer.TYPE_SPACE) {
+            if (tokenizer.getType() == LineTokenizer.Type.SPACE) {
                 commandItems.add(new SpaceItem(source, lineNumber, columnNumber, tokenizer.getToken()));
-            } else if (tokenizer.getType() == LineTokenizer.TYPE_STRING) {
+            } else if (tokenizer.getType() == LineTokenizer.Type.STRING) {
                 commandItems.add(new StringItem(source, lineNumber, columnNumber, tokenizer.getToken()));
             } else {
                 commandItems.add(new TextItem(source, lineNumber, columnNumber, tokenizer.getToken()));
@@ -108,7 +114,9 @@ public class ItemReader {
         items.add(new CommandItem(source, lineNumber, commandColumnNumber, commandName, isInlineCommand, commandItems));
     }
 
-    /** Items in the Amigaguide. */
+    /**
+     * Items in the Amigaguide.
+     */
     public List<AbstractItem> getItems() {
         return items;
     }

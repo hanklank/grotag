@@ -4,31 +4,23 @@ import net.sf.grotag.common.Tools;
 
 /** Tokenizer for a single line of an AmigaGuide document */
 public class LineTokenizer {
-    // TODO: Use enum instead of constants.
-    public static final char TYPE_SPACE = '_';
-    public static final char TYPE_TEXT = 'a';
-    public static final char TYPE_STRING = '$';
-    public static final char TYPE_COMMAND = '@';
-    public static final char TYPE_OPEN_BRACE = '{';
-    public static final char TYPE_CLOSE_BRACE = '}';
+    public enum Type {
+        CLOSE_BRACE, COMMAND, INVALID, OPEN_BRACE, SPACE, STRING, TEXT
+    }
 
-    private static final char IN_TEXT = 't';
-    private static final char IN_COMMAND = '@';
-    private static final char IN_COMMAND_BRACE = '{';
+    private enum State {
+        IN_COMMAND, IN_COMMAND_BRACE, IN_TEXT
+    }
+
     private static final int NO_COLUMN = -1;
 
-    /**
-     * Token type when the line is empty.
-     */
-    private static final char TYPE_INVALID = 'x';
-
-    private char parserState;
+    private State parserState;
     private String text;
     private int lineNumber;
     private int column;
     private int columnOpenBrace;
     private String token;
-    private char type;
+    private Type type;
     private Tools tools;
     private boolean insertCloseBrace;
     private AbstractSource source;
@@ -62,17 +54,15 @@ public class LineTokenizer {
         text = tools.withoutTrailingWhiteSpace(newText);
         column = 0;
         columnOpenBrace = NO_COLUMN;
-        parserState = IN_TEXT;
-        type = TYPE_INVALID;
+        parserState = State.IN_TEXT;
+        type = Type.INVALID;
     }
 
     /**
      * The type of the current token.
-     * 
-     * @return one of TYPE_*
      */
-    public char getType() {
-        if (type == TYPE_INVALID) {
+    public Type getType() {
+        if (type == Type.INVALID) {
             throw new IllegalStateException("getType() must be called only when there is a token available");
         }
         return type;
@@ -130,7 +120,7 @@ public class LineTokenizer {
         char some;
 
         if (insertCloseBrace) {
-            assert parserState == IN_COMMAND_BRACE : "parserState must be " + IN_COMMAND_BRACE + " but is "
+            assert parserState == State.IN_COMMAND_BRACE : "parserState must be " + State.IN_COMMAND_BRACE + " but is "
                     + parserState;
             insertCloseBrace = false;
             some = '}';
@@ -139,30 +129,30 @@ public class LineTokenizer {
             column += 1;
         }
         token = "" + some;
-        type = TYPE_INVALID;
+        type = Type.INVALID;
         if (isWhitespace(some)) {
             // Parse sequence of white spaces.
             while (hasChars() && isWhitespace(text.charAt(column))) {
                 token += text.charAt(column);
                 column += 1;
             }
-            type = TYPE_SPACE;
-        } else if ((parserState == IN_TEXT) && (some < 32)) {
+            type = Type.SPACE;
+        } else if ((parserState == State.IN_TEXT) && (some < 32)) {
             // Get rid of invisible characters, especially because they are
             // invalid in XML.
             token = "?";
-            type = TYPE_TEXT;
+            type = Type.TEXT;
             fireWarning("replaced invisible character with code " + ((int) some) + " by " + tools.sourced(token));
-        } else if ((parserState == IN_TEXT) && (some == '@') && atSignIsCommand(column - 1)) {
+        } else if ((parserState == State.IN_TEXT) && (some == '@') && atSignIsCommand(column - 1)) {
             // Parse @ indicating a command.
-            parserState = IN_COMMAND;
-            type = TYPE_COMMAND;
-        } else if ((parserState == IN_COMMAND) && (some == '{')) {
+            parserState = State.IN_COMMAND;
+            type = Type.COMMAND;
+        } else if ((parserState == State.IN_COMMAND) && (some == '{')) {
             // Parse opening curly brace indicating a command.
             columnOpenBrace = column;
-            parserState = IN_COMMAND_BRACE;
-            type = TYPE_OPEN_BRACE;
-        } else if (((parserState == IN_COMMAND) || (parserState == IN_COMMAND_BRACE)) && (some == '"')) {
+            parserState = State.IN_COMMAND_BRACE;
+            type = Type.OPEN_BRACE;
+        } else if (((parserState == State.IN_COMMAND) || (parserState == State.IN_COMMAND_BRACE)) && (some == '"')) {
             // Parse quoted text within a command.
             int quoteColumn = column;
 
@@ -184,14 +174,14 @@ public class LineTokenizer {
                 column += 1;
             }
             token += "\"";
-            type = TYPE_STRING;
-        } else if ((parserState == IN_COMMAND_BRACE) && (some == '}')) {
+            type = Type.STRING;
+        } else if ((parserState == State.IN_COMMAND_BRACE) && (some == '}')) {
             // Parse "}" within a command to indicate end of command.
             assert columnOpenBrace != NO_COLUMN : "columnOpenBrace must have been set earlier";
             token = "" + some;
             columnOpenBrace = NO_COLUMN;
-            parserState = IN_TEXT;
-            type = TYPE_CLOSE_BRACE;
+            parserState = State.IN_TEXT;
+            type = Type.CLOSE_BRACE;
         } else {
             // Parse normal text.
             boolean afterBackslash = (some == '\\');
@@ -203,8 +193,8 @@ public class LineTokenizer {
             }
             while (hasChars()
                     && (text.charAt(column) > 32)
-                    && !((parserState == IN_COMMAND_BRACE) && (text.charAt(column) == '}'))
-                    && !((parserState == IN_TEXT) && (text.charAt(column) == '@') && !afterBackslash && atSignIsCommand(column))) {
+                    && !((parserState == State.IN_COMMAND_BRACE) && (text.charAt(column) == '}'))
+                    && !((parserState == State.IN_TEXT) && (text.charAt(column) == '@') && !afterBackslash && atSignIsCommand(column))) {
                 some = text.charAt(column);
                 if (afterBackslash) {
                     if ((some != '\\') && (some != '@')) {
@@ -230,12 +220,12 @@ public class LineTokenizer {
                 fireWarning("appended backslash after dangling backslash at end of token");
                 token += '\\';
             }
-            type = TYPE_TEXT;
+            type = Type.TEXT;
         }
-        if (!hasNext() && (parserState == IN_COMMAND_BRACE)) {
+        if (!hasNext() && (parserState == State.IN_COMMAND_BRACE)) {
             insertCloseBrace = true;
         }
-        assert type != TYPE_INVALID : "token type must be set";
+        assert type != Type.INVALID : "token type must be set";
     }
 
     private boolean hasChars() {
