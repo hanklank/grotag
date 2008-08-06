@@ -29,6 +29,23 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="grotagDocBookToHtml">
+    <attribute name="guide" />
+    <attribute name="xml" />
+    <attribute name="html" />
+    <sequential>
+      <java jar="${Grotag.jar}" fork="true" failonerror="true">
+        <arg value="-docbook" />
+        <arg value="@{guide}" />
+        <arg value="@{xml}" />
+        <assertions>
+          <enable />
+        </assertions>
+      </java>
+      <docBookToHtml html="@{html}" xml="@{xml}" />
+    </sequential>
+  </macrodef>
+
   <target depends="jar" description="Build distribution archive Grotag.zip." name="build">
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
@@ -54,51 +71,19 @@
   </target>
 
   <target name="lha.html" depends="jar">
-    <java jar="${Grotag.jar}" fork="true" failonerror="true">
-      <arg value="-docbook" />
-      <arg value="${guides.dir}/LhA.guide" />
-      <arg value="${actual.dir}/lha.xml" />
-      <assertions>
-        <enable />
-      </assertions>
-    </java>
-    <docBookToHtml html="${actual.dir}/lha.html" xml="${actual.dir}/lha.xml" />
+    <grotagDocBookToHtml guide="${guides.dir}/LhA.guide" html="${actual.dir}/lha.html" xml="${actual.dir}/lha.xml" />
   </target>
 
   <target name="agr_test.html" depends="jar">
-    <java jar="${Grotag.jar}" fork="true" failonerror="true">
-      <arg value="-docbook" />
-      <arg value="${guides.dir}/agr_test.guide" />
-      <arg value="${actual.dir}/agr_test.xml" />
-      <assertions>
-        <enable />
-      </assertions>
-    </java>
-    <docBookToHtml html="${actual.dir}/agr_test.html" xml="${actual.dir}/agr_test.xml" />
+    <grotagDocBookToHtml guide="${guides.dir}/agr_test.guide" html="${actual.dir}/agr_test.html" xml="${actual.dir}/agr_test.xml" />
   </target>
 
   <target name="dev.html" depends="jar">
-    <java jar="${Grotag.jar}" fork="true" failonerror="true">
-      <arg value="-docbook" />
-      <arg value="${guides.dir}/reference_library/devices/Dev_1" />
-      <arg value="${actual.dir}/dev.xml" />
-      <assertions>
-        <enable />
-      </assertions>
-    </java>
-    <docBookToHtml html="${actual.dir}/dev.html" xml="${actual.dir}/dev.xml" />
+    <grotagDocBookToHtml guide="${guides.dir}/reference_library/devices/Dev_1" html="${actual.dir}/dev.html" xml="${actual.dir}/dev.xml" />
   </target>
 
   <target name="root.html" depends="jar">
-    <java jar="${Grotag.jar}" fork="true" failonerror="true">
-      <arg value="-docbook" />
-      <arg value="${input.dir}/root.guide" />
-      <arg value="${actual.dir}/root.xml" />
-      <assertions>
-        <enable />
-      </assertions>
-    </java>
-    <docBookToHtml html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
+    <grotagDocBookToHtml guide="${input.dir}/root.guide" html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
   </target>
 
   <target name="user-guide">
