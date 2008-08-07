@@ -86,6 +86,12 @@
                          xml="${actual.dir}/dev.xml" />
   </target>
 
+  <target name="lib.html" depends="jar">
+    <grotagDocBookToHtml guide="${guides.dir}/reference_library//libraries/Lib_1"
+                         html="${actual.dir}/lib.html"
+                         xml="${actual.dir}/lib.xml" />
+  </target>
+
   <target name="root.html" depends="jar">
     <grotagDocBookToHtml guide="${input.dir}/root.guide" html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
   </target>
