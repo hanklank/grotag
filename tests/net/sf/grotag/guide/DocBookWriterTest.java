@@ -24,12 +24,12 @@ public class DocBookWriterTest {
     private void testWriteGuide(String baseName) throws IOException, ParserConfigurationException, TransformerException {
         File inFile = testTools.getTestInputFile(baseName + ".guide");
         File outFile = testTools.getTestActualFile(baseName + ".xml");
-        GuidePile pile = new GuidePile();
-        
+        GuidePile pile;
+
         if (!inFile.exists()) {
             inFile = testTools.getTestGuideFile(baseName + ".guide");
         }
-        pile.addRecursive(inFile);
+        pile = GuidePile.createGuidePile(inFile);
         DocBookWriter.write(pile, outFile);
         assertTrue(outFile.exists());
     }

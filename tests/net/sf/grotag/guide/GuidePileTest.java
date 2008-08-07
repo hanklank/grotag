@@ -3,6 +3,7 @@ package net.sf.grotag.guide;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Logger;
 
@@ -14,10 +15,12 @@ import org.junit.Test;
 
 public class GuidePileTest {
     private TestTools testTools;
+    private Tools tools;
     private Logger log;
 
     @Before
     public void setUp() throws Exception {
+        tools = Tools.getInstance();
         testTools = TestTools.getInstance();
         log = Logger.getLogger(GuidePileTest.class.getName());
     }
@@ -25,24 +28,20 @@ public class GuidePileTest {
     @Test
     public void testAdd() throws IOException {
         File rootGuideFile = testTools.getTestInputFile("root.guide");
-        GuidePile pile = new GuidePile();
-        pile.addRecursive(rootGuideFile);
+        GuidePile pile = GuidePile.createGuidePile(rootGuideFile);
         assertEquals(4, pile.getGuides().size());
-        pile.validateLinks();
     }
 
     @Test
     public void testRkrm() throws IOException {
         File rkrmDevicesFolder = testTools.getTestGuideFile("reference_library");
-        File rkrmDevicesGuide = new File(new File(rkrmDevicesFolder, "devices"), "Dev_1");
+        File rkrmDevicesGuideFile = new File(new File(rkrmDevicesFolder, "devices"), "Dev_1");
 
-        if (rkrmDevicesGuide.exists()) {
-            GuidePile pile = new GuidePile();
-            pile.addRecursive(rkrmDevicesGuide);
+        try {
+            GuidePile pile = GuidePile.createGuidePile(rkrmDevicesGuideFile);
             assertEquals(29, pile.getGuides().size());
-            pile.validateLinks();
-        } else {
-            log.warning("skipped test for " + Tools.getInstance().sourced(rkrmDevicesGuide));
+        } catch (FileNotFoundException errorToIgnore) {
+            log.warning("skipped test for " + tools.sourced(rkrmDevicesGuideFile));
         }
     }
 }

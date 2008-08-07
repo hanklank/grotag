@@ -50,9 +50,7 @@ public class Grotag {
             guide.writePretty(targetFile);
         } else {
             File sourceFile = new File(sourceFilePath);
-            GuidePile pile = new GuidePile();
-            pile.addRecursive(sourceFile);
-            pile.validateLinks();
+            GuidePile pile = GuidePile.createGuidePile(sourceFile);
             if (action != Action.VALIDATE) {
                 File targetFile = new File(targetFilePath);
                 if (action == Action.DOCBOOK) {
