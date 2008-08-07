@@ -102,7 +102,7 @@ public class GuidePile {
         Guide guide = getCachedGuideFor(guideFile);
         List<Link> linksToFollow = new LinkedList<Link>(guide.getLinks());
 
-        while (linksToFollow.size() > 0) {
+        while (!linksToFollow.isEmpty()) {
             Link link = linksToFollow.get(0);
             linkMap.put(link.getLinkCommand(), link);
             if (link.getType().equals("link")) {
@@ -136,18 +136,24 @@ public class GuidePile {
                 }
             } else {
                 // Non-file link, no need to follow.
-                scheduleLinkForValidation(link);
+                scheduleLinkForValidation(link, Link.State.UNSUPPORTED);
             }
 
             linksToFollow.remove(0);
         }
     }
 
-    private void scheduleLinkForValidation(Link linkToValidate) {
+    private void scheduleLinkForValidation(Link linkToValidate, Link.State newState) {
         assert linkToValidate != null;
-        linkToValidate.setState(Link.State.VALID_GUIDE_UNCHECKED_NODE);
+        assert newState != Link.State.UNCHECKED;
+        linkToValidate.setState(newState);
         linksToValidate.add(linkToValidate);
         log.log(Level.INFO, "scheduled link for validation: {0}", linkToValidate);
+    }
+
+    private void scheduleLinkForValidation(Link linkToValidate) {
+        assert linkToValidate != null;
+        scheduleLinkForValidation(linkToValidate, Link.State.VALID_GUIDE_UNCHECKED_NODE);
     }
 
     private void validateLinks() throws IOException {
