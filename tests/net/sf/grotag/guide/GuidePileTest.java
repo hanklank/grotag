@@ -27,7 +27,7 @@ public class GuidePileTest {
         File rootGuideFile = testTools.getTestInputFile("root.guide");
         GuidePile pile = new GuidePile();
         pile.addRecursive(rootGuideFile);
-        assertEquals(3, pile.getGuides().size());
+        assertEquals(4, pile.getGuides().size());
         pile.validateLinks();
     }
 

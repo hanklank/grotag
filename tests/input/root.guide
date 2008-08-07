@@ -7,9 +7,8 @@ This is the root, which is used to test link validation in a GuidePile.
 
 
 @{"Root" link "root.guide/Main"}
-
-@{"Green leave" link "green_leave.guide/Main"}
-
-@{"Yellow leave" link "yellow_leave.guide/Main"}
+@{"Red" link "red.guide/Main"}
+@{"Green" link "green.guide/Main"}
+@{"Blue" link "blue.guide/Main"}
 @endnode
 

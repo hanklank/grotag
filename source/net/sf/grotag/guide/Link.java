@@ -153,4 +153,13 @@ public class Link {
     public void setState(State newState) {
         state = newState;
     }
+
+    @Override
+    public String toString() {
+        Tools tools = Tools.getInstance();
+        String result = "Link[command=" + getLinkCommand().toPrettyAmigaguide() + ", target="
+                + tools.sourced(getTarget()) + ", state=" + getState() + ", file=" + tools.sourced(getTargetFile())
+                + ", node=" + tools.sourced(getTargetNode() + "type=" + getType());
+        return result;
+    }
 }
