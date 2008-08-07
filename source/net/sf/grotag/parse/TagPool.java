@@ -21,6 +21,7 @@ public class TagPool {
         TagOption color = new TagOption(TagOption.Type.COLOR);
         TagOption file = new TagOption(TagOption.Type.FILE);
         TagOption filenode = new TagOption(TagOption.Type.FILENODE);
+        TagOption guide = new TagOption(TagOption.Type.GUIDE);
         TagOption node = new TagOption(TagOption.Type.NODE);
         TagOption number = new TagOption(TagOption.Type.NUMBER);
         TagOption some = new TagOption(TagOption.Type.SOME);
@@ -72,7 +73,7 @@ public class TagPool {
         addTag(new Tag("fg", v34, Tag.Scope.INLINE, false, color));
 
         // TODO: Use optional "number" instead of "any" for @{alink}
-        addTag(Tag.createLink("alink", v34, new TagOption[] { node, any }));
+        addTag(Tag.createLink("alink", v34, new TagOption[] { filenode, any }));
         addTag(Tag.createLink("close", v34));
         addTag(Tag.createLink("link", v34, new TagOption[] { filenode, any }));
         addTag(Tag.createLink("rx", v34, text));
@@ -81,10 +82,9 @@ public class TagPool {
         addTag(Tag.createLink("quit", v34));
 
         // Amigaguide version 39 (Workbench 3.0)
-        v34 = Tag.Version.V39;
         Tag.Version v39 = Tag.Version.V39;
         addTag(new Tag("wordwrap", v39, Tag.Scope.GLOBAL, true));
-        addTag(new Tag("xref", v39, Tag.Scope.GLOBAL, true, file));
+        addTag(new Tag("xref", v39, Tag.Scope.GLOBAL, true, guide));
 
         addTag(new Tag("embed", v39, Tag.Scope.NODE, file));
         addTag(new Tag("proportional", v39, Tag.Scope.NODE, true));
@@ -97,8 +97,8 @@ public class TagPool {
         addTag(new Tag("ui", v39, Tag.Scope.INLINE));
         addTag(new Tag("uu", v39, Tag.Scope.INLINE));
 
-        addTag(Tag.createLink("beep", v34));
-        addTag(Tag.createLink("guide", v34, file));
+        addTag(Tag.createLink("beep", v39));
+        addTag(Tag.createLink("guide", v39, guide));
 
         // Amigaguide version 40 (Workbench 3.1)
         Tag.Version v40 = Tag.Version.V40;

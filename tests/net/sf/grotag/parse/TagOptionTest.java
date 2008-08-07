@@ -1,41 +1,28 @@
 package net.sf.grotag.parse;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-
-import java.text.ParseException;
 
 import org.junit.Test;
 
 public class TagOptionTest {
-    private TagOption option;
-
     @Test
-    public void testSimpleTagOptions() throws ParseException {
-        option = new TagOption("width number", 5);
-        assertEquals(TagOption.Type.NUMBER, option.getType());
-        assertNull(option.getDefaultValue());
-    }
+    public void testValidationError() {
+        TagOption option;
 
-    @Test
-    public void testTagOptionWithDefault() throws ParseException {
-        option = new TagOption("alink node number=0", 10);
-        assertEquals(TagOption.Type.NUMBER, option.getType());
-        assertEquals("0", option.getDefaultValue());
-    }
+        option = new TagOption(TagOption.Type.ANY);
+        assertNull(option.validationError(null));
+        assertNull(option.validationError("hugo"));
 
-    @Test(expected = ParseException.class)
-    public void testBrokenType() throws ParseException {
-        option = new TagOption("alink hugo", 5);
-    }
+        option = new TagOption(TagOption.Type.COLOR);
+        assertNull(option.validationError(TagOption.Color.FILL.toString()));
+        assertNull(option.validationError(TagOption.Color.FILL.toString().toLowerCase()));
+        assertNotNull(option.validationError("hugo"));
+        assertNotNull(option.validationError(null));
 
-    @Test(expected = ParseException.class)
-    public void testMissingDefaultValue() throws ParseException {
-        option = new TagOption("alink node number=", 10);
-    }
-
-    @Test(expected = ParseException.class)
-    public void testTooLong() throws ParseException {
-        option = new TagOption("alink node number=0=17", 10);
+        option = new TagOption(TagOption.Type.NUMBER);
+        assertNull(option.validationError("1234"));
+        assertNotNull(option.validationError("hugo"));
+        assertNotNull(option.validationError(null));
     }
 }
