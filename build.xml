@@ -53,6 +53,7 @@
   <target description="Build Grotag.jar." name="jar">
     <mkdir dir="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
+    <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}"/>
     <jar basedir="${classes.dir}" destfile="${Grotag.jar}" excludes="**/*Test.class" includes="**/*.class">
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger" />
