@@ -193,7 +193,7 @@ public class DocBookWriter {
                 } else {
                     boolean flushText = false;
                     boolean flushParagraph = false;
-                    Element linkToAppend = null;
+                    Element elementToAppend = null;
 
                     if (item instanceof SpaceItem) {
                         text += ((SpaceItem) item).getSpace();
@@ -242,9 +242,9 @@ public class DocBookWriter {
 
                                         if (isLocalLink) {
                                             if (mappedNode != null) {
-                                                linkToAppend = dom.createElement("link");
-                                                linkToAppend.setAttribute("linkend", mappedNode);
-                                                linkToAppend.appendChild(linkDescriptionText);
+                                                elementToAppend = dom.createElement("link");
+                                                elementToAppend.setAttribute("linkend", mappedNode);
+                                                elementToAppend.appendChild(linkDescriptionText);
                                             } else {
                                                 log.warning("skipped link to unknown node: "
                                                         + command.toPrettyAmigaguide());
@@ -253,13 +253,11 @@ public class DocBookWriter {
                                     } else if (linkedFile.exists()) {
                                         try {
                                             // TODO: Copy linked file to same
-                                            // folder
-                                            // as
-                                            // target document.
+                                            // folder as target document.
                                             URL linkedUrl = new URL("file", "localhost", linkedFile.getAbsolutePath());
-                                            linkToAppend = dom.createElement("ulink");
-                                            linkToAppend.setAttribute("url", linkedUrl.toExternalForm());
-                                            linkToAppend.appendChild(linkDescriptionText);
+                                            elementToAppend = dom.createElement("ulink");
+                                            elementToAppend.setAttribute("url", linkedUrl.toExternalForm());
+                                            elementToAppend.appendChild(linkDescriptionText);
                                         } catch (MalformedURLException error) {
                                             IllegalArgumentException wrapperError = new IllegalArgumentException(
                                                     "cannot create file URL for " + tools.sourced(linkedFile), error);
@@ -278,7 +276,7 @@ public class DocBookWriter {
 
                             // Link was not appended for some reason, so at
                             // least make sure the link label shows up.
-                            if (linkToAppend == null) {
+                            if (elementToAppend == null) {
                                 text += linkLabel;
                             } else {
                                 flushText = true;
@@ -286,20 +284,23 @@ public class DocBookWriter {
                         } else if (commandName.equals("amigaguide")) {
                             // Replace @{amigaguide} by text.
                             flushText = true;
-                            linkToAppend = dom.createElement("productname");
-                            linkToAppend.setAttribute("class", "trade");
-                            linkToAppend.appendChild(dom.createTextNode("Amigaguide"));
+                            elementToAppend = dom.createElement("productname");
+                            elementToAppend.setAttribute("class", "trade");
+                            elementToAppend.appendChild(dom.createTextNode("Amigaguide"));
                         }
-                    } 
+                    }
                     if (flushText) {
                         log.log(Level.FINER, "append text: {0}", tools.sourced(text));
+                        if (elementToAppend == null) {
+                            text = withoutPossibleTrailingNewLine(text);
+                        }
                         if (text.length() > 0) {
-                            paragraph.appendChild(dom.createTextNode(withoutPossibleTrailingNewLine(text)));
+                            paragraph.appendChild(dom.createTextNode(text));
                         }
                         text = "";
                     }
-                    if (linkToAppend != null) {
-                        paragraph.appendChild(linkToAppend);
+                    if (elementToAppend != null) {
+                        paragraph.appendChild(elementToAppend);
                     }
                     if (flushParagraph) {
                         result.appendChild(paragraph);
