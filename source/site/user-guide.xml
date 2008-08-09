@@ -1,113 +1,227 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <book id="top-of-user-guide">
   <bookinfo>
     <title>Grotag User Guide</title>
+
     <keywordset>
       <keyword>Amigaguide</keyword>
+
       <keyword>convert</keyword>
+
       <keyword>pretty print</keyword>
+
       <keyword>DocBook</keyword>
+
       <keyword>HTML</keyword>
     </keywordset>
+
     <copyright>
       <year>2008</year>
+
       <holder>Thomas Aglassinger</holder>
     </copyright>
+
     <legalnotice>
-      <para>Permission is granted to copy, distribute and/or modify this document under the terms
-      of the GNU Free Documentation License, Version 1.2 or any later version published by the Free
-      Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover
-      Texts. A copy of the license is included in the section entitled "GNU Free Documentation
-      License".</para>
+      <para>Permission is granted to copy, distribute and/or modify this
+      document under the terms of the GNU Free Documentation License, Version
+      1.2 or any later version published by the Free Software Foundation; with
+      no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A
+      copy of the license is included in the section entitled "GNU Free
+      Documentation License".</para>
     </legalnotice>
+
     <releaseinfo>$Revision$</releaseinfo>
-    <!--
-  <author><firstname>Thomas</firstname><surname>Aglassinger</surname></author>
-  -->
+
+    <author>
+      <firstname>Thomas</firstname>
+
+      <surname>Aglassinger</surname>
+    </author>
   </bookinfo>
+
   <preface id="introduction">
     <title>Introduction</title>
-    <para>Amigaguide is a file format and application for AmigaOS. It enables to author
-    and view hypertext documentation to some extend comparable to HTML or WinHelp.
-    Most of the online documentation written for Amiga applications or about developing Amiga
-    applications uses Amigaguide. Outside of AmigaOS however Amigaguide is unused
-    and consequently hardly any viewers exist.</para>
-    <para>Altough most Amigaguide documents are useless without access to an Amiga (real
-    or emulated), occasionally a need arises to read such documentation on other platforms.
-    Grotag is designed to address this need. It allows to convert Amigaguide documents to 
-    the platform independent HTML format, for which viewers exist on any reasonably 
-    modern system. Furthermore you can convert to DocBook, a format popular for
-    technical documentations, allowing to bring along existing manuals into the 21st century
-    for further editing.</para>
-    <para>Grotag is written in Java (version 1.5 or later), which is supported by many current
-    platforms such as Mac OS X (version 10.5 or later), Windows and Linux to name just a
-    few.</para>
-    <para>To find out what is new in this version, see the
-    <link
-        linkend="changes">revision history</link>. For updates and support, visit the Grotag
-    homepage at
-    <ulink url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>.</para>
+
+    <para>Amigaguide is a file format and application for AmigaOS. It enables
+    to author and view hypertext documentation to some extend comparable to
+    HTML or WinHelp. Most of the online documentation written for Amiga
+    applications or about developing Amiga applications uses Amigaguide.
+    Outside of AmigaOS however Amigaguide is unused and consequently hardly
+    any viewers exist.</para>
+
+    <para>Altough most Amigaguide documents are useless without access to an
+    Amiga (real or emulated), occasionally a need arises to read such
+    documentation on other platforms. Grotag is designed to address this need.
+    It allows to convert Amigaguide documents to the platform independent HTML
+    format, for which viewers exist on any reasonably modern system.
+    Furthermore you can convert to DocBook, a format popular for technical
+    documentations, allowing to bring along existing manuals into the 21st
+    century for further editing.</para>
+
+    <para>Grotag is written in Java (version 1.5 or later), which is supported
+    by many current platforms such as Mac OS X (version 10.5 or later),
+    Windows and Linux to name just a few.</para>
+
+    <para>To find out what is new in this version, see the <link
+    linkend="changes">revision history</link>. For updates and support, visit
+    the Grotag homepage at <ulink
+    url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>.</para>
   </preface>
 
   <chapter id="installation">
     <title>Installation</title>
+
     <section id="download">
       <title>Download</title>
+
       <para>...</para>
     </section>
   </chapter>
+
   <chapter id="command-line-usage">
     <title>Command line usage</title>
+
     <section id="command-line-launch">
       <title>Launch Grotag</title>
-      <para>To launch Grotag from the command line, open a terminal window (console)
-      and enter:</para>
-      <para><userinput>java -jar .../path/to/Grotag.jar</userinput></para>
-    </section>
-    <section id="command-line-validate">
-    <title>Validate Amigaguide documents</title>
-    <para>To validate an Amigaguide document named <filename>some.guide</filename>,
-    run:</para>
-    <para><userinput>java -jar .../path/to/Grotag.jar -validate some.guide</userinput></para>
-    <para>In case Grotag detects any inconsistencies, it will report what it would have done
-    in order to fix them. This isn't necessarily what you would have done to fix them, but
-    still shows exactly where  something is wrong.</para>
-    <para>If you trust Grotag to do the right thing, you can let it fix the reported issues by
-    using the command line option -pretty.</para>
-    </section>
-    <section id="command-line-pretty">
-    <title>Pretty print and fix Amigaguide documents</title>
-    <para>Amigaguide never came with an authoring tool or a formal specification of
-    the format. Consequently many existing Amigaguide documents contain little inconsistencies
-    the rather lenient Amigaguide application stilled displayed without any trouble.</para>
-    <para>Grotag takes a different approach: it points even tiny little errors, and makes an
-    attempt to fix it in a way that preserves the content while resulting in an documents that
-    does not have the issue anymore.</para>
-    <para>Furthermore Grotag cleans up formatting and upper/lower case in mark up.</para>
-    <para>In order to store the cleaned up version of the file <filename>ugly.guide</filename>
-    in <filename>pretty.guide</filename>, run:</para>
-    <para><userinput>java -jar .../path/to/Grotag.jar -pretty ugly.guide pretty.guide</userinput></para>
-    <para>To overwrite the same <filename>ugly.guide</filename> with a cleaned up
-    version, run:</para>
-    <para><userinput>java -jar .../path/to/Grotag.jar -pretty ugly.guide ugly.guide</userinput></para>
 
+      <para>To launch Grotag from the command line, open a terminal window
+      (console) and enter:</para>
+
+      <para><userinput>java -jar .../path/to/Grotag.jar
+      --help</userinput></para>
+
+      <para>Replace "<filename>.../path/to/</filename>" by the location of the
+      folder you extracted <filename>Grotag.zip</filename> to and where
+      <filename>Grotag.jar</filename> is located.</para>
+
+      <para>As a result, you should see a short decription of the options you
+      can pass to Grotag. Don't worry about them now, all of them will be
+      explained later in this chapter.</para>
+
+      <para>Because it is somewhat boring to type that much each time you want
+      to launch Grotag, it is recommended to define a console alias. In bash,
+      simply enter:</para>
+
+      <para><userinput>alias grotag="java -jar
+      .../path/to/Grotag.jar"</userinput></para>
+
+      <para>After that, you can simply run</para>
+
+      <para><userinput>grotag --help</userinput></para>
+
+      <para>to get same result as before. To avoid having to retype the alias
+      each time you open a new terminal, add it to the shell startup file
+      (<filename>~/.bashrc</filename> or <filename>~/.profile</filename>
+      depending on your platform.)</para>
     </section>
+
+    <section>
+      <title>Showing help and other information</title>
+
+      <para>To read a short description of all options available for Grotag,
+      run:</para>
+
+      <para><userinput>grotag --help</userinput></para>
+
+      <para>To learn which version of Grotag you are using, run:</para>
+
+      <para><userinput>grotag --version</userinput></para>
+
+      <para>To obtain information about Grotag's license, run:</para>
+
+      <para><userinput>grotag --license</userinput></para>
+    </section>
+
+    <section id="command-line-validate">
+      <title>Validate Amigaguide documents</title>
+
+      <para>To validate an Amigaguide document named
+      <filename>some.guide</filename>, run:</para>
+
+      <para><userinput>grotag --validate some.guide</userinput></para>
+
+      <para>In case Grotag detects any inconsistencies, it will report what it
+      would have done in order to fix them. This isn't necessarily what you
+      would have done to fix them, but still shows exactly where something is
+      wrong.</para>
+
+      <para>If you trust Grotag to do the right thing, you can let it fix the
+      reported issues by using the command line option
+      <userinput>--pretty</userinput>.</para>
+    </section>
+
+    <section id="command-line-pretty">
+      <title>Pretty print and fix Amigaguide documents</title>
+
+      <para>Amigaguide never came with an authoring tool or a formal
+      specification of the format. Consequently many existing Amigaguide
+      documents contain little inconsistencies the rather lenient Amigaguide
+      application stilled displayed without any trouble.</para>
+
+      <para>Grotag takes a different approach: it points even tiny little
+      errors, and makes an attempt to fix it in a way that preserves the
+      content while resulting in an documents that does not have the issue
+      anymore.</para>
+
+      <para>Furthermore Grotag cleans up formatting and upper/lower case in
+      mark up.</para>
+
+      <warning>
+        <para>Note that the original version of the Amigaguide document will
+        be overwritten and consequently be lost unless you made a backup copy
+        of it before applying <userinput>--pretty</userinput>.</para>
+      </warning>
+
+      <para>In order to clean up the file <filename>ugly.guide</filename>,
+      run:</para>
+
+      <para><userinput>grotag --pretty ugly.guide</userinput></para>
+
+      <para>In case you want to clean up multiple files, you can pass all of
+      them along at once.</para>
+    </section>
+
     <section id="command-line-docbook">
-    <title>Convert Amigaguide documents to DocBook XML</title>
-    <para>To convert an Amigaguide document named <filename>some.guide</filename>
-    to a DocBook XML file named <filename>some.xml</filename>, run:</para>
-    <para><userinput>java -jar .../path/to/Grotag.jar -docbook some.guide some.xml</userinput></para>
+      <title>Convert Amigaguide documents to DocBook XML</title>
+
+      <para>To convert an Amigaguide document named
+      <filename>some.guide</filename> to a DocBook XML file named
+      <filename>some.xml</filename>, run:</para>
+
+      <para><userinput>grotag --docbook some.guide</userinput></para>
+
+      <para>To use a different name for the output file, specify a second
+      file. For example, to store the DocBook version of some.guide in
+      other.xml, run:</para>
+
+      <para><userinput>grotag --docbook some.guide
+      other.xml</userinput></para>
+
+      <para>The DocBook output does not preserve any formatting command like
+      <code>@{b}</code>, <code>@{fg shine}</code> and so in. It only
+      reproduces the structure of the document. Each guide represents a
+      chapter, and each node is a section. If the Amigaguide document
+      specified in the command line links to other documents, they will be
+      included in the DocBook output as additional chapters.</para>
     </section>
   </chapter>
+
   <chapter id="changes">
     <title>Changes</title>
-    <para>This chapter describes improvements compared to earlier versions of Grotag.</para>
+
+    <para>This chapter describes improvements compared to earlier versions of
+    Grotag.</para>
+
     <section id="v0.0">
-    <title>Version 0.0, xx-Aug-2008</title>
-    <itemizedlist>
-      <listitem><para>Initial release.</para></listitem>
-    </itemizedlist>
+      <title>Version 0.0, xx-Aug-2008</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Initial release.</para>
+        </listitem>
+      </itemizedlist>
     </section>
   </chapter>
 </book>
