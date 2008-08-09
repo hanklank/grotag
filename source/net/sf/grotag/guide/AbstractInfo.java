@@ -74,4 +74,8 @@ abstract class AbstractInfo {
     public String getName() {
         return name;
     }
+
+    protected void setName(String newName) {
+        name = newName;
+    }
 }
