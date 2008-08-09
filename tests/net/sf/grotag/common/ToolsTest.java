@@ -38,4 +38,22 @@ public class ToolsTest {
         assertArrayEquals(new String[]{"", "y"}, tools.getToken("x y", 2));
         assertArrayEquals(new String[]{" ", "y"}, tools.getToken("x y", 1));
     }
+
+    @Test
+    public void testSeparated() {
+        assertNull(tools.separated(null));
+        assertNull(tools.separated(""));
+        assertNull(tools.separated("\t "));
+        assertArrayEquals(new String[] { "hugo" }, tools.separated("hugo"));
+        assertArrayEquals(new String[] { "hugo", "sepp" }, tools.separated("hugo, sepp"));
+        assertArrayEquals(new String[] { "hugo", "sepp" }, tools.separated("hugo; sepp"));
+        assertArrayEquals(new String[] { "hugo,x", "sepp" }, tools.separated("hugo,x; sepp"));
+    }
+
+    @Test
+    public void testCutOffAt() {
+        assertEquals("hugo", tools.cutOffAt("hugo", ','));
+        assertEquals("hugo", tools.cutOffAt("hugo,x", ','));
+        assertEquals("", tools.cutOffAt(",hugo,x", ','));
+    }
 }

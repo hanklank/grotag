@@ -149,9 +149,84 @@ public class DocBookWriter {
         dom = domBuilder.newDocument();
         bookElement = dom.createElement("book");
         dom.appendChild(bookElement);
+        if (pile.getGuides().size() > 0) {
+            Node metaInfoNode = createMetaInfoNode(pile.getGuides().get(0));
+            if (metaInfoNode != null) {
+                bookElement.appendChild(metaInfoNode);
+            }
+        }
         for (Guide guide : pile.getGuides()) {
             bookElement.appendChild(createChapter(guide));
         }
+    }
+
+    private Node createMetaInfoNode(Guide guide) {
+        Element result;
+        if (guide == pile.getGuides().get(0)) {
+            DatabaseInfo dbInfo = guide.getDatabaseInfo();
+            result = dom.createElement("bookinfo");
+
+            // Add document title.
+            String title = dbInfo.getName();
+            assert title != null;
+            Element titleNode = dom.createElement("title");
+            titleNode.appendChild(dom.createTextNode(title));
+            result.appendChild(titleNode);
+
+            // Add optional author(s).
+            String authorText = dbInfo.getAuthor();
+            String[] authors = tools.separated(authorText);
+            if (authors != null) {
+                for (String author : authors) {
+                    author = tools.cutOffAt(author, '(');
+                    author = tools.cutOffAt(author, ',');
+                    author = author.replace('\t', ' ');
+                    author = author.trim();
+                    if (author.length() > 0) {
+                        Element authorElement = dom.createElement("author");
+                        String[] nameParts = author.split(" ");
+                        for (int partIndex = 0; partIndex < nameParts.length; partIndex += 1) {
+                            String namePart = nameParts[partIndex];
+                            String namePartElementName;
+                            if ((nameParts.length > 1) && (partIndex == 0)) {
+                                namePartElementName = "firstname";
+                            } else if (partIndex == (nameParts.length - 1)) {
+                                namePartElementName = "surname";
+                            } else {
+                                namePartElementName = "othername";
+                            }
+                            Element nameElement = dom.createElement(namePartElementName);
+                            nameElement.appendChild(dom.createTextNode(namePart));
+                            authorElement.appendChild(nameElement);
+                        }
+                        result.appendChild(authorElement);
+                    }
+                }
+            }
+
+            // Add (optional) version information.
+            String versionText = dbInfo.getVersion();
+            if (versionText != null) {
+                Element versionElement = dom.createElement("releaseinfo");
+                versionElement.appendChild(dom.createTextNode("$VER: " + versionText));
+                result.appendChild(versionElement);
+            }
+
+            // Add (optional) copyright information.
+            String copyrightText = dbInfo.getCopyright();
+            if (copyrightText != null) {
+                Element copyrightElement = dom.createElement("copyright");
+                Element holderElement = dom.createElement("holder");
+                holderElement.appendChild(dom.createTextNode(copyrightText));
+                copyrightElement.appendChild(holderElement);
+                result.appendChild(copyrightElement);
+                // TODO: Extract copyright year and add <year>.
+            }
+
+        } else {
+            result = null;
+        }
+        return result;
     }
 
     private void writeDom() throws TransformerException {

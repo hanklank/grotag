@@ -305,4 +305,54 @@ public class Tools {
         }
         return result;
     }
+
+    private char separatorChar(String possibleSeparatedText) {
+        assert possibleSeparatedText != null;
+        char result;
+        if (possibleSeparatedText.indexOf(';') >= 0) {
+            result = ';';
+        } else if (possibleSeparatedText.indexOf(',') >= 0) {
+            result = ',';
+        } else {
+            result = 0;
+        }
+        return result;
+    }
+
+    public String cutOffAt(String text, char charToCutOffAt) {
+        assert text != null;
+        String result;
+        int cutOffIndex = text.indexOf(charToCutOffAt);
+        if (cutOffIndex >= 0) {
+            result = text.substring(0, cutOffIndex);
+        } else {
+            result = text;
+        }
+        return result;
+    }
+
+    public String[] separated(String possibleSeparatedText) {
+        String[] result;
+        if (possibleSeparatedText != null) {
+            char separator = separatorChar(possibleSeparatedText);
+            if (separator != 0) {
+                result = possibleSeparatedText.split("" + separator);
+            } else {
+                result = new String[] { possibleSeparatedText };
+            }
+            for (int i = 0; i < result.length; i += 1) {
+                result[i] = result[i].trim();
+                // TODO: Remove empty items.
+            }
+            // Detect if result actually is empty.
+            if (result.length == 0) {
+                result = null;
+            } else if ((result.length == 1) && (result[0].length() == 0)) {
+                result = null;
+            }
+        } else {
+            result = null;
+        }
+        return result;
+    }
 }
