@@ -2,8 +2,10 @@ package net.sf.grotag.guide;
 
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -37,6 +39,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class DocBookWriter {
+    private static final String OUTPUT_ENCODING = "UTF-8";
+
     private enum NodeParserState {
         BEFORE_NODE, INSIDE_NODE, AFTER_NODE;
     }
@@ -236,7 +240,9 @@ public class DocBookWriter {
         transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.5//EN");
         transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
                 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd");
-        transformer.setOutputProperty(OutputKeys.ENCODING, "ISO-8859-1");
+        // TODO: Remove: transformer.setOutputProperty(OutputKeys.ENCODING,
+        // "ISO-8859-1");
+        transformer.setOutputProperty(OutputKeys.ENCODING, OUTPUT_ENCODING);
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformer.transform(new DOMSource(dom), new StreamResult(writer));
     }
@@ -476,7 +482,8 @@ public class DocBookWriter {
         assert pile != null;
         assert targetFile != null;
 
-        Writer targetWriter = new BufferedWriter(new FileWriter(targetFile));
+        Writer targetWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
+                OUTPUT_ENCODING));
         try {
             write(pile, targetWriter);
         } finally {
