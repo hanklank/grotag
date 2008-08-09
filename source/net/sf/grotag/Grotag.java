@@ -91,7 +91,8 @@ public class Grotag {
             inputFile = files[0];
             outputFile = files[1];
         } else {
-            throw new IllegalArgumentException("only 2 files must be specified instead of " + fileCount);
+            throw new IllegalArgumentException("with --" + GrotagJsap.ARG_DOCBOOK
+                    + " only 2 files must be specified instead of " + fileCount);
         }
         GuidePile pile = GuidePile.createGuidePile(inputFile);
         DocBookWriter.write(pile, outputFile);
