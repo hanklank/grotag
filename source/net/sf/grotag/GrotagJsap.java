@@ -26,7 +26,8 @@ public class GrotagJsap extends JSAP {
             ARG_VERSION, ARG_VALIDATE };
 
     // TODO: Obtain copyright year from Version class.
-    private static final String[] HEADING = new String[] { "Grotag - Amigaguide converter and pretty printer.",
+    private static final String[] HEADING = new String[] {
+            "Grotag - Convert, validate and pretty print Amigaguide documents.",
             "Copyright (C) 2008  Thomas Aglassinger <http://grotag.sourceforge.net/>" };
 
     private static final String[] LICENSE = new String[] { "",
@@ -44,31 +45,48 @@ public class GrotagJsap extends JSAP {
      * Create JSAP for Grotag command line options.
      */
     public GrotagJsap() throws JSAPException {
-        UnflaggedOption fileOption = new UnflaggedOption(ARG_FILE).setStringParser(FileStringParser.getParser());
-        fileOption.setHelp("the files to be processed; when converting, the last file is the target file");
+        UnflaggedOption fileOption = new UnflaggedOption(ARG_FILE);
+        fileOption.setStringParser(FileStringParser.getParser());
+        fileOption.setGreedy(true);
+        fileOption.setHelp("the files to be processed by --" + ARG_DOCBOOK + ", --" + ARG_PRETTY + " or --"
+                + ARG_VALIDATE);
         registerParameter(fileOption);
 
-        Switch docBookSwitch = new Switch(ARG_DOCBOOK).setShortFlag('d').setLongFlag(ARG_DOCBOOK);
-        docBookSwitch.setHelp("convert to DocBook XML");
+        Switch docBookSwitch = new Switch(ARG_DOCBOOK);
+        docBookSwitch.setShortFlag('d');
+        docBookSwitch.setLongFlag(ARG_DOCBOOK);
+        docBookSwitch.setHelp("convert to DocBook XML using the first specified file as Amigaguide input "
+                + "and the second file as DocBook XML output; if only one file is specified, the output "
+                + "is written to a file with the suffix changed to \".xml\"");
         registerParameter(docBookSwitch);
 
-        Switch prettySwitch = new Switch(ARG_PRETTY).setShortFlag('v').setLongFlag(ARG_PRETTY);
-        prettySwitch.setHelp("cleanup specified Amigaguide documents, overwritting the original");
+        Switch prettySwitch = new Switch(ARG_PRETTY);
+        prettySwitch.setShortFlag('v');
+        prettySwitch.setLongFlag(ARG_PRETTY);
+        prettySwitch.setHelp("cleanup specified Amigaguide file, overwritting the original");
         registerParameter(prettySwitch);
 
-        Switch validateSwitch = new Switch(ARG_VALIDATE).setShortFlag('p').setLongFlag(ARG_VALIDATE);
-        validateSwitch.setHelp("validate specified Amigaguide documents");
+        Switch validateSwitch = new Switch(ARG_VALIDATE);
+        validateSwitch.setShortFlag('p');
+        validateSwitch.setLongFlag(ARG_VALIDATE);
+        validateSwitch.setHelp("validate specified Amigaguide files");
         registerParameter(validateSwitch);
 
-        Switch helpSwitch = new Switch(ARG_HELP).setShortFlag('h').setLongFlag(ARG_HELP);
+        Switch helpSwitch = new Switch(ARG_HELP);
+        helpSwitch.setShortFlag('h');
+        helpSwitch.setLongFlag(ARG_HELP);
         helpSwitch.setHelp("show usage instructions");
         registerParameter(helpSwitch);
 
-        Switch licenseSwitch = new Switch(ARG_LICENSE).setShortFlag(NO_SHORTFLAG).setLongFlag(ARG_LICENSE);
+        Switch licenseSwitch = new Switch(ARG_LICENSE);
+        licenseSwitch.setShortFlag(NO_SHORTFLAG);
+        licenseSwitch.setLongFlag(ARG_LICENSE);
         licenseSwitch.setHelp("show license");
         registerParameter(licenseSwitch);
 
-        Switch versionSwitch = new Switch(ARG_VERSION).setShortFlag(NO_SHORTFLAG).setLongFlag(ARG_VERSION);
+        Switch versionSwitch = new Switch(ARG_VERSION);
+        versionSwitch.setShortFlag(NO_SHORTFLAG);
+        versionSwitch.setLongFlag(ARG_VERSION);
         versionSwitch.setHelp("show version information");
         registerParameter(versionSwitch);
     }
@@ -114,7 +132,7 @@ public class GrotagJsap extends JSAP {
      */
     public void printVersion(PrintStream stream) {
         // TODO: Obtain version number from Version class.
-        stream.println("Grotag 0.1");
+        stream.println("Grotag 0.0");
     }
 
     private void parseAnyRequired(JSAPResult options) {
