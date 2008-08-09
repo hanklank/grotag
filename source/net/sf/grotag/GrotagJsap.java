@@ -10,6 +10,11 @@ import com.martiansoftware.jsap.SyntaxException;
 import com.martiansoftware.jsap.UnflaggedOption;
 import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
+/**
+ * Parser for Grotag's command line options.
+ *
+ * @author Thomas Aglassinger
+ */
 public class GrotagJsap extends JSAP {
     public static final String ARG_DOCBOOK = "docbook";
     public static final String ARG_FILE = "file";
