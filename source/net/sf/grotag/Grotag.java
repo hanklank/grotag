@@ -34,7 +34,7 @@ public class Grotag {
 
         if (!options.success()) {
             // Throw exception for broken command line.
-            Iterator<String> errorRider = options.getErrorMessageIterator();
+            Iterator<String> errorRider = (Iterator<String>) options.getErrorMessageIterator();
             String errorMessage;
 
             if (errorRider.hasNext()) {
@@ -71,7 +71,7 @@ public class Grotag {
         } else if (options.getBoolean(GrotagJsap.ARG_VERSION)) {
             jsap.printVersion(System.out);
         } else {
-            assert false : "GUI must be implemented";
+            jsap.printHelp(System.err);
         }
     }
 
@@ -118,9 +118,10 @@ public class Grotag {
             grotag.work(arguments);
             exitCode = 0;
         } catch (IllegalArgumentException error) {
-            mainLog.log(Level.INFO, "cannot process command line options: " + error.getMessage(), error);
+            mainLog.log(Level.FINE, "cannot process command line options: " + error.getMessage(), error);
+            System.err.println("cannot process command line options: " + error.getMessage());
         } catch (Throwable error) {
-            mainLog.log(Level.SEVERE, "cannot run Grotag" + error.getMessage(), error);
+            mainLog.log(Level.SEVERE, "cannot run Grotag: " + error.getMessage(), error);
         }
         System.exit(exitCode);
     }
