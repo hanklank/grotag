@@ -6,7 +6,7 @@
 @font Helvetica.font 13
 
 @node Main "Basic Amigaguide features"
-This Guide demonstrates some of the basic featurs in Amigaguide.
+This Guide demonstrates some of the basic features of @{amigaguide}.
 
 @{"Preformatted Text" link "preformatted"} - a preformatted layout.
 @{"Smartwrapped Text" link "wordwrapped"} - uses wordwrap.

@@ -221,6 +221,7 @@ public class DocBookWriter {
                         }
                     } else if (item instanceof CommandItem) {
                         CommandItem command = (CommandItem) item;
+                        String commandName = command.getCommandName();
                         if (command.isLink()) {
                             // Create and append link.
                             log.log(Level.INFO, "connect link: {0}", command);
@@ -282,8 +283,14 @@ public class DocBookWriter {
                             } else {
                                 flushText = true;
                             }
+                        } else if (commandName.equals("amigaguide")) {
+                            // Replace @{amigaguide} by text.
+                            flushText = true;
+                            linkToAppend = dom.createElement("productname");
+                            linkToAppend.setAttribute("class", "trade");
+                            linkToAppend.appendChild(dom.createTextNode("Amigaguide"));
                         }
-                    }
+                    } 
                     if (flushText) {
                         log.log(Level.FINER, "append text: {0}", tools.sourced(text));
                         if (text.length() > 0) {
