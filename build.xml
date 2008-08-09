@@ -34,8 +34,9 @@
     <attribute name="xml" />
     <attribute name="html" />
     <sequential>
+      <mkdir dir="${tests.dir}/actual" />
       <java jar="${Grotag.jar}" fork="true" failonerror="true">
-        <arg value="-docbook" />
+        <arg value="--docbook" />
         <arg value="@{guide}" />
         <arg value="@{xml}" />
         <assertions>
@@ -51,9 +52,8 @@
   </target>
 
   <target description="Build Grotag.jar." name="jar">
-    <mkdir dir="${classes.dir}" />
+    <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
-    <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}"/>
     <jar basedir="${classes.dir}" destfile="${Grotag.jar}" excludes="**/*Test.class" includes="**/*.class">
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger" />
@@ -67,7 +67,9 @@
   <target description="Clean up." name="clean">
     <delete file="${Grotag.jar}" />
     <delete file="${Grotag.zip}" />
-    <delete dir="${classes.dir}/net" />
+    <delete includeemptydirs="true">
+      <fileset dir="${classes.dir}" includes="**/*" />
+    </delete>
     <delete dir="${tests.dir}/actual" />
   </target>
 
@@ -79,6 +81,12 @@
     <grotagDocBookToHtml guide="${guides.dir}/agr_test.guide"
                          html="${actual.dir}/agr_test.html"
                          xml="${actual.dir}/agr_test.xml" />
+  </target>
+
+  <target name="basics.html" depends="jar">
+    <grotagDocBookToHtml guide="${input.dir}/basics.guide"
+                         html="${actual.dir}/basics.html"
+                         xml="${actual.dir}/basics.xml" />
   </target>
 
   <target name="dev.html" depends="jar">
