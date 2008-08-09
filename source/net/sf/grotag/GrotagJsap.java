@@ -12,7 +12,7 @@ import com.martiansoftware.jsap.stringparsers.FileStringParser;
 
 /**
  * Parser for Grotag's command line options.
- *
+ * 
  * @author Thomas Aglassinger
  */
 public class GrotagJsap extends JSAP {
