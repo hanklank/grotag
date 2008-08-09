@@ -105,7 +105,7 @@ public class GuidePile {
         while (!linksToFollow.isEmpty()) {
             Link link = linksToFollow.get(0);
             linkMap.put(link.getLinkCommand(), link);
-            if (link.getType().equals("link")) {
+            if (link.isDataLink()) {
                 File linkedFile = link.getTargetFile();
                 assert linkedFile != null;
                 if (!hasCachedGuideFor(linkedFile)) {

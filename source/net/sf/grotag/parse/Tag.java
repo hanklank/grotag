@@ -7,6 +7,35 @@ package net.sf.grotag.parse;
  */
 public class Tag implements Comparable<Tag> {
     /**
+     * Enumerator to represent all known tags for Amigaguide commands, including
+     * inline and link commands. The values are deliberately lower case because
+     * of case insensitive comparison.
+     * 
+     * @author Thomas Aglassinger
+     */
+    public enum Name {
+        alink, amigaguide, apen, author, b, beep, bg, body, bpen, cleartabs, close, code, database, dnode, embed, endnode, fg, font, guide, height, help, i, index, jcenter, jleft, jright, keywords, lindent, line, link, macro, master, next, onclose, onopen, node, par, pard, pari, plain, prev, proportional, quit, rem, remark, rx, rxs, settabs, smartwrap, system, tab, title, toc, u, ub, ui, uu, width, wordwrap, xref;
+
+        /**
+         * Like <code>valueOf()</code>, but instead of throwing an
+         * <code>IllegalArgumentException</code> on an unknown
+         * <code>some</code> yield <code>null</code>.
+         * 
+         * @see Enum#valueOf(Class, String)
+         */
+        public static Name valueOfOrNull(String some) {
+            assert some != null;
+            Name result;
+            try {
+                result = valueOf(some);
+            } catch (IllegalArgumentException errorToFix) {
+                result = null;
+            }
+            return result;
+        }
+    }
+
+    /**
      * Possible scopes for Amigaguide tags:
      * <ul>
      * <li>GLOBAL - takes effect for the whole document</li>
@@ -87,11 +116,11 @@ public class Tag implements Comparable<Tag> {
         return result;
     }
 
-    public static Tag createLink(String newName, Version newVersion) {
+    public static Tag createLink(Name newName, Version newVersion) {
         return createLink(newName, newVersion, (TagOption[]) null);
     }
 
-    public static Tag createLink(String newName, Version newVersion, TagOption newOption) {
+    public static Tag createLink(Name newName, Version newVersion, TagOption newOption) {
         Tag result;
         TagOption[] options;
         if (newOption != null) {
@@ -103,8 +132,32 @@ public class Tag implements Comparable<Tag> {
         return result;
     }
 
-    public static Tag createLink(String newName, Version newVersion, TagOption[] newOptions) {
+    public static Tag createLink(Name newName, Version newVersion, TagOption[] newOptions) {
         return new Tag(newName, newVersion, Scope.LINK, false, newOptions);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope, boolean newUnique, TagOption[] newOptions) {
+        this(newName.toString(), newVersion, newScope, newUnique, newOptions);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope) {
+        this(newName.toString(), newVersion, newScope);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope, boolean newUnique) {
+        this(newName.toString(), newVersion, newScope, newUnique);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope, boolean newUnique, TagOption newOption) {
+        this(newName.toString(), newVersion, newScope, newUnique, newOption);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope, TagOption newOption) {
+        this(newName.toString(), newVersion, newScope, newOption);
+    }
+
+    public Tag(Name newName, Version newVersion, Scope newScope, TagOption[] newOptions) {
+        this(newName.toString(), newVersion, newScope, newOptions);
     }
 
     public Tag(String newName, Version newVersion, Scope newScope, boolean newUnique, TagOption[] newOptions) {
@@ -143,6 +196,7 @@ public class Tag implements Comparable<Tag> {
      * Compare with <code>other</code> concerning scope and name and yield -1,
      * 0 or 1.
      */
+    // TODO: Implement equals() and hashCode() too.
     public int compareTo(Tag other) {
         int result = getScope().ordinal() - other.getScope().ordinal();
         if (result == 0) {

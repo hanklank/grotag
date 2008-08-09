@@ -8,6 +8,7 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -28,9 +29,11 @@ import net.sf.grotag.parse.AbstractTextItem;
 import net.sf.grotag.parse.CommandItem;
 import net.sf.grotag.parse.NewLineItem;
 import net.sf.grotag.parse.SpaceItem;
+import net.sf.grotag.parse.Tag;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class DocBookWriter {
@@ -79,6 +82,48 @@ public class DocBookWriter {
                 nodeCounter += 1;
             }
         }
+    }
+
+    protected Node createAmigaguideNode() {
+        Element result = dom.createElement("productname");
+        result.setAttribute("class", "trade");
+        result.appendChild(dom.createTextNode("Amigaguide"));
+        return result;
+    }
+
+    protected Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel) {
+        Element result = dom.createElement("link");
+        result.setAttribute("linkend", mappedNode);
+        result.appendChild(dom.createTextNode(linkLabel));
+        return result;
+    }
+
+    protected Node createOtherFileLinkNode(File linkedFile, String linkLabel) {
+        // TODO: Copy linked file to same
+        // folder as target document.
+        URL linkedUrl = createUrl("file", "localhost", linkedFile);
+        Element result = dom.createElement("ulink");
+        result.setAttribute("url", linkedUrl.toExternalForm());
+        result.appendChild(dom.createTextNode(linkLabel));
+        return result;
+    }
+
+    protected URL createUrl(String type, String host, File file) {
+        try {
+            return new URL("file", "localhost", file.getAbsolutePath());
+        } catch (MalformedURLException error) {
+            IllegalArgumentException wrappedError = new IllegalArgumentException("cannot create file URL for "
+                    + tools.sourced(file), error);
+            throw wrappedError;
+        }
+    }
+
+    protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel) {
+        URL linkedUrl = createUrl("file", "localhost", linkedFile);
+        Element elementToAppend = dom.createElement("ulink");
+        elementToAppend.setAttribute("url", linkedUrl.toExternalForm());
+        elementToAppend.appendChild(dom.createTextNode(linkLabel));
+        return elementToAppend;
     }
 
     private String nodeKey(Guide guideContainingNode, String nodeName) {
@@ -193,7 +238,7 @@ public class DocBookWriter {
                 } else {
                     boolean flushText = false;
                     boolean flushParagraph = false;
-                    Element elementToAppend = null;
+                    Node elementToAppend = null;
 
                     if (item instanceof SpaceItem) {
                         text += ((SpaceItem) item).getSpace();
@@ -222,47 +267,52 @@ public class DocBookWriter {
                     } else if (item instanceof CommandItem) {
                         CommandItem command = (CommandItem) item;
                         String commandName = command.getCommandName();
+                        Tag.Name commandTag = Tag.Name.valueOfOrNull(commandName);
                         if (command.isLink()) {
                             // Create and append link.
-                            log.log(Level.INFO, "connect link: {0}", command);
+                            log.log(Level.FINE, "connect link: {0}", command);
                             Link link = pile.getLink(command);
                             String linkLabel = command.getLinkLabel();
                             if (link != null) {
                                 if (link.getState() == Link.State.VALID) {
-                                    String linkType = link.getType();
+                                    Link.Type linkType = link.getType();
                                     String targetNode = link.getTargetNode();
-                                    boolean isLocalLink = linkType.equals("link");
-                                    Text linkDescriptionText = dom.createTextNode(linkLabel);
                                     File linkedFile = link.getTargetFile();
                                     Guide targetGuide = pile.getGuide(linkedFile);
+
+                                    if (linkType == Link.Type.guide) {
+                                        // Attempt to set targetNode to first
+                                        // node in guide.
+                                        assert targetNode == null;
+                                        List<NodeInfo> targetNodeInfos = targetGuide.getNodeInfos();
+                                        if (targetNodeInfos.size() > 0) {
+                                            NodeInfo firstNodeInTargetGuide = targetNodeInfos.get(0);
+                                            targetNode = firstNodeInTargetGuide.getName();
+                                        } else {
+                                            targetGuide = null;
+                                            log.warning("skipped link to guide without nodes: "
+                                                    + command.toPrettyAmigaguide());
+                                        }
+                                    } else {
+                                        // Assert that all @{alink}s have been
+                                        // changed to @{link}.
+                                        assert linkType == Link.Type.link : "linkType=" + linkType;
+                                    }
 
                                     if (targetGuide != null) {
                                         // Link within DocBook document.
                                         String mappedNode = agNodeToDbNodeMap.get(nodeKey(targetGuide, targetNode));
 
-                                        if (isLocalLink) {
+                                        if (link.isDataLink()) {
                                             if (mappedNode != null) {
-                                                elementToAppend = dom.createElement("link");
-                                                elementToAppend.setAttribute("linkend", mappedNode);
-                                                elementToAppend.appendChild(linkDescriptionText);
+                                                elementToAppend = createDataLinkNode(null, mappedNode, linkLabel);
                                             } else {
                                                 log.warning("skipped link to unknown node: "
                                                         + command.toPrettyAmigaguide());
                                             }
                                         }
                                     } else if (linkedFile.exists()) {
-                                        try {
-                                            // TODO: Copy linked file to same
-                                            // folder as target document.
-                                            URL linkedUrl = new URL("file", "localhost", linkedFile.getAbsolutePath());
-                                            elementToAppend = dom.createElement("ulink");
-                                            elementToAppend.setAttribute("url", linkedUrl.toExternalForm());
-                                            elementToAppend.appendChild(linkDescriptionText);
-                                        } catch (MalformedURLException error) {
-                                            IllegalArgumentException wrapperError = new IllegalArgumentException(
-                                                    "cannot create file URL for " + tools.sourced(linkedFile), error);
-                                            throw wrapperError;
-                                        }
+                                        elementToAppend = createOtherFileLinkNode(linkedFile, linkLabel);
                                     } else {
                                         log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                                     }
@@ -281,12 +331,10 @@ public class DocBookWriter {
                             } else {
                                 flushText = true;
                             }
-                        } else if (commandName.equals("amigaguide")) {
+                        } else if (commandTag == Tag.Name.amigaguide) {
                             // Replace @{amigaguide} by text.
                             flushText = true;
-                            elementToAppend = dom.createElement("productname");
-                            elementToAppend.setAttribute("class", "trade");
-                            elementToAppend.appendChild(dom.createTextNode("Amigaguide"));
+                            elementToAppend = createAmigaguideNode();
                         }
                     }
                     if (flushText) {

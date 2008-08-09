@@ -31,13 +31,20 @@ public class Link {
         BROKEN, VALID, VALID_GUIDE_BROKEN_NODE, VALID_GUIDE_UNCHECKED_NODE, VALID_OTHER_FILE, UNCHECKED, UNSUPPORTED
     }
 
-    // TODO: public enum Type.
+    /**
+     * Enumerator to represent the different types of Amigaguide links.
+     * 
+     * @author Thomas Aglassinger
+     */
+    public enum Type {
+        alink, beep, close, guide, link, quit, rx, rxs, system
+    }
 
     public static final int NO_LINE = -1;
 
     private int line;
     private String target;
-    private String type;
+    private Type type;
     private String label;
     private State state;
     private File targetFile;
@@ -60,7 +67,13 @@ public class Link {
         label = newLinkCommand.getOriginalCommandName();
         label = label.substring(1, label.length() - 1);
         state = State.UNCHECKED;
-        type = linkCommand.getOption(0).toLowerCase();
+
+        String typeText = linkCommand.getOption(0).toLowerCase();
+        try {
+            type = Type.valueOf(typeText);
+        } catch (IllegalArgumentException error) {
+            throw new IllegalLinkTypeException(typeText, error);
+        }
         target = linkCommand.getOption(1);
         String lineText = linkCommand.getOption(2);
         if (lineText != null) {
@@ -68,7 +81,13 @@ public class Link {
         } else {
             line = NO_LINE;
         }
-        if (type.equals("link")) {
+        if (type == Type.guide) {
+            // FIXME: Handle non-FileSource properly by using original file.
+            // (For example from macros expanding to links.)
+            assert newLinkCommand.getFile() instanceof FileSource;
+            targetFile = ((FileSource) newLinkCommand.getFile()).getFile();
+            targetNode = null;
+        } else if ((type == Type.link) || (type == Type.alink)) {
             // FIXME: Handle non-FileSource properly by using original file.
             // (For example from macros expanding to links.)
             assert newLinkCommand.getFile() instanceof FileSource;
@@ -103,9 +122,11 @@ public class Link {
     }
 
     /**
-     * The type of the link, for example "link".
+     * The type of the link, for example <code>link</code> or
+     * <code>beep</code>, or <code>null</code> in case the command is no
+     * standard Amigaguide link type.
      */
-    public String getType() {
+    public Type getType() {
         return type;
     }
 
@@ -118,8 +139,12 @@ public class Link {
         return label;
     }
 
-    private boolean isLinkType() {
-        return (getType().equals("link"));
+    /**
+     * Is the link of a type that can be resolved to link to some actual data in
+     * another file or node?
+     */
+    public boolean isDataLink() {
+        return (getType() == Type.alink) || (getType() == Type.guide) || (getType() == Type.link);
     }
 
     /**
@@ -127,7 +152,7 @@ public class Link {
      * document where the target node is defined.
      */
     public File getTargetFile() {
-        assert isLinkType() : "type=" + getType();
+        assert isDataLink() : "type=" + getType();
         return targetFile;
     }
 
@@ -135,7 +160,7 @@ public class Link {
      * The name of the node in the target file.
      */
     public String getTargetNode() {
-        assert isLinkType() : "type=" + getType();
+        assert isDataLink() : "type=" + getType();
         return targetNode;
     }
 
@@ -158,8 +183,11 @@ public class Link {
     public String toString() {
         Tools tools = Tools.getInstance();
         String result = "Link[command=" + getLinkCommand().toPrettyAmigaguide() + ", target="
-                + tools.sourced(getTarget()) + ", state=" + getState() + ", file=" + tools.sourced(getTargetFile())
-                + ", node=" + tools.sourced(getTargetNode() + "type=" + getType());
+                + tools.sourced(getTarget()) + ", state=" + getState() + ", type=" + getType();
+        if (isDataLink()) {
+            result += ", file=" + tools.sourced(getTargetFile()) + ", node=" + tools.sourced(getTargetNode());
+        }
+        result += "]";
         return result;
     }
 }
