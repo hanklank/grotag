@@ -111,7 +111,7 @@ public class Grotag {
         }
     }
 
-    public static void main(final String[] arguments) {
+    public static void main(final String[] arguments) throws Exception {
         Logger mainLog = Logger.getLogger(Grotag.class.getName());
         int exitCode = 1;
         try {
@@ -121,7 +121,7 @@ public class Grotag {
         } catch (IllegalArgumentException error) {
             mainLog.log(Level.FINE, "cannot process command line options: " + error.getMessage(), error);
             System.err.println("cannot process command line options: " + error.getMessage());
-        } catch (Throwable error) {
+        } catch (Exception error) {
             mainLog.log(Level.SEVERE, "cannot run Grotag: " + error.getMessage(), error);
         }
         System.exit(exitCode);
