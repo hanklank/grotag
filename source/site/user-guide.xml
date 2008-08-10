@@ -193,8 +193,9 @@
       <para><userinput>grotag --docbook some.guide</userinput></para>
 
       <para>To use a different name for the output file, specify a second
-      file. For example, to store the DocBook version of some.guide in
-      other.xml, run:</para>
+      file. For example, to store the DocBook version of
+      <filename>some.guide</filename> in <filename>other.xml</filename>,
+      run:</para>
 
       <para><userinput>grotag --docbook some.guide
       other.xml</userinput></para>
