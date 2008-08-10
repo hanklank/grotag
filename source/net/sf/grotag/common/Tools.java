@@ -74,7 +74,9 @@ public class Tools {
         return escapeMap.containsKey(some);
     }
 
-    /** Copy of <code>some</code> with any trailing white space removed. */
+    /**
+     * Copy of <code>some</code> with any trailing white space removed.
+     */
     public String withoutTrailingWhiteSpace(String some) {
         assert some != null;
 
@@ -83,6 +85,21 @@ public class Tools {
             i -= 1;
         }
         return some.substring(0, i + 1);
+    }
+
+    /**
+     * Copy of <code>some</code> with any whitespace removed.
+     */
+    public String withoutWhiteSpace(String some) {
+        assert some != null;
+        String result = "";
+
+        for (char ch : some.toCharArray()) {
+            if (!Character.isWhitespace(ch)) {
+                result += ch;
+            }
+        }
+        return result;
     }
 
     /**

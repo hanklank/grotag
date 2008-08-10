@@ -2,6 +2,7 @@ package net.sf.grotag.guide;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,7 +41,7 @@ public class InfoTest {
         Guide guide = getBasicsGuide();
         DatabaseInfo info = guide.getDatabaseInfo();
         assertNotNull(info);
-        assertEquals("basics.guide", info.getName());
+        assertEquals("basics", info.getName());
         assertEquals("Thomas Aglassinger", info.getAuthor());
         assertEquals("2008 Thomas Aglassinger", info.getCopyright());
         assertEquals("Helvetica.font", info.getFontName());
@@ -53,12 +54,11 @@ public class InfoTest {
         Guide guide = getBasicsGuide();
         NodeInfo info;
 
-        info = guide.getNodeInfo("main");
+        info = guide.getNodeInfo("smartwrapped");
         assertNotNull(info);
         assertEquals(Wrap.SMART, info.getWrap());
         assertEquals("Helvetica.font", info.getFontName());
         assertEquals(13, info.getFontSize());
-        assertEquals(Wrap.SMART, info.getWrap());
     }
 
     @Test
@@ -69,5 +69,25 @@ public class InfoTest {
 
         log.fine("database=" + databaseInfo.toString());
         log.fine("node=" + nodeInfo.toString());
+    }
+
+    @Test
+    public void testParseCopyrightYearAndHolder() {
+        DatabaseInfo dbInfo = new DatabaseInfo("hugo.guide");
+        dbInfo.setCopyright("2008 hugo");
+        assertEquals("2008", dbInfo.getCopyrightYear());
+        assertEquals("hugo", dbInfo.getCopyrightHolder());
+
+        dbInfo.setCopyright("2001-2008 hugo");
+        assertEquals("2001-2008", dbInfo.getCopyrightYear());
+        assertEquals("hugo", dbInfo.getCopyrightHolder());
+
+        dbInfo.setCopyright("2001 -\t2008   \t  hugo");
+        assertEquals("2001-2008", dbInfo.getCopyrightYear());
+        assertEquals("hugo", dbInfo.getCopyrightHolder());
+
+        dbInfo.setCopyright("2008");
+        assertNull(dbInfo.getCopyrightYear());
+        assertNull(dbInfo.getCopyrightHolder());
     }
 }

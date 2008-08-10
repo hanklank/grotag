@@ -216,14 +216,19 @@ public class DocBookWriter {
             }
 
             // Add (optional) copyright information.
-            String copyrightText = dbInfo.getCopyright();
-            if (copyrightText != null) {
+            String copyrightYear = dbInfo.getCopyrightYear();
+            if (copyrightYear != null) {
+                String copyrightHolder = dbInfo.getCopyrightHolder();
+                assert copyrightHolder != null;
+
                 Element copyrightElement = dom.createElement("copyright");
+                Element yearElement = dom.createElement("year");
                 Element holderElement = dom.createElement("holder");
-                holderElement.appendChild(dom.createTextNode(copyrightText));
+                yearElement.appendChild(dom.createTextNode(copyrightYear));
+                holderElement.appendChild(dom.createTextNode(copyrightHolder));
+                copyrightElement.appendChild(yearElement);
                 copyrightElement.appendChild(holderElement);
                 result.appendChild(copyrightElement);
-                // TODO: Extract copyright year and add <year>.
             }
 
         } else {
