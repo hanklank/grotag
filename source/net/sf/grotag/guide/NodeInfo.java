@@ -1,5 +1,8 @@
 package net.sf.grotag.guide;
 
+import java.util.Arrays;
+
+import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
 
 /**
@@ -8,10 +11,12 @@ import net.sf.grotag.parse.CommandItem;
  * @author Thomas Aglassinger
  */
 public class NodeInfo extends AbstractInfo {
+    private static final String[] MONOSPACED_FONTS = new String[] { "topaz", "xen" };
     private DatabaseInfo databaseInfo;
     private CommandItem startNode;
     private CommandItem endNode;
     private String title;
+    private boolean isProportional;
 
     public NodeInfo(DatabaseInfo newDatabaseInfo, String newName, String newTitle) {
         super(newName.toLowerCase());
@@ -78,5 +83,24 @@ public class NodeInfo extends AbstractInfo {
     public String toString() {
         String result = "NodeInfo " + getName() + ": start=" + getStartNode() + ", end=" + getEndNode();
         return result;
+    }
+
+    public boolean isProportional() {
+        boolean result = isProportional;
+        if (!result) {
+            String fontName = getFontName();
+            if (fontName != null) {
+                Tools tools = Tools.getInstance();
+                fontName = tools.getWithoutLastSuffix(fontName).toLowerCase();
+                if (Arrays.binarySearch(MONOSPACED_FONTS, fontName) < 0) {
+                    result = true;
+                }
+            }
+        }
+        return result;
+    }
+
+    public void setProportional(boolean newProportional) {
+        isProportional = newProportional;
     }
 }

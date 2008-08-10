@@ -3,7 +3,6 @@ package net.sf.grotag.guide;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
@@ -266,7 +265,7 @@ public class DocBookWriter {
         return result;
     }
 
-    private Element createElementForWrap(Wrap wrap) {
+    private Element createParagraph(Wrap wrap, boolean isProportional) {
         Element result;
         String tagName;
 
@@ -277,6 +276,10 @@ public class DocBookWriter {
             assert wrap != Wrap.DEFAULT;
         }
         result = dom.createElement(tagName);
+        if (!isProportional) {
+            result.setAttribute("class", "monospaced");
+        }
+
         return result;
     }
 
@@ -301,7 +304,8 @@ public class DocBookWriter {
         // Traverse node items.
         NodeParserState parserState = NodeParserState.BEFORE_NODE;
         Wrap wrap = nodeInfo.getWrap();
-        Element paragraph = createElementForWrap(wrap);
+        boolean isProportional = nodeInfo.isProportional();
+        Element paragraph = createParagraph(wrap, isProportional);
         String text = "";
         boolean lastTextWasNewLine = false;
 
@@ -433,7 +437,7 @@ public class DocBookWriter {
                     }
                     if (flushParagraph) {
                         result.appendChild(paragraph);
-                        paragraph = createElementForWrap(wrap);
+                        paragraph = createParagraph(wrap, isProportional);
                     }
                 }
             } else {

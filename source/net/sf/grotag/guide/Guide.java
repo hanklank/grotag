@@ -462,6 +462,9 @@ public class Guide {
                                     int fontSize = Integer.parseInt(command.getOption(1));
                                     scopedInfo.setFont(fontName, fontSize);
                                 }
+                            } else if (commandName.equals(Tag.Name.proportional.toString())
+                                    && (currentNodeInfo != null)) {
+                                currentNodeInfo.setProportional(true);
                             } else if (commandName.equals("smartwrap")) {
                                 scopedInfo.setWrap(Wrap.SMART);
                             } else if (commandName.equals("wordwrap")) {
