@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
-public class DocBookWriterTest {
+public class DomWriterTest {
     TestTools testTools;
 
     @Before
@@ -34,7 +34,7 @@ public class DocBookWriterTest {
 
         DocBookDomFactory docBookDomFactory = new DocBookDomFactory(pile);
         Document dom = docBookDomFactory.createDom();
-        DomWriter domWriter = new DomWriter();
+        DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
         domWriter.write(dom, outFile);
         assertTrue(outFile.exists());
     }
