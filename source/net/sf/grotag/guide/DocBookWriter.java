@@ -364,7 +364,8 @@ public class DocBookWriter {
                             String linkLabel = command.getLinkLabel();
                             if (link != null) {
                                 if (link.getState() == Link.State.VALID) {
-                                    // Valid link to Amigaguide document and node.
+                                    // Valid link to Amigaguide document and
+                                    // node.
                                     Link.Type linkType = link.getType();
                                     String targetNode = link.getTargetNode();
                                     File linkedFile = link.getTargetFile();
@@ -397,6 +398,10 @@ public class DocBookWriter {
                                     } else {
                                         log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                                     }
+                                } else if (link.getState() == Link.State.VALID_OTHER_FILE) {
+                                    // Valid link to non-Amigaguide file.
+                                    log.log(Level.FINE, "connect to non-guide: {0}", command);
+                                    nodeToAppend = createLinkToNonGuideNode(link.getTargetFile(), link.getLabel());
                                 } else {
                                     log.warning("skipped link with state=" + link.getState() + ": "
                                             + command.toPrettyAmigaguide());
