@@ -71,6 +71,9 @@
       <fileset dir="${classes.dir}" includes="**/*" />
     </delete>
     <delete dir="${tests.dir}/actual" />
+    <delete dir="${site.dir}/examples" />
+    <delete file="${site.dir}/index.html" />
+    <delete file="${site.dir}/license.txt" />
   </target>
 
   <target name="lha.html" depends="jar">
@@ -121,5 +124,26 @@
     <move todir="docbook-xsl">
       <fileset dir="docbook-xsl-${docbook-xsl-version}" />
     </move>
+  </target>
+
+  <target name="site.zip" depends="examples, user-guide">
+    <zip destfile="site.zip" basedir="${site.dir}" />
+  </target>
+
+  <target name="examples" depends="basics.html, root.html"> 
+    <mkdir dir="${site.dir}/examples" />
+    <copy file="${source.dir}/site/index.html" todir="${site.dir}" />
+    <copy file="license.txt" todir="${site.dir}" />
+    <copy file="${actual.dir}/basics.html" todir="${site.dir}/examples" />
+    <copy file="${actual.dir}/basics.xml" todir="${site.dir}/examples" />
+    <copy file="${actual.dir}/root.html" todir="${site.dir}/examples" />
+    <copy file="${actual.dir}/root.xml" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/basics.guide" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/blue.guide" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/green.guide" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/embedded.txt" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/linked.txt" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/red.guide" todir="${site.dir}/examples" />
+    <copy file="${input.dir}/root.guide" todir="${site.dir}/examples" />
   </target>
 </project>

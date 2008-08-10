@@ -1,0 +1,89 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <title>Grotag</title>
+  <meta name="description"
+ content="Grotag - Convert, validate and pretty print Amigaguide documents.">
+  <meta name="keywords"
+ content="Amigaguide, convert, validate, pretty, DocBook, HTML, XML">
+</head>
+<body
+ style="font-family: sans-serif; color: rgb(0, 0, 0); background-color: rgb(204, 204, 204);"
+ alink="#000099" link="#000099" vlink="#990099">
+<p><a href="#about">About</a> | <a href="#download">Download</a> | <a
+ href="#examples">Examples</a> | <a href="#usage">Usage</a> |
+<a href="http://sourceforge.net/forum/forum.php?forum_id=850444">Forum</a>
+| <a href="#development">Development</a></p>
+<h1>Grotag</h1>
+<p style="font-style: italic;">"Get rid of them Amigaguides"</p>
+<h2 id="about">About Grotag</h2>
+<p>Grotag is a platform independent tool to help working with
+Amigaguide documents. It validates and pretty prints Amigaguides, and
+converts them to DocBook XML.</p>
+<p>It is distributed under the <a href="license.txt">GNU General
+Public License</a>, version 3 or
+later.</p>
+<h2 id="development">Download</h2>
+<p>At the moment Grotag is a work in progress and no downloads are
+available yet.</p>
+<h2 id="examples">Examples</h2>
+<p>The easiest way to describe what kind of output you can expect from
+Grotag are examples, so here are a few:</p>
+<ul>
+  <li>
+    <p><a href="examples/basics.guide">Basics.guide</a> is a test
+document that exercises several features of Amigaguide. With --docbook,
+you get <a href="examples/basics.xml">basics.xml</a>, which in turn
+can be converted to <a href="examples/basics.html">basics.html</a>.</p>
+    <p>Note that --docbook deliberately removes all formatting
+attributes and
+simlpy preserves the document structure.This kind of output is useful
+if you want to migrate an existing Amigiuaguide manual and keep editing
+it. DocBook does not support "physical" styles such as "bold" or
+"italic", instead there is a huge amount of logical styles that can
+assign meaning to terms. Only a human author will be able to choose the
+proper logical style. Grotag has no way of knowing the original meaning
+behind a certain physical style in the original Amigaguide document.</p>
+  </li>
+  <li><a href="examples/root.guide">Root.guide</a> is a base document
+that links to several others: <a href="examples/red.guide">red.guide</a>,
+    <a href="examples/green.guide">green.guide</a>, <a
+ href="examples/blue.guide">blue.guide</a>. This shows how Grotag
+handles the different kind of links, such as @alink, @guide or @link.
+In practice, you should only use @link these days, but Grotag is
+perfectly capable of working with the legacy commands. Using --docbook
+again, we get <a href="examples/root.xml">root.xml</a> which can be
+converted to <a href="examples/root.html">root.html</a>.</li>
+</ul>
+<h2 id="development">Usage</h2>
+<p>The <a href="user-guide.html">User Guide</a> describes how to work
+with Grotag. Currently it is a rough draft and under constant change.</p>
+<h2 id="development">Development</h2>
+<p>The <a href="https://sourceforge.net/projects/grotag/">Grotag
+project site</a> is hosted by <a href="http://sourceforge.net/">SourceForge.net</a>
+and contains the resources used for the development of Grotag.</p>
+<p>The source code is available from a <a
+ href="http://subversion.tigris.org/">Subversion</a> repository
+which you can browse at <a
+ href="http://grotag.svn.sourceforge.net/viewvc/grotag/">http://lichttools.svn.sourceforge.net/viewvc/lichttools/</a>.
+To check out the current version from the repository, use</p>
+<div style="margin-left: 40px;">svn&nbsp;checkout&nbsp;https://grotag.svn.sourceforge.net/svnroot/grotag/<span
+ style="font-style: italic;"></span>trunk grotag<span
+ style="font-style: italic;"></span></div>
+<p>After the check out, run</p>
+<p style="margin-left: 40px;">ant setup</p>
+<p>This extracts some resources need for DocBook transformation. You
+need
+to do this only the first time.</p>
+<p>After that, run</p>
+<p style="margin-left: 40px;">ant</p>
+<p>to build Grotag.jar and Grotag.zip</p>
+<p>In case you add a feature or fix a bug,
+feel free to submit your changes using the <a
+ href="http://sourceforge.net/tracker/?group_id=233964&amp;atid=1092388">patch
+tracker</a>.</p>
+<a href="http://sourceforge.net"><img
+ src="http://sourceforge.net/sflogo.php?group_id=grotag&amp;type=1"
+ alt="SourceForge.net Logo" border="0" height="31" width="88"></a>
+</body>
+</html>
