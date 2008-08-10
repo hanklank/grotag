@@ -79,21 +79,21 @@ public class DocBookDomFactory {
         }
     }
 
-    protected Node createAmigaguideNode() {
+    private Node createAmigaguideNode() {
         Element result = dom.createElement("productname");
         result.setAttribute("class", "registered");
         result.appendChild(dom.createTextNode("Amigaguide"));
         return result;
     }
 
-    protected Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel) {
+    private Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel) {
         Element result = dom.createElement("link");
         result.setAttribute("linkend", mappedNode);
         result.appendChild(dom.createTextNode(linkLabel));
         return result;
     }
 
-    protected Node createOtherFileLinkNode(File linkedFile, String linkLabel) {
+    private Node createOtherFileLinkNode(File linkedFile, String linkLabel) {
         // TODO: Copy linked file to same
         // folder as target document.
         URL linkedUrl = createUrl("file", "localhost", linkedFile);
@@ -133,7 +133,7 @@ public class DocBookDomFactory {
         return result;
     }
 
-    protected URL createUrl(String type, String host, File file) {
+    private URL createUrl(String type, String host, File file) {
         try {
             return new URL("file", "localhost", file.getAbsolutePath());
         } catch (MalformedURLException error) {
@@ -143,7 +143,7 @@ public class DocBookDomFactory {
         }
     }
 
-    protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel) {
+    private Node createLinkToNonGuideNode(File linkedFile, String linkLabel) {
         URL linkedUrl = createUrl("file", "localhost", linkedFile);
         Element elementToAppend = dom.createElement("ulink");
         elementToAppend.setAttribute("url", linkedUrl.toExternalForm());
