@@ -96,7 +96,7 @@ public class DocBookWriter {
 
     protected Node createAmigaguideNode() {
         Element result = dom.createElement("productname");
-        result.setAttribute("class", "trade");
+        result.setAttribute("class", "registered");
         result.appendChild(dom.createTextNode("Amigaguide"));
         return result;
     }
