@@ -12,6 +12,7 @@ import net.sf.grotag.common.TestTools;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
 
 public class DocBookWriterTest {
     TestTools testTools;
@@ -30,7 +31,11 @@ public class DocBookWriterTest {
             inFile = testTools.getTestGuideFile(baseName + ".guide");
         }
         pile = GuidePile.createGuidePile(inFile);
-        DocBookWriter.write(pile, outFile);
+
+        DocBookDomFactory docBookDomFactory = new DocBookDomFactory(pile);
+        Document dom = docBookDomFactory.createDom();
+        DomWriter domWriter = new DomWriter();
+        domWriter.write(dom, outFile);
         assertTrue(outFile.exists());
     }
 

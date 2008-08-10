@@ -9,8 +9,11 @@ import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import org.w3c.dom.Document;
+
 import net.sf.grotag.common.Tools;
-import net.sf.grotag.guide.DocBookWriter;
+import net.sf.grotag.guide.DocBookDomFactory;
+import net.sf.grotag.guide.DomWriter;
 import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
 
@@ -95,7 +98,11 @@ public class Grotag {
                     + " only 2 files must be specified instead of " + fileCount);
         }
         GuidePile pile = GuidePile.createGuidePile(inputFile);
-        DocBookWriter.write(pile, outputFile);
+        DocBookDomFactory domFactory = new DocBookDomFactory(pile);
+        Document dom = domFactory.createDom();
+        DomWriter domWriter = new DomWriter();
+
+        domWriter.write(dom, outputFile);
     }
 
     private void pretty(File[] files) throws IOException {

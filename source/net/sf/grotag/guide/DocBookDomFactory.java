@@ -50,7 +50,7 @@ public class DocBookDomFactory {
     private Map<String, String> agNodeToDbNodeMap;
     private AmigaTools amigaTools;
 
-    private DocBookDomFactory(GuidePile newPile) {
+    public DocBookDomFactory(GuidePile newPile) {
         assert newPile != null;
 
         log = Logger.getLogger(DocBookDomFactory.class.getName());
@@ -167,7 +167,7 @@ public class DocBookDomFactory {
         return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 
-    public void createDom() throws ParserConfigurationException {
+    public Document createDom() throws ParserConfigurationException {
         log.info("create dom");
         DocumentBuilderFactory domBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder domBuilder = domBuilderFactory.newDocumentBuilder();
@@ -183,6 +183,8 @@ public class DocBookDomFactory {
         for (Guide guide : pile.getGuides()) {
             bookElement.appendChild(createChapter(guide));
         }
+        
+        return dom;
     }
 
     private Node createMetaInfoNode(Guide guide) {
