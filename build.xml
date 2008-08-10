@@ -105,6 +105,12 @@
     <grotagDocBookToHtml guide="${input.dir}/root.guide" html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
   </target>
 
+  <target name="amigaguide.html" depends="jar">
+    <grotagDocBookToHtml guide="${guides.dir}/amigaguide.guide"
+                         html="${actual.dir}/amigaguide.html"
+                         xml="${actual.dir}/amigaguide.xml" />
+  </target>
+
   <target name="user-guide">
     <docBookToHtml html="${site.dir}/user-guide.html" xml="${source.dir}/site/user-guide.xml" />
   </target>
