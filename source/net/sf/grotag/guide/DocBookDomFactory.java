@@ -1,15 +1,11 @@
 package net.sf.grotag.guide;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -20,12 +16,6 @@ import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
@@ -42,14 +32,11 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class DocBookDomFactory {
-    private static final String OUTPUT_ENCODING = "UTF-8";
-
     private enum NodeParserState {
         BEFORE_NODE, INSIDE_NODE, AFTER_NODE;
     }
 
     private GuidePile pile;
-    private Writer writer;
     private Document dom;
     private Element bookElement;
     private Logger log;
@@ -63,16 +50,14 @@ public class DocBookDomFactory {
     private Map<String, String> agNodeToDbNodeMap;
     private AmigaTools amigaTools;
 
-    private DocBookDomFactory(GuidePile newPile, Writer newWriter) {
+    private DocBookDomFactory(GuidePile newPile) {
         assert newPile != null;
-        assert newWriter != null;
 
         log = Logger.getLogger(DocBookDomFactory.class.getName());
         tools = Tools.getInstance();
         amigaTools = AmigaTools.getInstance();
 
         pile = newPile;
-        writer = newWriter;
 
         // Map the Amigaguide node names to DocBook id's that conform to the
         // NCName definition.
@@ -182,7 +167,7 @@ public class DocBookDomFactory {
         return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 
-    private void createDom() throws ParserConfigurationException {
+    public void createDom() throws ParserConfigurationException {
         log.info("create dom");
         DocumentBuilderFactory domBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder domBuilder = domBuilderFactory.newDocumentBuilder();
@@ -272,20 +257,6 @@ public class DocBookDomFactory {
             result = null;
         }
         return result;
-    }
-
-    private void writeDom() throws TransformerException {
-        log.info("write dom");
-        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-        Transformer transformer = transformerFactory.newTransformer();
-        transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.5//EN");
-        transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
-                "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd");
-        // TODO: Remove: transformer.setOutputProperty(OutputKeys.ENCODING,
-        // "ISO-8859-1");
-        transformer.setOutputProperty(OutputKeys.ENCODING, OUTPUT_ENCODING);
-        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformer.transform(new DOMSource(dom), new StreamResult(writer));
     }
 
     private Element createChapter(Guide guide) {
@@ -521,28 +492,5 @@ public class DocBookDomFactory {
             result = some;
         }
         return result;
-    }
-
-    public static void write(GuidePile pile, Writer targetWriter) throws ParserConfigurationException,
-            TransformerException {
-        assert pile != null;
-        assert targetWriter != null;
-        DocBookDomFactory DocBookDomFactory = new DocBookDomFactory(pile, targetWriter);
-        DocBookDomFactory.createDom();
-        DocBookDomFactory.writeDom();
-    }
-
-    public static void write(GuidePile pile, File targetFile) throws IOException, ParserConfigurationException,
-            TransformerException {
-        assert pile != null;
-        assert targetFile != null;
-
-        Writer targetWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
-                OUTPUT_ENCODING));
-        try {
-            write(pile, targetWriter);
-        } finally {
-            targetWriter.close();
-        }
     }
 }
