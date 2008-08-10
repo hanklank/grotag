@@ -33,7 +33,7 @@ public class DomWriterTest {
         pile = GuidePile.createGuidePile(inFile);
 
         DocBookDomFactory docBookDomFactory = new DocBookDomFactory(pile);
-        Document dom = docBookDomFactory.createDom();
+        Document dom = docBookDomFactory.createBook();
         DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
         domWriter.write(dom, outFile);
         assertTrue(outFile.exists());

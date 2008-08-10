@@ -99,7 +99,7 @@ public class Grotag {
         }
         GuidePile pile = GuidePile.createGuidePile(inputFile);
         DocBookDomFactory domFactory = new DocBookDomFactory(pile);
-        Document dom = domFactory.createDom();
+        Document dom = domFactory.createBook();
         DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
 
         domWriter.write(dom, outputFile);
