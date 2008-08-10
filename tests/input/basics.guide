@@ -27,6 +27,9 @@ Special characters: äöüß§
 @{b}bold @{i}bold+italic @{i}all@{uu}bold+italic @{ui}bold @{ub}
 @{b}bold @{i}bold+italic @{i}all@{ui}bold+underline @{ub}underline @{uu}
 
+Here is some text from an embedded file:
+@embed "embedded.txt"
+And here we are back again in the main document.
 @endnode
 
 

@@ -9,5 +9,6 @@ This is the root, which is used to test link validation in a GuidePile.
 @{"Red" alink "red.guide/Main"}
 @{"Green" link "green.guide/Main"}
 @{"Blue" guide "blue.guide/Main"}
+@{"Text file" link "linked.txt/Main"}
 @endnode
 

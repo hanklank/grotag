@@ -1,10 +1,14 @@
 package net.sf.grotag.guide;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -23,6 +27,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
 import net.sf.grotag.parse.AbstractTextItem;
@@ -56,6 +61,7 @@ public class DocBookWriter {
      * start with a letter and then must use only certain characters.
      */
     private Map<String, String> agNodeToDbNodeMap;
+    private AmigaTools amigaTools;
 
     private DocBookWriter(GuidePile newPile, Writer newWriter) {
         assert newPile != null;
@@ -63,6 +69,8 @@ public class DocBookWriter {
 
         log = Logger.getLogger(DocBookWriter.class.getName());
         tools = Tools.getInstance();
+        amigaTools = AmigaTools.getInstance();
+
         pile = newPile;
         writer = newWriter;
 
@@ -107,6 +115,36 @@ public class DocBookWriter {
         Element result = dom.createElement("ulink");
         result.setAttribute("url", linkedUrl.toExternalForm());
         result.appendChild(dom.createTextNode(linkLabel));
+        return result;
+    }
+
+    private Node createEmbeddedFile(File embeddedFile) {
+        Element result = createParagraph(Wrap.NONE, false);
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(embeddedFile),
+                    AmigaTools.ENCODING));
+            try {
+                String textLine = reader.readLine();
+                while (textLine != null) {
+                    result.appendChild(dom.createTextNode(textLine + "\n"));
+                    textLine = reader.readLine();
+                }
+            } finally {
+                reader.close();
+            }
+        } catch (UnsupportedEncodingException error) {
+            throw new IllegalStateException("Amiga encoding not supported", error);
+        } catch (IOException error) {
+            result = dom.createElement("caution");
+            Element cautionTitle = dom.createElement("title");
+            Element cautionContent = dom.createElement("para");
+            cautionTitle.appendChild(dom.createTextNode("Missing embedded file"));
+            cautionContent.appendChild(dom.createTextNode("@embed for " + tools.sourced(embeddedFile) + " failed: "
+                    + error.getMessage()));
+            result.appendChild(cautionTitle);
+            result.appendChild(cautionContent);
+        }
+
         return result;
     }
 
@@ -328,6 +366,7 @@ public class DocBookWriter {
                     boolean flushText = false;
                     boolean flushParagraph = false;
                     Node nodeToAppend = null;
+                    Node nodeToAppendAfterParagraph = null;
 
                     if (item instanceof SpaceItem) {
                         text += ((SpaceItem) item).getSpace();
@@ -421,6 +460,14 @@ public class DocBookWriter {
                             // Replace @{amigaguide} by text.
                             flushText = true;
                             nodeToAppend = createAmigaguideNode();
+                        } else if (commandTag == Tag.Name.embed) {
+                            // Include content specified by @embed
+                            // FIXME: Add @embed base path.
+                            File embeddedFile = amigaTools.getFileFor(command.getOption(0));
+                            flushText = true;
+                            flushParagraph = true;
+                            log.log(Level.INFO, "embed: {0}", tools.sourced(embeddedFile));
+                            nodeToAppendAfterParagraph = createEmbeddedFile(embeddedFile);
                         }
                     }
                     if (flushText) {
@@ -439,6 +486,9 @@ public class DocBookWriter {
                     if (flushParagraph) {
                         result.appendChild(paragraph);
                         paragraph = createParagraph(wrap, isProportional);
+                    }
+                    if (nodeToAppendAfterParagraph != null) {
+                        result.appendChild(nodeToAppendAfterParagraph);
                     }
                 }
             } else {
