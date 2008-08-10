@@ -5,10 +5,9 @@
 @node Main "Root"
 This is the root, which is used to test link validation in a GuidePile.
 
-
 @{"Root" link "root.guide/Main"}
-@{"Red" link "red.guide/Main"}
+@{"Red" alink "red.guide/Main"}
 @{"Green" link "green.guide/Main"}
-@{"Blue" link "blue.guide/Main"}
+@{"Blue" guide "blue.guide/Main"}
 @endnode
 
