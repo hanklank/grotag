@@ -241,4 +241,9 @@ public class Tag implements Comparable<Tag> {
     public void setUnused(boolean newUnused) {
         this.isUnused = newUnused;
     }
+
+    public boolean nameEquals(Tag.Name tagName) {
+        assert tagName != null;
+        return getName().equals(tagName.toString());
+    }
 }

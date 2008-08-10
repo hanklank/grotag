@@ -166,14 +166,31 @@ public class GuidePile {
                 assert hasCachedGuideFor(linkedFile);
                 Guide guideContainingNode = getCachedGuideFor(linkedFile);
                 assert guideContainingNode != null;
-                NodeInfo nodeInfo = guideContainingNode.getNodeInfo(linkedNodeName);
-                if (nodeInfo == null) {
+
+                // For guide links, look up the first node of the target.
+                if (link.getType() == Link.Type.guide && (linkedNodeName == null)) {
+                    List<NodeInfo> targetNodeInfos = guideContainingNode.getNodeInfos();
+                    if (targetNodeInfos.size() > 0) {
+                        linkedNodeName = targetNodeInfos.get(0).getName();
+                        link.setTargetNode(linkedNodeName);
+                        link.setState(Link.State.VALID);
+                    }
+                }
+                
+                // Validate the node.
+                NodeInfo nodeInfo;
+                if (linkedNodeName != null) {
+                    nodeInfo = guideContainingNode.getNodeInfo(linkedNodeName);
+                } else {
+                    nodeInfo = null;
+                }
+                if (nodeInfo != null) {
+                    link.setState(Link.State.VALID);
+                } else {
                     link.setState(Link.State.VALID_GUIDE_BROKEN_NODE);
                     MessageItem message = new MessageItem(link.getLinkCommand(), "cannot find node "
                             + tools.sourced(linkedNodeName) + " in " + tools.sourced(linkedFile));
                     messagePool.add(message);
-                } else {
-                    link.setState(Link.State.VALID);
                 }
             }
         }

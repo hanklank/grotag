@@ -9,7 +9,6 @@ import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -371,18 +370,9 @@ public class DocBookWriter {
                                     Guide targetGuide = pile.getGuide(linkedFile);
 
                                     if (linkType == Link.Type.guide) {
-                                        // Attempt to set targetNode to first
-                                        // node in guide.
-                                        assert targetNode == null;
-                                        List<NodeInfo> targetNodeInfos = targetGuide.getNodeInfos();
-                                        if (targetNodeInfos.size() > 0) {
-                                            NodeInfo firstNodeInTargetGuide = targetNodeInfos.get(0);
-                                            targetNode = firstNodeInTargetGuide.getName();
-                                        } else {
-                                            targetGuide = null;
-                                            log.warning("skipped link to guide without nodes: "
-                                                    + command.toPrettyAmigaguide());
-                                        }
+                                        // Assert that target node has been set
+                                        // by validateLinks().
+                                        assert targetNode != null;
                                     } else {
                                         // Assert that all @{alink}s have been
                                         // changed to @{link}.

@@ -51,6 +51,8 @@ public class Link {
     private String targetNode;
     private CommandItem linkCommand;
 
+    private Tools tools;
+
     /**
      * Create a new link.
      */
@@ -59,7 +61,7 @@ public class Link {
         assert newLinkCommand.isLink();
         assert newLinkCommand.getOption(0) != null;
 
-        Tools tools = Tools.getInstance();
+        tools = Tools.getInstance();
         AmigaTools amigaTools = AmigaTools.getInstance();
         Logger log = Logger.getLogger(Link.class.getName());
 
@@ -179,9 +181,21 @@ public class Link {
         state = newState;
     }
 
+    /**
+     * Set the target node. This is normally already done by the constructor.
+     * However, in case the link is of type "guide", it can only be done once
+     * <code>GuidePile</code> knows about all the nodes in the document set.
+     */
+    // Package visibility because GuidePile.validateLinks() is the only sensible
+    // place to call this from.
+    void setTargetNode(String newTargetNode) {
+        assert getType() == Link.Type.guide : "type=" + getType();
+        assert getTargetNode() == null : "existing targetNode=" + tools.sourced(getTargetNode());
+        targetNode = newTargetNode;
+    }
+
     @Override
     public String toString() {
-        Tools tools = Tools.getInstance();
         String result = "Link[command=" + getLinkCommand().toPrettyAmigaguide() + ", target="
                 + tools.sourced(getTarget()) + ", state=" + getState() + ", type=" + getType();
         if (isDataLink()) {

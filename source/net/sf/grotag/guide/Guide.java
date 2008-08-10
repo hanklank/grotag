@@ -188,7 +188,8 @@ public class Guide {
                     Tag linkTag = tagPool.getTag(type, Tag.Scope.LINK);
 
                     if (linkTag != null) {
-                        if (type.equals("link")) {
+                        assert !linkTag.nameEquals(Tag.Name.alink) : "alink must have been replaced: " + command;
+                        if (linkTag.nameEquals(Tag.Name.link) || linkTag.nameEquals(Tag.Name.guide)) {
                             String target = command.getOption(1);
                             assert target != null : "empty target: " + command;
                             if (target.length() > 0) {
@@ -617,7 +618,26 @@ public class Guide {
                         optionIndex += 1;
                     }
                 }
-                // TODO: Detect and remove additional link options.
+
+                // Change possible alink to link.
+                if (linkTag.nameEquals(Tag.Name.alink)) {
+                    logger.fine("old alink: " + command);
+                    command.setOption(0, Tag.Name.link.toString());
+                    logger.fine("new link: " + command);
+                    MessageItem message = new MessageItem(command.getOptionItem(0),
+                            "replaced obsolete @{... alink} by @{... link}");
+                    messagePool.add(message);
+                }
+
+                // Detect and remove additional link options.
+                optionIndex += 1;
+                if (command.getOption(optionIndex) != null) {
+                    logger.info("remove link options from: " + command);
+                    MessageItem message = new MessageItem(command.getOptionItem(optionIndex),
+                            "removed unexpected link options starting with option #" + optionIndex);
+                    messagePool.add(message);
+                    command.cutOptionsAt(optionIndex);
+                }
             }
         } else {
             reasonToReplaceLinkByText = "empty link";
