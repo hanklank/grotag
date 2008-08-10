@@ -327,7 +327,7 @@ public class DocBookWriter {
                 } else {
                     boolean flushText = false;
                     boolean flushParagraph = false;
-                    Node elementToAppend = null;
+                    Node nodeToAppend = null;
 
                     if (item instanceof SpaceItem) {
                         text += ((SpaceItem) item).getSpace();
@@ -364,6 +364,7 @@ public class DocBookWriter {
                             String linkLabel = command.getLinkLabel();
                             if (link != null) {
                                 if (link.getState() == Link.State.VALID) {
+                                    // Valid link to Amigaguide document and node.
                                     Link.Type linkType = link.getType();
                                     String targetNode = link.getTargetNode();
                                     File linkedFile = link.getTargetFile();
@@ -385,14 +386,14 @@ public class DocBookWriter {
 
                                         if (link.isDataLink()) {
                                             if (mappedNode != null) {
-                                                elementToAppend = createDataLinkNode(null, mappedNode, linkLabel);
+                                                nodeToAppend = createDataLinkNode(null, mappedNode, linkLabel);
                                             } else {
                                                 log.warning("skipped link to unknown node: "
                                                         + command.toPrettyAmigaguide());
                                             }
                                         }
                                     } else if (linkedFile.exists()) {
-                                        elementToAppend = createOtherFileLinkNode(linkedFile, linkLabel);
+                                        nodeToAppend = createOtherFileLinkNode(linkedFile, linkLabel);
                                     } else {
                                         log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                                     }
@@ -406,7 +407,7 @@ public class DocBookWriter {
 
                             // Link was not appended for some reason, so at
                             // least make sure the link label shows up.
-                            if (elementToAppend == null) {
+                            if (nodeToAppend == null) {
                                 text += linkLabel;
                             } else {
                                 flushText = true;
@@ -414,12 +415,12 @@ public class DocBookWriter {
                         } else if (commandTag == Tag.Name.amigaguide) {
                             // Replace @{amigaguide} by text.
                             flushText = true;
-                            elementToAppend = createAmigaguideNode();
+                            nodeToAppend = createAmigaguideNode();
                         }
                     }
                     if (flushText) {
                         log.log(Level.FINER, "append text: {0}", tools.sourced(text));
-                        if (elementToAppend == null) {
+                        if (nodeToAppend == null) {
                             text = withoutPossibleTrailingNewLine(text);
                         }
                         if (text.length() > 0) {
@@ -427,8 +428,8 @@ public class DocBookWriter {
                         }
                         text = "";
                     }
-                    if (elementToAppend != null) {
-                        paragraph.appendChild(elementToAppend);
+                    if (nodeToAppend != null) {
+                        paragraph.appendChild(nodeToAppend);
                     }
                     if (flushParagraph) {
                         result.appendChild(paragraph);

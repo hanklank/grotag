@@ -39,7 +39,7 @@ import net.sf.grotag.parse.TextItem;
  */
 public class Guide {
     private static final String GUIDE_ID = "@database";
-    private Logger logger;
+    private Logger log;
     private AbstractSource guideSource;
     private List<AbstractItem> items;
     private TagPool tagPool;
@@ -61,7 +61,7 @@ public class Guide {
 
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
-        logger = Logger.getLogger(Guide.class.getName());
+        log = Logger.getLogger(Guide.class.getName());
 
         guideSource = newGuideSource;
         tagPool = new TagPool();
@@ -111,7 +111,7 @@ public class Guide {
         int itemIndex = 0;
         while (itemIndex < items.size()) {
             AbstractItem item = items.get(itemIndex);
-            logger.fine("process " + item);
+            log.fine("process " + item);
             if (isInlineCommand(item)) {
                 CommandItem tagItem = (CommandItem) item;
                 Tag macro = tagPool.getMacro(tagItem.getCommandName());
@@ -160,10 +160,10 @@ public class Guide {
 
                 if (accessOptionIndex < caller.getItems().size()) {
                     optionText = ((AbstractTextItem) caller.getItems().get(accessOptionIndex)).getText();
-                    logger.fine("  substituting $" + optionIndex + " by: " + tools.sourced(optionText));
+                    log.fine("  substituting $" + optionIndex + " by: " + tools.sourced(optionText));
                 } else {
                     optionText = "";
-                    logger.fine("  substituting $" + optionIndex + " by empty text");
+                    log.fine("  substituting $" + optionIndex + " by empty text");
                 }
                 result += optionText;
             } else {
@@ -171,7 +171,7 @@ public class Guide {
             }
             i += 1;
         }
-        logger.fine("resolved macro: " + result);
+        log.fine("resolved macro: " + result);
 
         return result;
     }
@@ -198,7 +198,7 @@ public class Guide {
                                     links.add(link);
                                 } catch (NumberFormatException error) {
                                     String lineText = command.getOption(2);
-                                    logger.log(Level.INFO, "ignored broken line number: " + tools.sourced(lineText),
+                                    log.log(Level.INFO, "ignored broken line number: " + tools.sourced(lineText),
                                             error);
                                     MessageItem message = new MessageItem(command.getOptionItem(2),
                                             "ignored broken line number: " + tools.sourced(lineText));
@@ -299,8 +299,8 @@ public class Guide {
         }
 
         for (CommandItem node : nodeList) {
-            logger.fine("node: " + node);
-            logger.fine("  endnode: " + endNodeMap.get(getNodeName(node)));
+            log.fine("node: " + node);
+            log.fine("  endnode: " + endNodeMap.get(getNodeName(node)));
         }
     }
 
@@ -374,7 +374,7 @@ public class Guide {
             AbstractItem item = items.get(itemIndex);
             if (item instanceof CommandItem) {
                 CommandItem command = (CommandItem) item;
-                logger.log(Level.FINE, "validate {0}", item.toPrettyAmigaguide());
+                log.log(Level.FINE, "validate {0}", item.toPrettyAmigaguide());
                 if (command.getCommandName().equals("node")) {
                     assert currentNodeInfo == null;
                     String nodeName = getNodeName(command);
@@ -511,7 +511,7 @@ public class Guide {
                 int fontSize = Integer.parseInt(fontSizeText);
                 result = (fontSize > 0);
             } catch (NumberFormatException error) {
-                logger.fine("detected invalid font size: " + fontSizeText);
+                log.fine("detected invalid font size: " + fontSizeText);
             }
         }
         // Report broken font size.
@@ -621,9 +621,9 @@ public class Guide {
 
                 // Change possible alink to link.
                 if (linkTag.nameEquals(Tag.Name.alink)) {
-                    logger.fine("old alink: " + command);
+                    log.fine("old alink: " + command);
                     command.setOption(0, Tag.Name.link.toString());
-                    logger.fine("new link: " + command);
+                    log.fine("new link: " + command);
                     MessageItem message = new MessageItem(command.getOptionItem(0),
                             "replaced obsolete @{... alink} by @{... link}");
                     messagePool.add(message);
@@ -632,7 +632,7 @@ public class Guide {
                 // Detect and remove additional link options.
                 optionIndex += 1;
                 if (command.getOption(optionIndex) != null) {
-                    logger.info("remove link options from: " + command);
+                    log.info("remove link options from: " + command);
                     MessageItem message = new MessageItem(command.getOptionItem(optionIndex),
                             "removed unexpected link options starting with option #" + optionIndex);
                     messagePool.add(message);
@@ -789,13 +789,13 @@ public class Guide {
                     }
                     databaseInfo = new DatabaseInfo(databaseName);
                 } else {
-                    logger.info("first command is: " + firstItem);
+                    log.info("first command is: " + firstItem);
                 }
             } else {
-                logger.info("first item is: " + firstItem);
+                log.info("first item is: " + firstItem);
             }
         } else {
-            logger.info("guide is empty: " + guideSource);
+            log.info("guide is empty: " + guideSource);
         }
 
         if (getDatabaseInfo() == null) {
