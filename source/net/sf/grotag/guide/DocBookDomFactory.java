@@ -17,6 +17,7 @@ import net.sf.grotag.common.Tools;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.Text;
 
 /**
  * Factory to create a DOM for DocBook XML.
@@ -33,6 +34,26 @@ public class DocBookDomFactory extends AbstractDomFactory {
 
         log = Logger.getLogger(DocBookDomFactory.class.getName());
         tools = Tools.getInstance();
+    }
+
+    @Override
+    protected Element createGuideNode(Guide guide) {
+        assert guide != null;
+
+        Element result = getDom().createElement("chapter");
+        String chapterTitle = guide.getDatabaseInfo().getName();
+
+        log.info("create chapter " + tools.sourced(chapterTitle));
+        // Create chapter title.
+        Element title = getDom().createElement("title");
+        Text titleText = getDom().createTextNode(chapterTitle);
+        title.appendChild(titleText);
+        result.appendChild(title);
+
+        for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+            result.appendChild(createNodeNode(guide, nodeInfo));
+        }
+        return result;
     }
 
     @Override

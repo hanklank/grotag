@@ -41,7 +41,6 @@ abstract public class AbstractDomFactory {
     private Document dom;
     private Logger log;
     private Tools tools;
-
     private Map<String, String> agNodeToDbNodeMap;
     private AmigaTools amigaTools;
 
@@ -77,6 +76,13 @@ abstract public class AbstractDomFactory {
             }
         }
     }
+
+    /**
+     * Create node that represents the while <code>guide</code>.
+     * 
+     * @see #createNodeNode(Guide, NodeInfo)
+     */
+    abstract protected Element createGuideNode(Guide guide);
 
     /**
      * Create node for <code>@amigaguide</code>
@@ -141,25 +147,6 @@ abstract public class AbstractDomFactory {
 
     private String nodeKey(Guide guideContainingNode, NodeInfo nodeInfo) {
         return nodeKey(guideContainingNode, nodeInfo.getName());
-    }
-
-    protected Element createGuideNode(Guide guide) {
-        assert guide != null;
-
-        Element result = dom.createElement("chapter");
-        String chapterTitle = guide.getDatabaseInfo().getName();
-
-        log.info("create chapter " + tools.sourced(chapterTitle));
-        // Create chapter title.
-        Element title = dom.createElement("title");
-        Text titleText = dom.createTextNode(chapterTitle);
-        title.appendChild(titleText);
-        result.appendChild(title);
-
-        for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-            result.appendChild(createNodeNode(guide, nodeInfo));
-        }
-        return result;
     }
 
     protected Element createNodeNode(Guide guide, NodeInfo nodeInfo) {
@@ -360,11 +347,11 @@ abstract public class AbstractDomFactory {
         return result;
     }
 
-    public GuidePile getPile() {
+    public final GuidePile getPile() {
         return pile;
     }
 
-    protected Document getDom() {
+    protected final Document getDom() {
         return dom;
     }
 }
