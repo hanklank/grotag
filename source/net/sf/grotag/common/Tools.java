@@ -291,13 +291,12 @@ public class Tools {
      * "hugo.tar.gz" yields "gz".
      */
     public String getSuffix(String name) {
-        // FIXME: handle dir.xxx/name correctly -> should be "", not
-        // "xxx/name"
         assert name != null;
         String result;
         int lastDotIndex = name.lastIndexOf('.');
+        int lastSeparatorIndex = name.lastIndexOf(File.separator);
 
-        if (lastDotIndex == -1) {
+        if ((lastDotIndex < lastSeparatorIndex) || (lastDotIndex == -1)) {
             result = "";
         } else {
             result = name.substring(lastDotIndex + 1).toLowerCase();
