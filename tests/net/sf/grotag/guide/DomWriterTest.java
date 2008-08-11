@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 public class DomWriterTest {
-    TestTools testTools;
+    private TestTools testTools;
 
     @Before
     public void setUp() throws Exception {
