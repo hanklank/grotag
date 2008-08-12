@@ -1,6 +1,6 @@
 package net.sf.grotag;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -18,12 +18,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Testcase for IFFReader (just to see how it works).
+ * Test case for IFFReader (just to see how it works).
  * 
  * @author Thomas Aglassinger
  */
 public class IlbmImageTest {
+    private static final int MILLISECONDS_TO_SHOW_IMAGE = 3000;
     private static final boolean SHOW_AMIGABALL = false;
+
     private TestTools testTools;
 
     @Before
@@ -45,7 +47,7 @@ public class IlbmImageTest {
             frame.pack();
             frame.setVisible(true);
             try {
-                Thread.sleep(3000);
+                Thread.sleep(MILLISECONDS_TO_SHOW_IMAGE);
             } catch (InterruptedException error) {
                 error.printStackTrace();
             }
