@@ -34,7 +34,7 @@ public class DomWriter {
      * @author Thomas Aglassinger
      */
     public enum Dtd {
-        DOCBOOK
+        DOCBOOK, HTML
     }
 
     public static final String DEFAULT_ENCODING = "UTF-8";
@@ -59,6 +59,9 @@ public class DomWriter {
             transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.5//EN");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
                     "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd");
+        } else if (dtd == Dtd.HTML) {
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//W3C//DTD HTML 4.01//EN");
+            transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "http://www.w3.org/TR/html4/strict.dtd");
         } else {
             assert false : "dtd=" + dtd;
         }

@@ -18,6 +18,7 @@ a:visited {color: purple; text-decoration: none; outline: solid gray}
 .bpen5 { background: navy }
 .bpen6 { background: green }
 .bpen7 { background: red }
+.monospace { font-family: monospace }
 .b { font-weight: bold }
 .bi { font-weight: bold; font-style: italic }
 .biu { font-weight: bold; font-style: italic; text-decoration: underline }

@@ -36,7 +36,11 @@ public class DocBookDomFactory extends AbstractDomFactory {
         tools = Tools.getInstance();
     }
 
-    @Override
+    /**
+     * Create node that represents the whole <code>guide</code>.
+     * 
+     * @see #createNodeNode(Guide, NodeInfo)
+     */
     protected Element createGuideNode(Guide guide) {
         assert guide != null;
 
@@ -144,8 +148,11 @@ public class DocBookDomFactory extends AbstractDomFactory {
         return getDom();
     }
 
-    @Override
-    protected Node createMetaInfoNode(Guide guide) {
+    /**
+     * Create node that holds all the meta information about the document, such
+     * as <code>@author</code>, <code>@(c)</code>, <code>@keywords</code> and so on.
+     */
+    private Node createMetaInfoNode(Guide guide) {
         Element result;
         if (guide == getPile().getGuides().get(0)) {
             DatabaseInfo dbInfo = guide.getDatabaseInfo();

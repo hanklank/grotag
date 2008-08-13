@@ -78,13 +78,6 @@ abstract public class AbstractDomFactory {
     }
 
     /**
-     * Create node that represents the while <code>guide</code>.
-     * 
-     * @see #createNodeNode(Guide, NodeInfo)
-     */
-    abstract protected Element createGuideNode(Guide guide);
-
-    /**
      * Create node for <code>@amigaguide</code>
      */
     abstract protected Node createAmigaguideNode();
@@ -105,12 +98,6 @@ abstract public class AbstractDomFactory {
     abstract protected Node createEmbeddedFile(File embeddedFile);
 
     abstract protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel);
-
-    /**
-     * Create node that holds all the meta information about the document, such
-     * as <code>@author</code>, <code>@(c)</code>, <code>@keywords</code> and so on.
-     */
-    abstract protected Node createMetaInfoNode(Guide guide);
 
     /**
      * Create node to hold the text if a paragraph.
