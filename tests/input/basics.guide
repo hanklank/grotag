@@ -10,8 +10,8 @@ This Guide demonstrates some of the basic features of @{amigaguide}.
 
 @{"Playing with text" link "text"} - various things that can be done with text & style.
 @{"Preformatted Text" link "preformatted"} - a preformatted layout.
-@{"Smartwrapped Text" link "wordwrapped"} - uses wordwrap.
-@{"Wordwrapped Text" link "smartwrapped"} - usese smartwrap 
+@{"Wordwrapped Text" link "wordwrapped"} - uses wordwrap.
+@{"Smartwrapped Text" link "smartwrapped"} - uses smartwrap 
 @{"Monospaced Node" link "monospaced"} - shows the text in a monospaced font.
 
 @endnode
