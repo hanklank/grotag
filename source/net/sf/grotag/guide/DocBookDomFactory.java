@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -39,7 +40,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
     /**
      * Create node that represents the whole <code>guide</code>.
      * 
-     * @see #createNodeNode(Guide, NodeInfo)
+     * @see #appendNodeContent(Element, Guide, NodeInfo)
      */
     protected Element createGuideNode(Guide guide) {
         assert guide != null;
@@ -55,7 +56,9 @@ public class DocBookDomFactory extends AbstractDomFactory {
         result.appendChild(title);
 
         for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-            result.appendChild(createNodeNode(guide, nodeInfo));
+            Element section = createNodeBody(guide, nodeInfo);
+            result.appendChild(section);
+            appendNodeContent(section, guide, nodeInfo);
         }
         return result;
     }
@@ -242,6 +245,27 @@ public class DocBookDomFactory extends AbstractDomFactory {
             result.setAttribute("class", "monospaced");
         }
 
+        return result;
+    }
+
+    @Override
+    protected Element createNodeBody(Guide guide, NodeInfo nodeInfo) {
+        Element result = getDom().createElement("section");
+        String sectionId = getIdFor(guide, nodeInfo);
+        String sectionTitle = nodeInfo.getTitle();
+
+        log.log(Level.INFO, "create section with id={0} from node {1}: {2}", new Object[] { tools.sourced(sectionId),
+                tools.sourced(nodeInfo.getName()), tools.sourced(sectionTitle) });
+        result.setAttribute("id", sectionId);
+
+        return result;
+    }
+
+    @Override
+    protected Element createNodeHeading(String heading) {
+        assert heading != null;
+        Element result = getDom().createElement("title");
+        result.appendChild(getDom().createTextNode(heading));
         return result;
     }
 }

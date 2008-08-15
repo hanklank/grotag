@@ -35,7 +35,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
 
     @Override
     protected Node createAmigaguideNode() {
-        Element result = getDom().createElement("style");
+        Element result = getDom().createElement("span");
         result.setAttribute("class", "b");
         result.appendChild(getDom().createTextNode("Amigaguide\u00ae"));
         return result;
@@ -80,9 +80,8 @@ public class HtmlDomFactory extends AbstractDomFactory {
         Element html = getDom().createElement("html");
         Element head = createHead();
         html.appendChild(head);
-        Element body = getDom().createElement("body");
-        Node content = createNodeNode(guide, nodeInfo);
-        body.appendChild(content);
+        Element body = createNodeBody(guide, nodeInfo);
+        appendNodeContent(body, guide, nodeInfo);
         getDom().appendChild(html);
         html.appendChild(body);
         return getDom();
@@ -131,6 +130,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         style.setAttribute("type", "text/css");
         // FIXME: Consider that CSS can be in parent folder.
         style.setAttribute("href", "amigaguide.css");
+        result.appendChild(style);
 
         // Append author.
         String author = dbInfo.getAuthor();
@@ -171,6 +171,20 @@ public class HtmlDomFactory extends AbstractDomFactory {
                 result.setAttribute("class", "monospace");
             }
         }
+        return result;
+    }
+
+    @Override
+    protected Element createNodeBody(Guide guide, NodeInfo nodeInfo) {
+        Element result = getDom().createElement("body");
+        return result;
+    }
+
+    @Override
+    protected Element createNodeHeading(String heading) {
+        assert heading != null;
+        Element result = getDom().createElement("h1");
+        result.appendChild(getDom().createTextNode(heading));
         return result;
     }
 }

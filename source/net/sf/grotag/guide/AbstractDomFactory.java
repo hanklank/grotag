@@ -24,7 +24,6 @@ import net.sf.grotag.parse.Tag;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-import org.w3c.dom.Text;
 
 /**
  * Abstract factory to create those parts of the DOM that are the same for
@@ -128,7 +127,7 @@ abstract public class AbstractDomFactory {
         assert guideContainingNode.getNodeInfo(nodeName) != null : "guide must contain node " + tools.sourced(nodeName)
                 + ": " + guideContainingNode.getSource().getFullName();
 
-        String result = nodeName + "@" + guideContainingNode.getSource().getFullName().replaceAll("\\@", "@@");
+        String result = nodeName.replace("@", "@@") + "@" + guideContainingNode.getSource().getFullName().replace("@", "@@");
         return result;
     }
 
@@ -136,23 +135,21 @@ abstract public class AbstractDomFactory {
         return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 
-    protected Element createNodeNode(Guide guide, NodeInfo nodeInfo) {
+    protected String getIdFor(Guide guideContainingNode, NodeInfo nodeInfo) {
+        return agNodeToDbNodeMap.get(nodeKey(guideContainingNode, nodeInfo));
+    }
+
+    abstract protected Element createNodeBody(Guide guide, NodeInfo nodeInfo);
+    
+    abstract protected Element createNodeHeading(String heading);
+
+    protected void appendNodeContent(Element result, Guide guide, NodeInfo nodeInfo) {
+        assert result != null;
         assert guide != null;
         assert nodeInfo != null;
 
-        Element result = dom.createElement("section");
-        String sectionId = agNodeToDbNodeMap.get(nodeKey(guide, nodeInfo));
-        String sectionTitle = nodeInfo.getTitle();
-
-        log.log(Level.INFO, "create section with id={0} from node {1}: {2}", new Object[] { tools.sourced(sectionId),
-                tools.sourced(nodeInfo.getName()), tools.sourced(sectionTitle) });
-        result.setAttribute("id", sectionId);
-
-        // Create title.
-        Element title = dom.createElement("title");
-        Text titleText = dom.createTextNode(sectionTitle);
-        title.appendChild(titleText);
-        result.appendChild(title);
+        Element heading = createNodeHeading(nodeInfo.getTitle());
+        result.appendChild(heading);
 
         // Traverse node items.
         NodeParserState parserState = NodeParserState.BEFORE_NODE;
@@ -314,8 +311,6 @@ abstract public class AbstractDomFactory {
             paragraph.appendChild(dom.createTextNode(withoutPossibleTrailingNewLine(text)));
             result.appendChild(paragraph);
         }
-
-        return result;
     }
 
     /**
