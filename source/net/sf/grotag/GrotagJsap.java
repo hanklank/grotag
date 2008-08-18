@@ -19,6 +19,7 @@ public class GrotagJsap extends JSAP {
     public static final String ARG_DOCBOOK = "docbook";
     public static final String ARG_FILE = "file";
     public static final String ARG_HELP = "help";
+    public static final String ARG_HTML = "html";
     public static final String ARG_LICENSE = "license";
     public static final String ARG_PRETTY = "pretty";
     public static final String ARG_VALIDATE = "validate";
@@ -27,8 +28,8 @@ public class GrotagJsap extends JSAP {
     /**
      * Exactly one of these options must be specified.
      */
-    private static final String[] ANY_REQUIRED = new String[] { ARG_DOCBOOK, ARG_HELP, ARG_LICENSE, ARG_PRETTY,
-            ARG_VERSION, ARG_VALIDATE };
+    private static final String[] ANY_REQUIRED = new String[] { ARG_DOCBOOK, ARG_HELP, ARG_HTML, ARG_LICENSE,
+            ARG_PRETTY, ARG_VERSION, ARG_VALIDATE };
 
     // TODO: Obtain copyright year from Version class.
     private static final String[] HEADING = new String[] {
@@ -53,8 +54,8 @@ public class GrotagJsap extends JSAP {
         UnflaggedOption fileOption = new UnflaggedOption(ARG_FILE);
         fileOption.setStringParser(FileStringParser.getParser());
         fileOption.setGreedy(true);
-        fileOption.setHelp("the files to be processed by --" + ARG_DOCBOOK + ", --" + ARG_PRETTY + " or --"
-                + ARG_VALIDATE);
+        fileOption.setHelp("the files to be processed by --" + ARG_DOCBOOK + ", --" + ARG_HTML + ", --" + ARG_PRETTY
+                + " or --" + ARG_VALIDATE);
         registerParameter(fileOption);
 
         Switch docBookSwitch = new Switch(ARG_DOCBOOK);
@@ -64,6 +65,14 @@ public class GrotagJsap extends JSAP {
                 + "and the second file as DocBook XML output; if only one file is specified, the output "
                 + "is written to a file with the suffix changed to \".xml\"");
         registerParameter(docBookSwitch);
+
+        Switch htmlSwitch = new Switch(ARG_HTML);
+        htmlSwitch.setShortFlag('w');
+        htmlSwitch.setLongFlag(ARG_HTML);
+        htmlSwitch.setHelp("convert to HTML using the first specified file as Amigaguide input "
+                + "and the second as output folder; if only one file is specified, the output "
+                + "is written to the current directory");
+        registerParameter(htmlSwitch);
 
         Switch prettySwitch = new Switch(ARG_PRETTY);
         prettySwitch.setShortFlag('v');
@@ -117,7 +126,9 @@ public class GrotagJsap extends JSAP {
      */
     public void printHelp(PrintStream stream) {
         assert stream != null;
-        stream.println(HEADING);
+        for (String line : HEADING) {
+            stream.println(line);
+        }
         stream.println();
         stream.println(getHelp());
     }

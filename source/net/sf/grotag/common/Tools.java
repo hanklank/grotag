@@ -26,6 +26,7 @@ public class Tools {
     private static final int BUFFER_SIZE = 16384;
 
     private Map<Character, String> escapeMap;
+    private Logger log;
 
     private static Tools instance;
 
@@ -62,6 +63,7 @@ public class Tools {
                 Logger.getLogger(Tools.class.getName()).severe(
                         "cannot read \"" + loggingSetupFilePath + "" + "\": " + error.getMessage());
             }
+            log = Logger.getLogger(Tools.class.getName());
             fileIndex += 1;
         }
 
@@ -126,6 +128,9 @@ public class Tools {
     public String getRelativeUrl(File linkingFile, File targetFile) {
         assert linkingFile != null;
         assert targetFile != null;
+
+        log.fine(sourced(linkingFile));
+        log.fine(sourced(targetFile));
         String result = "";
         String[] linkingParts = splitFile(linkingFile);
         String[] targetParts = splitFile(targetFile);
@@ -148,6 +153,8 @@ public class Tools {
             }
             result += targetParts[targetIndex];
         }
+
+        log.fine("-> " + sourced(result));
         return result;
     }
 
@@ -317,12 +324,11 @@ public class Tools {
         return result;
     }
 
-    public void copyFile(File source, File target)
-        throws IOException {
+    public void copyFile(File source, File target) throws IOException {
         boolean copied = false;
         InputStream in = new FileInputStream(source);
 
-         target.getParentFile().mkdirs();
+        target.getParentFile().mkdirs();
 
         try {
             OutputStream out = new FileOutputStream(target);

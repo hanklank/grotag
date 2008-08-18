@@ -98,17 +98,16 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(Guide sourceGuide, File mappedFile, String mappedNode, String linkLabel) {
+    protected Node createDataLinkNode(Guide sourceGuide, File linkedFile, String linkedNode, String linkLabel) {
         Element result = getDom().createElement("a");
-        File sourceFile = sourceGuide.getSourceFile();
-        Guide targetGuide = pile.getGuide(mappedFile);
-        NodeInfo targetNodeInfo = targetGuide.getNodeInfo(mappedNode);
+        NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
+        File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
+        Guide targetGuide = pile.getGuide(linkedFile);
+        NodeInfo targetNodeInfo = targetGuide.getNodeInfo(linkedNode);
         File targetFile = getTargetFileFor(targetGuide, targetNodeInfo);
-        String relativeTargetUrl = tools.getRelativeUrl(sourceFile, targetFile);
-        System.out.println(tools.sourced(relativeTargetUrl));
+        String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetFile);
 
         result.setAttribute("href", relativeTargetUrl);
-        System.out.println(linkLabel);
         result.appendChild(getDom().createTextNode(linkLabel));
         return result;
     }

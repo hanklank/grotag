@@ -1,5 +1,7 @@
 package net.sf.grotag;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
@@ -16,6 +18,9 @@ import net.sf.grotag.guide.DocBookDomFactory;
 import net.sf.grotag.guide.DomWriter;
 import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
+import net.sf.grotag.guide.HtmlDomFactory;
+import net.sf.grotag.guide.HtmlDomFactoryTest;
+import net.sf.grotag.guide.NodeInfo;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -49,9 +54,10 @@ public class Grotag {
         }
 
         boolean isDocBook = options.getBoolean(GrotagJsap.ARG_DOCBOOK);
+        boolean isHtml = options.getBoolean(GrotagJsap.ARG_HTML);
         boolean isPretty = options.getBoolean(GrotagJsap.ARG_PRETTY);
         boolean isValidate = options.getBoolean(GrotagJsap.ARG_VALIDATE);
-        if (isDocBook || isPretty || isValidate) {
+        if (isDocBook || isHtml || isPretty || isValidate) {
             File files[] = options.getFileArray(GrotagJsap.ARG_FILE);
             // According to JSAP API documentation, this is never is null.
             assert files != null;
@@ -60,6 +66,8 @@ public class Grotag {
             }
             if (isDocBook) {
                 docBook(files);
+            } else if (isHtml) {
+                html(files);
             } else if (isPretty) {
                 pretty(files);
             } else if (isValidate) {
@@ -103,6 +111,36 @@ public class Grotag {
         DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
 
         domWriter.write(dom, outputFile);
+    }
+
+    private void html(File[] files) throws IOException, ParserConfigurationException, TransformerException {
+        int fileCount = files.length;
+        File inputFile;
+        File outputFolder;
+        if (fileCount == 0) {
+            throw new IllegalArgumentException("Amigaguide input file must be specified");
+        } else if (fileCount == 1) {
+            inputFile = files[0];
+            outputFolder = new File(System.getProperty("user.dir"));
+        } else if (fileCount == 2) {
+            inputFile = files[0];
+            outputFolder = files[1];
+        } else {
+            throw new IllegalArgumentException("with --" + GrotagJsap.ARG_HTML
+                    + " only 2 files must be specified instead of " + fileCount);
+        }
+        GuidePile pile = GuidePile.createGuidePile(inputFile);
+        for (Guide guide : pile.getGuides()) {
+            HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
+            // FIXME: Obtain amigaguide.css from proper location.
+            factory.copyStyleFile(new File("source", "amigaguide.css"));
+            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+                Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
+                File targetFile = factory.getTargetFileFor(guide, nodeInfo);
+                DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
+                htmlWriter.write(htmlDocument, targetFile);
+            }
+        }
     }
 
     private void pretty(File[] files) throws IOException {
