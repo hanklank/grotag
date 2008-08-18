@@ -282,7 +282,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
             assert wrap != Wrap.DEFAULT;
         }
         result = getDom().createElement(tagName);
-        if (!isProportional) {
+        if (!isProportional && (wrap == Wrap.NONE)) {
             result.setAttribute("class", "monospaced");
         }
 
