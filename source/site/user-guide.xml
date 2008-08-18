@@ -44,12 +44,15 @@
   <preface id="introduction">
     <title>Introduction</title>
 
-    <para>Amigaguide is a file format and application for AmigaOS. It enables
-    to author and view hypertext documentation to some extend comparable to
-    HTML or WinHelp. Most of the online documentation written for Amiga
-    applications or about developing Amiga applications uses Amigaguide.
-    Outside of AmigaOS however Amigaguide is unused and consequently hardly
-    any viewers exist.</para>
+    <para>Amigaguide is a file format and application for AmigaOS<footnote>
+        <para>The original Amigaguide is still available from any Aminet
+        mirror, for example <ulink
+        url="http://aminet.net/text/hyper/aguide34.lha"></ulink>.</para>
+      </footnote>. It enables to author and view hypertext documentation to
+    some extend comparable to HTML or WinHelp. Most of the online
+    documentation written for Amiga applications or about developing Amiga
+    applications uses Amigaguide. Outside of AmigaOS however Amigaguide is
+    unused and consequently hardly any viewers exist.</para>
 
     <para>Altough most Amigaguide documents are useless without access to an
     Amiga (real or emulated), occasionally a need arises to read such
@@ -181,6 +184,30 @@
 
       <para>In case you want to clean up multiple files, you can pass all of
       them along at once.</para>
+    </section>
+
+    <section id="command-line-html">
+      <title>Convert Amigaguide documents to HTML</title>
+
+      <para>To convert an Amigaguide document named
+      <filename>some.guide</filename> to a set of HTML documents, run:</para>
+
+      <para><userinput>grotag --html some.guide</userinput></para>
+
+      <para>This creates a folder <filename>some</filename> in the current
+      folder, which contains a <filename>*.html</filename> file for each node.
+      The file for the main node is always called
+      <filename>index.html</filename>.</para>
+
+      <para>To store the output in a different folder, specify it as a second
+      option. For example, to store the HTML version of
+      <filename>some.guide</filename> in <filename>~/guides</filename>,
+      run:</para>
+
+      <para><userinput>grotag --docbook some.guide ~/guides</userinput></para>
+
+      <para>To start reading, open
+      <filename>~/guides/some/index.html</filename>.</para>
     </section>
 
     <section id="command-line-docbook">
