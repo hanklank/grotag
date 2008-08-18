@@ -94,7 +94,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(File guideFile, String targetNode, String linkLabel) {
+    protected Node createDataLinkNode(Guide sourceGuide, File guideFile, String targetNode, String linkLabel) {
         Node result;
         Element resultElement = null;
         Guide guide = getPile().getGuide(guideFile);
@@ -121,7 +121,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createOtherFileLinkNode(File linkedFile, String linkLabel) {
+    protected Node createOtherFileLinkNode(Guide sourceGuide, File linkedFile, String linkLabel) {
         // TODO: Copy linked file to same
         // folder as target document.
         URL linkedUrl = createUrl("file", "localhost", linkedFile);
@@ -163,7 +163,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel) {
+    protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel) {
         URL linkedUrl = createUrl("file", "localhost", linkedFile);
         Element elementToAppend = getDom().createElement("ulink");
         elementToAppend.setAttribute("url", linkedUrl.toExternalForm());

@@ -66,19 +66,19 @@ abstract public class AbstractDomFactory {
     /**
      * Create node for a link to a node in a guide.
      */
-    abstract protected Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel);
+    abstract protected Node createDataLinkNode(Guide sourceGuide, File targetFile, String targetNode, String linkLabel);
 
     /**
      * Create node for a link to non guide file (for example an image).
      */
-    abstract protected Node createOtherFileLinkNode(File linkedFile, String linkLabel);
+    abstract protected Node createOtherFileLinkNode(Guide sourceGuide, File linkedFile, String linkLabel);
 
     /**
      * Create node for the content of file included using <code>@embed</code>.
      */
     abstract protected Node createEmbeddedFile(File embeddedFile);
 
-    abstract protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel);
+    abstract protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel);
 
     /**
      * Create node to hold the text if a paragraph.
@@ -210,8 +210,8 @@ abstract public class AbstractDomFactory {
                                     if (targetGuide != null) {
                                         // Link within DocBook document.
                                         if (link.isDataLink()) {
-                                            nodeToAppend = createDataLinkNode(targetGuide.getSourceFile(), targetNode,
-                                                    linkLabel);
+                                            nodeToAppend = createDataLinkNode(guide, targetGuide.getSourceFile(),
+                                                    targetNode, linkLabel);
                                         } else {
                                             // FIXME: Figure out how this case
                                             // can happen and what would be the
@@ -219,14 +219,15 @@ abstract public class AbstractDomFactory {
                                             assert false : "no data link";
                                         }
                                     } else if (linkedFile.exists()) {
-                                        nodeToAppend = createOtherFileLinkNode(linkedFile, linkLabel);
+                                        nodeToAppend = createOtherFileLinkNode(guide, linkedFile, linkLabel);
                                     } else {
                                         log.warning("skipped link to unknown file: " + command.toPrettyAmigaguide());
                                     }
                                 } else if (link.getState() == Link.State.VALID_OTHER_FILE) {
                                     // Valid link to non-Amigaguide file.
                                     log.log(Level.FINE, "connect to non-guide: {0}", command);
-                                    nodeToAppend = createLinkToNonGuideNode(link.getTargetFile(), link.getLabel());
+                                    nodeToAppend = createLinkToNonGuideNode(guide, link.getTargetFile(), link
+                                            .getLabel());
                                 } else {
                                     log.warning("skipped link with state=" + link.getState() + ": "
                                             + command.toPrettyAmigaguide());

@@ -98,10 +98,19 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel) {
-        // TODO: Implement proper link.
-        Text label = getDom().createTextNode(linkLabel);
-        return label;
+    protected Node createDataLinkNode(Guide sourceGuide, File mappedFile, String mappedNode, String linkLabel) {
+        Element result = getDom().createElement("a");
+        File sourceFile = sourceGuide.getSourceFile();
+        Guide targetGuide = pile.getGuide(mappedFile);
+        NodeInfo targetNodeInfo = targetGuide.getNodeInfo(mappedNode);
+        File targetFile = getTargetFileFor(targetGuide, targetNodeInfo);
+        String relativeTargetUrl = tools.getRelativeUrl(sourceFile, targetFile);
+        System.out.println(tools.sourced(relativeTargetUrl));
+
+        result.setAttribute("href", relativeTargetUrl);
+        System.out.println(linkLabel);
+        result.appendChild(getDom().createTextNode(linkLabel));
+        return result;
     }
 
     @Override
@@ -145,7 +154,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createLinkToNonGuideNode(File linkedFile, String linkLabel) {
+    protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel) {
         // TODO: Implement proper link.
         Text label = getDom().createTextNode(linkLabel);
         return label;
@@ -211,7 +220,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createOtherFileLinkNode(File linkedFile, String linkLabel) {
+    protected Node createOtherFileLinkNode(Guide sourceGuide, File linkedFile, String linkLabel) {
         // TODO: Implement proper link.
         Text label = getDom().createTextNode(linkLabel);
         return label;
