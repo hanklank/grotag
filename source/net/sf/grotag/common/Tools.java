@@ -3,7 +3,12 @@ package net.sf.grotag.common;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.LogManager;
@@ -18,6 +23,7 @@ public class Tools {
      */
     private static final int ESCAPE_SLACK_COUNT = 16;
     private static final int UNICODE_HEX_DIGIT_COUNT = 4;
+    private static final int BUFFER_SIZE = 16384;
 
     private Map<Character, String> escapeMap;
 
@@ -98,6 +104,49 @@ public class Tools {
             if (!Character.isWhitespace(ch)) {
                 result += ch;
             }
+        }
+        return result;
+    }
+
+    public String[] splitFile(File file) {
+        List<String> result = new LinkedList<String>();
+        File parentRider = file.getAbsoluteFile();
+
+        while (parentRider.getName().length() > 0) {
+            result.add(0, parentRider.getName());
+            parentRider = parentRider.getParentFile();
+        }
+        return result.toArray(new String[] {});
+    }
+
+    /**
+     * The relative URL to link from <code>linkingFile</code> to
+     * <code>targetFile</target>.
+     */
+    public String getRelativeUrl(File linkingFile, File targetFile) {
+        assert linkingFile != null;
+        assert targetFile != null;
+        String result = "";
+        String[] linkingParts = splitFile(linkingFile);
+        String[] targetParts = splitFile(targetFile);
+        int commonIndex = 0;
+        while ((commonIndex < linkingParts.length) && (commonIndex < targetParts.length)
+                && linkingParts[commonIndex].equals(targetParts[commonIndex])) {
+            commonIndex += 1;
+        }
+
+        for (int parentIndex = commonIndex + 1; parentIndex < linkingParts.length; parentIndex += 1) {
+            result += "../";
+        }
+
+        boolean isFirstTargetPart = true;
+        for (int targetIndex = commonIndex; targetIndex < targetParts.length; targetIndex += 1) {
+            if (isFirstTargetPart) {
+                isFirstTargetPart = false;
+            } else {
+                result += "/";
+            }
+            result += targetParts[targetIndex];
         }
         return result;
     }
@@ -266,6 +315,39 @@ public class Tools {
         String result = filePath.substring(basePath.length() + 1);
 
         return result;
+    }
+
+    public void copyFile(File source, File target)
+        throws IOException {
+        boolean copied = false;
+        InputStream in = new FileInputStream(source);
+
+         target.getParentFile().mkdirs();
+
+        try {
+            OutputStream out = new FileOutputStream(target);
+
+            try {
+                byte[] buffer = new byte[BUFFER_SIZE];
+
+                while (!copied) {
+                    int bytesRead = in.read(buffer);
+
+                    if (bytesRead > 0) {
+                        out.write(buffer, 0, bytesRead);
+                    } else {
+                        copied = true;
+                    }
+                }
+            } finally {
+                out.close();
+                if (!copied) {
+                    target.delete();
+                }
+            }
+        } finally {
+            in.close();
+        }
     }
 
     public String[] getRelativePaths(File baseDir, File[] filesInBaseDir) {

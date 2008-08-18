@@ -36,6 +36,7 @@ public class HtmlDomFactoryTest {
         GuidePile pile = GuidePile.createGuidePile(guideFile);
         Guide guide = pile.getGuides().get(0);
         HtmlDomFactory factory = new HtmlDomFactory(pile, targetFolder);
+        factory.copyStyleFile(new File("source", "amigaguide.css"));
         for (NodeInfo nodeInfo : guide.getNodeInfos()) {
             Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
             assertNotNull(htmlDocument);

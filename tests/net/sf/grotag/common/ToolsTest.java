@@ -2,6 +2,8 @@ package net.sf.grotag.common;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+
 import net.sf.grotag.common.Tools;
 
 import org.junit.Before;
@@ -9,9 +11,12 @@ import org.junit.Test;
 
 public class ToolsTest {
     private Tools tools;
+    private TestTools testTools;
+
 
     @Before
     public void setUp() throws Exception {
+        testTools = TestTools.getInstance();
         tools = Tools.getInstance();
     }
 
@@ -55,5 +60,22 @@ public class ToolsTest {
         assertEquals("hugo", tools.cutOffAt("hugo", ','));
         assertEquals("hugo", tools.cutOffAt("hugo,x", ','));
         assertEquals("", tools.cutOffAt(",hugo,x", ','));
+    }
+
+    @Test
+    public void testSplitFile() {
+        String[] fileParts = tools.splitFile(testTools.getTestActualFile("hugo"));
+        assertNotNull(fileParts);
+        assertTrue(fileParts.length > 0);
+    }
+
+    @Test
+    public void testGetRelativeUrlTo() {
+        File linkingFile;
+        File targetFile;
+        
+        linkingFile = testTools.getTestInputFile("linking.html");
+        targetFile = testTools.getTestActualFile("target.html");
+        assertEquals("../actual/target.html", tools.getRelativeUrl(linkingFile, targetFile));
     }
 }
