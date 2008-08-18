@@ -11,7 +11,7 @@ This Guide demonstrates some of the basic features of @{amigaguide}.
 @{"Playing with text" link "text"} - various things that can be done with text & style.
 @{"Preformatted Text" link "preformatted"} - a preformatted layout.
 @{"Wordwrapped Text" link "wordwrapped"} - uses wordwrap.
-@{"Smartwrapped Text" link "smartwrapped"} - uses smartwrap 
+@{"Smartwrapped Text" link "smartwrapped"} - uses smartwrap.
 @{"Monospaced Node" link "monospaced"} - shows the text in a monospaced font.
 
 @endnode
@@ -35,7 +35,7 @@ And here we are back again in the main document.
 
 @node Preformatted "Preformatted Text"
 Here is some preformatted text.
-This means viewers and converted
+This means viewers and converters
 will preserve line breaks as specified
 in the source document.
 @endnode
