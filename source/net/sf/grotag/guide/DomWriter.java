@@ -78,6 +78,7 @@ public class DomWriter {
 
         log.log(Level.INFO, "write dom to {0} using encoding {1}", new Object[] { tools.sourced(targetFile),
                 tools.sourced(encoding) });
+        targetFile.getParentFile().mkdirs();
         Writer targetWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile), encoding));
         try {
             transformer.setOutputProperty(OutputKeys.ENCODING, encoding);

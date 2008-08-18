@@ -52,9 +52,7 @@ abstract public class AbstractDomFactory {
 
         pile = newPile;
 
-        DocumentBuilderFactory domBuilderFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder domBuilder = domBuilderFactory.newDocumentBuilder();
-        dom = domBuilder.newDocument();
+        createDom();
 
         // Map the Amigaguide node names to DocBook id's that conform to the
         // NCName definition.
@@ -74,6 +72,12 @@ abstract public class AbstractDomFactory {
                 nodeCounter += 1;
             }
         }
+    }
+
+    protected void createDom() throws ParserConfigurationException {
+        DocumentBuilderFactory domBuilderFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder domBuilder = domBuilderFactory.newDocumentBuilder();
+        dom = domBuilder.newDocument();
     }
 
     /**
@@ -131,7 +135,7 @@ abstract public class AbstractDomFactory {
         return result;
     }
 
-    private String nodeKey(Guide guideContainingNode, NodeInfo nodeInfo) {
+    protected String nodeKey(Guide guideContainingNode, NodeInfo nodeInfo) {
         return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 

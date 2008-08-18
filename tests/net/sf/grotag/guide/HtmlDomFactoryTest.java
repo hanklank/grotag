@@ -30,18 +30,19 @@ public class HtmlDomFactoryTest {
     @Test
     public void testCreateNodeDocument() throws IOException, ParserConfigurationException, TransformerException {
         File guideFile = testTools.getTestInputFile("basics.guide");
-        File targetFolder = testTools.getTestActualFile("basics");
-        targetFolder.mkdirs();
+        String testName = testTools.getTestName(HtmlDomFactoryTest.class, "testCreateNodeDocument");
+        File targetFolder = testTools.getTestActualFile(testName);
 
         GuidePile pile = GuidePile.createGuidePile(guideFile);
         Guide guide = pile.getGuides().get(0);
-        NodeInfo nodeInfo = guide.getNodeInfos().get(0);
-        HtmlDomFactory factory = new HtmlDomFactory(pile, guide, nodeInfo);
-        Document htmlDocument = factory.createNodeDocument();
-        assertNotNull(htmlDocument);
+        HtmlDomFactory factory = new HtmlDomFactory(pile, targetFolder);
+        for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+            Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
+            assertNotNull(htmlDocument);
 
-        File targetFile = new File(targetFolder, nodeInfo.getName() + ".html");
-        DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
-        htmlWriter.write(htmlDocument, targetFile);
+            File targetFile = factory.getTargetFileFor(guide, nodeInfo);
+            DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
+            htmlWriter.write(htmlDocument, targetFile);
+        }
     }
 }

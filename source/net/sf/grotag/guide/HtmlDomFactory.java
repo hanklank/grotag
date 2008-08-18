@@ -6,11 +6,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
+import net.sf.grotag.parse.FileSource;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -18,19 +24,68 @@ import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
 public class HtmlDomFactory extends AbstractDomFactory {
-    private Guide guide;
-    private NodeInfo nodeInfo;
+    private GuidePile pile;
+    private File pileBaseFolder;
+    private File pileTargetFolder;
     private Tools tools;
+    private Map<String, File> targetFileMap;
 
-    public HtmlDomFactory(GuidePile newPile, Guide newGuide, NodeInfo newNodeInfo) throws ParserConfigurationException {
+    public HtmlDomFactory(GuidePile newPile, File newPileTargetFolder) throws ParserConfigurationException {
         super(newPile);
-        assert newGuide != null;
-        assert newNodeInfo != null;
+        assert newPileTargetFolder != null;
 
         tools = Tools.getInstance();
 
-        guide = newGuide;
-        nodeInfo = newNodeInfo;
+        pile = newPile;
+        pileTargetFolder = newPileTargetFolder;
+
+        List<Guide> guides = pile.getGuides();
+        assert guides != null;
+        assert guides.size() > 0;
+        Guide baseGuide = guides.get(0);
+        FileSource guideSource = (FileSource) baseGuide.getSource();
+        pileBaseFolder = guideSource.getFile().getParentFile();
+        targetFileMap = createTargetFileMap();
+    }
+
+    public File getTargetFileFor(Guide guide, NodeInfo nodeInfo) {
+        File result = targetFileMap.get(nodeKey(guide, nodeInfo));
+        assert result != null;
+        return result;
+    }
+
+    private Map<String, File> createTargetFileMap() {
+        Map<String, File> result = new HashMap<String, File>();
+
+        for (Guide nextGuide : pile.getGuides()) {
+            Map<String, String> nodeToFileNameMap = new HashMap<String, String>();
+            Set<String> fileNameSet = new HashSet<String>();
+            File guideFile = ((FileSource) nextGuide.getSource()).getFile();
+            String relativeGuideFolder = tools.getRelativePath(pileBaseFolder, guideFile);
+            File htmlTargetFolder = new File(pileTargetFolder, tools.getWithoutLastSuffix(relativeGuideFolder));
+
+            for (NodeInfo nextNodeInfo : nextGuide.getNodeInfos()) {
+                String nodeName = nextNodeInfo.getName();
+                assert nodeName.equals(nodeName.toLowerCase());
+
+                // Make sure the "main" node ends up in the HTML file "index".
+                if (nodeName.equals("main")) {
+                    nodeName = "index";
+                } else if (nodeName.equals("index")) {
+                    nodeName = "list";
+                }
+                String fileName = nodeName;
+                int uniqueCounter = 0;
+                while (fileNameSet.contains(fileName)) {
+                    uniqueCounter += 1;
+                    fileName = nodeName + "." + uniqueCounter;
+                }
+                fileNameSet.add(fileName);
+                nodeToFileNameMap.put(nodeName, fileName);
+                result.put(nodeKey(nextGuide, nextNodeInfo), new File(htmlTargetFolder, fileName + ".html"));
+            }
+        }
+        return result;
     }
 
     @Override
@@ -76,9 +131,10 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    public Document createNodeDocument() {
+    public Document createNodeDocument(Guide guide, NodeInfo nodeInfo) throws ParserConfigurationException {
+        createDom();
         Element html = getDom().createElement("html");
-        Element head = createHead();
+        Element head = createHead(guide, nodeInfo);
         html.appendChild(head);
         Element body = createNodeBody(guide, nodeInfo);
         appendNodeContent(body, guide, nodeInfo);
@@ -110,7 +166,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
      * Create <code>&lt;head&gt;</code> including meta elements according to
      * <a href="http://dublincore.org/">Dublin Core</a>.
      */
-    private Element createHead() {
+    private Element createHead(Guide guide, NodeInfo nodeInfo) {
         assert guide != null;
         assert nodeInfo != null;
 

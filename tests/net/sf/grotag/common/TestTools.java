@@ -13,7 +13,7 @@ import java.io.InputStreamReader;
  */
 public class TestTools {
     private static TestTools instance;
-    
+
     public enum Folder {
         ACTUAL, EXPECTED, GUIDES, INPUT
     }
@@ -24,7 +24,7 @@ public class TestTools {
         }
         return instance;
     }
-    
+
     private TestTools() {
         // Instantiate tools to setup logging.
         Tools.getInstance();
@@ -66,6 +66,16 @@ public class TestTools {
         File expectedFile = getTestFile(Folder.EXPECTED, fileName);
         File actualFile = getTestFile(Folder.ACTUAL, fileName);
         assertFilesAreEqual(expectedFile, actualFile);
+    }
+
+    public String getTestName(Class classToTest, String methodToTest) {
+        assert classToTest != null;
+        assert methodToTest != null;
+        String result = classToTest.getName();
+        int dotIndex = result.lastIndexOf('.');
+        assert dotIndex >= 0;
+        result = result.substring(dotIndex + 1) + "." + methodToTest;
+        return result;
     }
 
     public void assertFilesAreEqual(File expected, File actual) throws IOException {
