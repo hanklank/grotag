@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -29,12 +31,32 @@ public class DocBookDomFactory extends AbstractDomFactory {
 
     private Logger log;
     private Tools tools;
+    private Map<String, String> agNodeToDbNodeMap;
 
     public DocBookDomFactory(GuidePile newPile) throws ParserConfigurationException {
         super(newPile);
 
         log = Logger.getLogger(DocBookDomFactory.class.getName());
         tools = Tools.getInstance();
+
+        // Map the Amigaguide node names to DocBook id's that conform to the
+        // NCName definition.
+        agNodeToDbNodeMap = new HashMap<String, String>();
+        int nodeCounter = 1;
+        for (Guide guide : newPile.getGuides()) {
+            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+                String agNodeName = nodeKey(guide, nodeInfo);
+                String dbNodeName = "n" + nodeCounter;
+
+                log.log(Level.INFO, "add mapped node {0} from {1}", new Object[] { dbNodeName, agNodeName });
+
+                assert !agNodeToDbNodeMap.containsKey(agNodeName) : "duplicate agNode: " + tools.sourced(agNodeName);
+                assert !agNodeToDbNodeMap.containsValue(dbNodeName) : "duplicate dbNode: " + tools.sourced(dbNodeName);
+
+                agNodeToDbNodeMap.put(agNodeName, dbNodeName);
+                nodeCounter += 1;
+            }
+        }
     }
 
     /**
@@ -72,10 +94,29 @@ public class DocBookDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(File mappedFile, String mappedNode, String linkLabel) {
-        Element result = getDom().createElement("link");
-        result.setAttribute("linkend", mappedNode);
-        result.appendChild(getDom().createTextNode(linkLabel));
+    protected Node createDataLinkNode(File guideFile, String targetNode, String linkLabel) {
+        Node result;
+        Element resultElement = null;
+        Guide guide = getPile().getGuide(guideFile);
+
+        if (guide != null) {
+            String mappedNode = agNodeToDbNodeMap.get(nodeKey(guide, targetNode));
+            if (mappedNode != null) {
+                resultElement = getDom().createElement("link");
+                resultElement.setAttribute("linkend", mappedNode);
+                resultElement.appendChild(getDom().createTextNode(linkLabel));
+            }
+        }
+
+        if (resultElement != null) {
+            result = resultElement;
+        } else {
+            result = getDom().createTextNode(linkLabel);
+            String fileText = tools.sourced(guideFile);
+            String nodeText = tools.sourced(targetNode);
+            log.warning("skipped link to unknown node " + nodeText + " in " + fileText);
+        }
+
         return result;
     }
 
@@ -246,6 +287,10 @@ public class DocBookDomFactory extends AbstractDomFactory {
         }
 
         return result;
+    }
+
+    private String getIdFor(Guide guideContainingNode, NodeInfo nodeInfo) {
+        return agNodeToDbNodeMap.get(nodeKey(guideContainingNode, nodeInfo));
     }
 
     @Override

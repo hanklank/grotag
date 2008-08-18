@@ -16,7 +16,6 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
-import net.sf.grotag.parse.FileSource;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -43,8 +42,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         assert guides != null;
         assert guides.size() > 0;
         Guide baseGuide = guides.get(0);
-        FileSource guideSource = (FileSource) baseGuide.getSource();
-        pileBaseFolder = guideSource.getFile().getParentFile();
+        pileBaseFolder = baseGuide.getSourceFile().getParentFile();
         targetFileMap = createTargetFileMap();
     }
 
@@ -57,14 +55,14 @@ public class HtmlDomFactory extends AbstractDomFactory {
     private Map<String, File> createTargetFileMap() {
         Map<String, File> result = new HashMap<String, File>();
 
-        for (Guide nextGuide : pile.getGuides()) {
+        for (Guide guide : pile.getGuides()) {
             Map<String, String> nodeToFileNameMap = new HashMap<String, String>();
             Set<String> fileNameSet = new HashSet<String>();
-            File guideFile = ((FileSource) nextGuide.getSource()).getFile();
+            File guideFile = guide.getSourceFile();
             String relativeGuideFolder = tools.getRelativePath(pileBaseFolder, guideFile);
             File htmlTargetFolder = new File(pileTargetFolder, tools.getWithoutLastSuffix(relativeGuideFolder));
 
-            for (NodeInfo nextNodeInfo : nextGuide.getNodeInfos()) {
+            for (NodeInfo nextNodeInfo : guide.getNodeInfos()) {
                 String nodeName = nextNodeInfo.getName();
                 assert nodeName.equals(nodeName.toLowerCase());
 
@@ -82,7 +80,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
                 }
                 fileNameSet.add(fileName);
                 nodeToFileNameMap.put(nodeName, fileName);
-                result.put(nodeKey(nextGuide, nextNodeInfo), new File(htmlTargetFolder, fileName + ".html"));
+                result.put(nodeKey(guide, nextNodeInfo), new File(htmlTargetFolder, fileName + ".html"));
             }
         }
         return result;

@@ -3,8 +3,6 @@ package net.sf.grotag.guide;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -40,7 +38,6 @@ abstract public class AbstractDomFactory {
     private Document dom;
     private Logger log;
     private Tools tools;
-    private Map<String, String> agNodeToDbNodeMap;
     private AmigaTools amigaTools;
 
     protected AbstractDomFactory(GuidePile newPile) throws ParserConfigurationException {
@@ -53,25 +50,6 @@ abstract public class AbstractDomFactory {
         pile = newPile;
 
         createDom();
-
-        // Map the Amigaguide node names to DocBook id's that conform to the
-        // NCName definition.
-        agNodeToDbNodeMap = new HashMap<String, String>();
-        int nodeCounter = 1;
-        for (Guide guide : pile.getGuides()) {
-            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-                String agNodeName = nodeKey(guide, nodeInfo);
-                String dbNodeName = "n" + nodeCounter;
-
-                log.log(Level.INFO, "add mapped node {0} from {1}", new Object[] { dbNodeName, agNodeName });
-
-                assert !agNodeToDbNodeMap.containsKey(agNodeName) : "duplicate agNode: " + tools.sourced(agNodeName);
-                assert !agNodeToDbNodeMap.containsValue(dbNodeName) : "duplicate dbNode: " + tools.sourced(dbNodeName);
-
-                agNodeToDbNodeMap.put(agNodeName, dbNodeName);
-                nodeCounter += 1;
-            }
-        }
     }
 
     protected void createDom() throws ParserConfigurationException {
@@ -123,7 +101,7 @@ abstract public class AbstractDomFactory {
         }
     }
 
-    private String nodeKey(Guide guideContainingNode, String nodeName) {
+    protected String nodeKey(Guide guideContainingNode, String nodeName) {
         assert guideContainingNode != null;
         assert nodeName != null;
         assert nodeName.equals(nodeName.toLowerCase()) : "nodeName must be lower case but is: "
@@ -131,7 +109,8 @@ abstract public class AbstractDomFactory {
         assert guideContainingNode.getNodeInfo(nodeName) != null : "guide must contain node " + tools.sourced(nodeName)
                 + ": " + guideContainingNode.getSource().getFullName();
 
-        String result = nodeName.replace("@", "@@") + "@" + guideContainingNode.getSource().getFullName().replace("@", "@@");
+        String result = nodeName.replace("@", "@@") + "@"
+                + guideContainingNode.getSource().getFullName().replace("@", "@@");
         return result;
     }
 
@@ -139,12 +118,8 @@ abstract public class AbstractDomFactory {
         return nodeKey(guideContainingNode, nodeInfo.getName());
     }
 
-    protected String getIdFor(Guide guideContainingNode, NodeInfo nodeInfo) {
-        return agNodeToDbNodeMap.get(nodeKey(guideContainingNode, nodeInfo));
-    }
-
     abstract protected Element createNodeBody(Guide guide, NodeInfo nodeInfo);
-    
+
     abstract protected Element createNodeHeading(String heading);
 
     protected void appendNodeContent(Element result, Guide guide, NodeInfo nodeInfo) {
@@ -234,15 +209,14 @@ abstract public class AbstractDomFactory {
 
                                     if (targetGuide != null) {
                                         // Link within DocBook document.
-                                        String mappedNode = agNodeToDbNodeMap.get(nodeKey(targetGuide, targetNode));
-
                                         if (link.isDataLink()) {
-                                            if (mappedNode != null) {
-                                                nodeToAppend = createDataLinkNode(null, mappedNode, linkLabel);
-                                            } else {
-                                                log.warning("skipped link to unknown node: "
-                                                        + command.toPrettyAmigaguide());
-                                            }
+                                            nodeToAppend = createDataLinkNode(targetGuide.getSourceFile(), targetNode,
+                                                    linkLabel);
+                                        } else {
+                                            // FIXME: Figure out how this case
+                                            // can happen and what would be the
+                                            // proper resolution to it.
+                                            assert false : "no data link";
                                         }
                                     } else if (linkedFile.exists()) {
                                         nodeToAppend = createOtherFileLinkNode(linkedFile, linkLabel);

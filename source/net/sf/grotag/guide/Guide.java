@@ -198,8 +198,9 @@ public class Guide {
                                     links.add(link);
                                 } catch (NumberFormatException error) {
                                     String lineText = command.getOption(2);
-                                    log.log(Level.INFO, "ignored broken line number: " + tools.sourced(lineText),
-                                            error);
+                                    log
+                                            .log(Level.INFO, "ignored broken line number: " + tools.sourced(lineText),
+                                                    error);
                                     MessageItem message = new MessageItem(command.getOptionItem(2),
                                             "ignored broken line number: " + tools.sourced(lineText));
                                     messagePool.add(message);
@@ -884,5 +885,13 @@ public class Guide {
      */
     public AbstractSource getSource() {
         return guideSource;
+    }
+
+    /**
+     * Assuming the source the guide was created from was a file, yield this
+     * file.
+     */
+    public File getSourceFile() {
+        return ((FileSource) getSource()).getFile();
     }
 }
