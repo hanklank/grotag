@@ -1,5 +1,6 @@
 package net.sf.grotag.guide;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,7 +12,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import javax.imageio.ImageIO;
+import javax.imageio.spi.ImageReaderSpi;
+import javax.imageio.stream.ImageInputStream;
 import javax.xml.parsers.ParserConfigurationException;
 
 import net.sf.grotag.common.AmigaTools;
@@ -22,6 +28,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
+import com.twelvemonkeys.imageio.oldplugins.iff.IFFImageReaderSpi;
+
 public class HtmlDomFactory extends AbstractDomFactory {
     private GuidePile pile;
     private File pileBaseFolder;
@@ -29,11 +37,13 @@ public class HtmlDomFactory extends AbstractDomFactory {
     private Tools tools;
     private Map<String, File> targetFileMap;
     private File styleFile;
+    private Logger log;
 
     public HtmlDomFactory(GuidePile newPile, File newPileTargetFolder) throws ParserConfigurationException {
         super(newPile);
         assert newPileTargetFolder != null;
 
+        log = Logger.getLogger(HtmlDomFactory.class.getName());
         tools = Tools.getInstance();
 
         pile = newPile;
@@ -129,12 +139,12 @@ public class HtmlDomFactory extends AbstractDomFactory {
                 reader.close();
             }
         } catch (UnsupportedEncodingException error) {
-            throw new IllegalStateException("Amiga encoding not supported", error);
+            throw new IllegalStateException("Amiga encoding must be supported", error);
         } catch (IOException error) {
             result = createParagraph(Wrap.SMART, true);
             result.appendChild(getDom().createTextNode("Missing embedded file"));
-            result.appendChild(getDom().createTextNode(
-                    "@embed for " + tools.sourced(embeddedFile) + " failed: " + error.getMessage()));
+            result.appendChild(getDom().createTextNode("Cannot find file to @embed: " + tools.sourced(embeddedFile) + "."));
+            result.appendChild(getDom().createTextNode("Reason: " + error.getMessage() + "."));
         }
 
         return result;
@@ -152,16 +162,44 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return getDom();
     }
 
+    private boolean isIffImageFile(File possibleImageFile) throws IOException {
+        boolean result;
+        ImageReaderSpi iffSpi = new IFFImageReaderSpi();
+        ImageInputStream in = ImageIO.createImageInputStream(possibleImageFile);
+        try {
+            result = iffSpi.canDecodeInput(in);
+        } finally {
+            in.close();
+        }
+        return result;
+    }
+
     @Override
     protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel) throws IOException {
         Element result = getDom().createElement("a");
         NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
         File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
         String relativeLinkedFile = tools.getRelativePath(sourceGuide.getSourceFile().getParentFile(), linkedFile);
-        File targetFile = new File(sourceHtmlFile.getParentFile(), relativeLinkedFile);
+        File targetBaseFolder = sourceHtmlFile.getParentFile();
+        File targetFile;
+
+        if (isIffImageFile(linkedFile)) {
+            relativeLinkedFile = tools.getWithoutLastSuffix(relativeLinkedFile) + ".png";
+            targetFile = new File(targetBaseFolder, relativeLinkedFile);
+            targetFile.getParentFile().mkdirs();
+            log.log(Level.INFO, "convert {0} to {1}", new Object[] { tools.sourced(linkedFile),
+                    tools.sourced(targetFile) });
+            BufferedImage image = ImageIO.read(linkedFile);
+            ImageIO.write(image, "png", targetFile);
+        } else {
+            targetFile = new File(targetBaseFolder, relativeLinkedFile);
+            log.log(Level.INFO, "copy {0} to {1}",
+                    new Object[] { tools.sourced(linkedFile), tools.sourced(targetFile) });
+            tools.copyFile(linkedFile, targetFile);
+        }
+
         String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetFile);
 
-        tools.copyFile(linkedFile, targetFile);
         result.setAttribute("href", relativeTargetUrl);
         result.appendChild(getDom().createTextNode(linkLabel));
         return result;
