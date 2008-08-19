@@ -98,7 +98,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(Guide sourceGuide, File linkedFile, String linkedNode, String linkLabel) {
+    protected Node createLinkToGuideNode(Guide sourceGuide, File linkedFile, String linkedNode, String linkLabel) {
         Element result = getDom().createElement("a");
         NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
         File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
@@ -140,7 +140,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    public Document createNodeDocument(Guide guide, NodeInfo nodeInfo) throws ParserConfigurationException {
+    public Document createNodeDocument(Guide guide, NodeInfo nodeInfo) throws ParserConfigurationException, IOException {
         createDom();
         Element html = getDom().createElement("html");
         Element head = createHead(guide, nodeInfo);
@@ -153,10 +153,18 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel) {
-        // TODO: Implement proper link.
-        Text label = getDom().createTextNode(linkLabel);
-        return label;
+    protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel) throws IOException {
+        Element result = getDom().createElement("a");
+        NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
+        File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
+        String relativeLinkedFile = tools.getRelativePath(sourceGuide.getSourceFile().getParentFile(), linkedFile);
+        File targetFile = new File(sourceHtmlFile.getParentFile(), relativeLinkedFile);
+        String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetFile);
+
+        tools.copyFile(linkedFile, targetFile);
+        result.setAttribute("href", relativeTargetUrl);
+        result.appendChild(getDom().createTextNode(linkLabel));
+        return result;
     }
 
     private Element createMetaElement(String name, String content) {

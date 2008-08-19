@@ -17,6 +17,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,7 +65,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
      * 
      * @see #appendNodeContent(Element, Guide, NodeInfo)
      */
-    protected Element createGuideNode(Guide guide) {
+    protected Element createGuideNode(Guide guide) throws IOException {
         assert guide != null;
 
         Element result = getDom().createElement("chapter");
@@ -94,7 +95,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
     }
 
     @Override
-    protected Node createDataLinkNode(Guide sourceGuide, File guideFile, String targetNode, String linkLabel) {
+    protected Node createLinkToGuideNode(Guide sourceGuide, File guideFile, String targetNode, String linkLabel) {
         Node result;
         Element resultElement = null;
         Guide guide = getPile().getGuide(guideFile);
@@ -175,7 +176,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
      * Create a book that contains a chapter for each Amigaguide document and a
      * section for each node.
      */
-    public Document createBook() {
+    public Document createBook() throws DOMException, IOException {
         log.info("create book");
         Element bookElement = getDom().createElement("book");
         getDom().appendChild(bookElement);

@@ -1,6 +1,7 @@
 package net.sf.grotag.guide;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
@@ -66,7 +67,8 @@ abstract public class AbstractDomFactory {
     /**
      * Create node for a link to a node in a guide.
      */
-    abstract protected Node createDataLinkNode(Guide sourceGuide, File targetFile, String targetNode, String linkLabel);
+    abstract protected Node createLinkToGuideNode(Guide sourceGuide, File targetFile, String targetNode,
+            String linkLabel);
 
     /**
      * Create node for a link to non guide file (for example an image).
@@ -78,7 +80,8 @@ abstract public class AbstractDomFactory {
      */
     abstract protected Node createEmbeddedFile(File embeddedFile);
 
-    abstract protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel);
+    abstract protected Node createLinkToNonGuideNode(Guide sourceGuide, File linkedFile, String linkLabel)
+            throws IOException;
 
     /**
      * Create node to hold the text if a paragraph.
@@ -122,7 +125,7 @@ abstract public class AbstractDomFactory {
 
     abstract protected Element createNodeHeading(String heading);
 
-    protected void appendNodeContent(Element result, Guide guide, NodeInfo nodeInfo) {
+    protected void appendNodeContent(Element result, Guide guide, NodeInfo nodeInfo) throws IOException {
         assert result != null;
         assert guide != null;
         assert nodeInfo != null;
@@ -210,7 +213,7 @@ abstract public class AbstractDomFactory {
                                     if (targetGuide != null) {
                                         // Link within DocBook document.
                                         if (link.isDataLink()) {
-                                            nodeToAppend = createDataLinkNode(guide, targetGuide.getSourceFile(),
+                                            nodeToAppend = createLinkToGuideNode(guide, targetGuide.getSourceFile(),
                                                     targetNode, linkLabel);
                                         } else {
                                             // FIXME: Figure out how this case

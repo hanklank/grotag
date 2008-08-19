@@ -27,9 +27,8 @@ public class HtmlDomFactoryTest {
         testTools = TestTools.getInstance();
     }
 
-    @Test
-    public void testCreateNodeDocument() throws IOException, ParserConfigurationException, TransformerException {
-        File guideFile = testTools.getTestInputFile("basics.guide");
+    private void testCreateNodeDocument(String guideBaseName) throws IOException, ParserConfigurationException, TransformerException {
+        File guideFile = testTools.getTestInputFile(guideBaseName + ".guide");
         String testName = testTools.getTestName(HtmlDomFactoryTest.class, "testCreateNodeDocument");
         File targetFolder = testTools.getTestActualFile(testName);
 
@@ -45,5 +44,15 @@ public class HtmlDomFactoryTest {
             DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
             htmlWriter.write(htmlDocument, targetFile);
         }
+    }
+
+    @Test
+    public void testCreateBasicsDocument() throws IOException, ParserConfigurationException, TransformerException {
+        testCreateNodeDocument("basics");
+    }
+
+    @Test
+    public void testCreateRootDocument() throws IOException, ParserConfigurationException, TransformerException {
+        testCreateNodeDocument("root");
     }
 }
