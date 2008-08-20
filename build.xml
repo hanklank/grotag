@@ -53,6 +53,9 @@
 
   <target description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
+    <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
+    <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
+    <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
     <jar basedir="${classes.dir}" destfile="${Grotag.jar}" excludes="**/*Test.class" includes="**/*.class">
       <manifest>

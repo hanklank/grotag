@@ -54,8 +54,8 @@ public class GrotagJsap extends JSAP {
         UnflaggedOption fileOption = new UnflaggedOption(ARG_FILE);
         fileOption.setStringParser(FileStringParser.getParser());
         fileOption.setGreedy(true);
-        fileOption.setHelp("the files to be processed by --" + ARG_DOCBOOK + ", --" + ARG_HTML + ", --" + ARG_PRETTY
-                + " or --" + ARG_VALIDATE);
+        fileOption.setHelp("the file to be viewed or the files to be processed by --" + ARG_DOCBOOK + ", --" + ARG_HTML
+                + ", --" + ARG_PRETTY + " or --" + ARG_VALIDATE);
         registerParameter(fileOption);
 
         Switch docBookSwitch = new Switch(ARG_DOCBOOK);

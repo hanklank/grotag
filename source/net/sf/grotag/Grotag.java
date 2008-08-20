@@ -1,17 +1,16 @@
 package net.sf.grotag;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
-
-import org.w3c.dom.Document;
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DocBookDomFactory;
@@ -19,8 +18,10 @@ import net.sf.grotag.guide.DomWriter;
 import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
 import net.sf.grotag.guide.HtmlDomFactory;
-import net.sf.grotag.guide.HtmlDomFactoryTest;
 import net.sf.grotag.guide.NodeInfo;
+import net.sf.grotag.view.GrotagFrame;
+
+import org.w3c.dom.Document;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -31,6 +32,36 @@ import com.martiansoftware.jsap.JSAPResult;
  * @author Thomas Aglassinger
  */
 public class Grotag {
+    private final class ViewRunnable implements Runnable {
+        private File file;
+
+        private ViewRunnable(File newFile) {
+            assert newFile != null;
+            file = newFile;
+        }
+
+        public void run() {
+            try {
+                File tempHtmlFolder = File.createTempFile("grotag-", null);
+                tempHtmlFolder.delete();
+                tempHtmlFolder.mkdirs();
+                createHtml(file, tempHtmlFolder);
+                String firstHtmlName = Tools.getInstance().getWithoutLastSuffix(file.getName());
+                File firstHtmlFile = new File(new File(tempHtmlFolder, firstHtmlName), "index.html");
+                GrotagFrame viewer = new GrotagFrame();
+                viewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                viewer.pack();
+                viewer.setVisible(true);
+                viewer.setPage(firstHtmlFile);
+            } catch (Exception error) {
+                String filePath = Tools.getInstance().sourced(file);
+                Logger viewLog = Logger.getLogger(ViewRunnable.class.getName());
+                viewLog.log(Level.WARNING, "cannot view file: " + filePath, error);
+            }
+        }
+
+    }
+
     private GrotagJsap jsap;
 
     private Grotag() throws JSAPException {
@@ -82,7 +113,15 @@ public class Grotag {
         } else if (options.getBoolean(GrotagJsap.ARG_VERSION)) {
             jsap.printVersion(System.out);
         } else {
-            jsap.printHelp(System.err);
+            File files[] = options.getFileArray(GrotagJsap.ARG_FILE);
+            // According to JSAP API documentation, this is never is null.
+            assert files != null;
+            if (files.length == 0) {
+                throw new IllegalArgumentException("Amigaguide input file must be specified");
+            } else if (files.length > 1) {
+                throw new IllegalArgumentException("only one Amigaguide input file must be specified for viewing");
+            }
+            SwingUtilities.invokeLater(new ViewRunnable(files[0]));
         }
     }
 
@@ -129,6 +168,11 @@ public class Grotag {
             throw new IllegalArgumentException("with --" + GrotagJsap.ARG_HTML
                     + " only 2 files must be specified instead of " + fileCount);
         }
+        createHtml(inputFile, outputFolder);
+    }
+
+    private void createHtml(File inputFile, File outputFolder) throws IOException, ParserConfigurationException,
+            TransformerConfigurationException, TransformerException {
         GuidePile pile = GuidePile.createGuidePile(inputFile);
         for (Guide guide : pile.getGuides()) {
             HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
@@ -169,6 +213,8 @@ public class Grotag {
         } catch (Exception error) {
             mainLog.log(Level.SEVERE, "cannot run Grotag: " + error.getMessage(), error);
         }
-        System.exit(exitCode);
+        if (exitCode > 0) {
+            System.exit(exitCode);
+        }
     }
 }
