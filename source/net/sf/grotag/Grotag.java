@@ -33,26 +33,6 @@ import com.martiansoftware.jsap.JSAPResult;
  */
 public class Grotag {
     private GrotagFrame viewer;
-
-    private final class ViewRunnable implements Runnable {
-        private File file;
-
-        private ViewRunnable(File newFile) {
-            assert newFile != null;
-            file = newFile;
-        }
-
-        public void run() {
-            try {
-                viewer.read(file);
-            } catch (Exception error) {
-                String filePath = Tools.getInstance().sourced(file);
-                Logger viewLog = Logger.getLogger(ViewRunnable.class.getName());
-                viewLog.log(Level.WARNING, "cannot view file: " + filePath, error);
-            }
-        }
-    }
-
     private GrotagJsap jsap;
 
     private Grotag() throws JSAPException {
@@ -116,7 +96,7 @@ public class Grotag {
             viewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             viewer.pack();
             viewer.setVisible(true);
-            SwingUtilities.invokeLater(new ViewRunnable(files[0]));
+            viewer.read(files[0]);
         }
     }
 

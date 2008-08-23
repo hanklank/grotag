@@ -25,6 +25,7 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.Document;
 
+import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DomWriter;
 import net.sf.grotag.guide.Guide;
@@ -38,6 +39,25 @@ import net.sf.grotag.guide.NodeInfo;
  * @author Thomas Aglassinger
  */
 public class GrotagFrame extends JFrame implements HyperlinkListener {
+    private class ReadWorker extends SwingWorker {
+        private File guideFile;
+
+        public ReadWorker(File newGuideFile) {
+            assert newGuideFile != null;
+            guideFile = newGuideFile;
+        }
+
+        @Override
+        public Object construct() {
+            try {
+                doRead(guideFile);
+            } catch (IOException error) {
+                showError("cannot read " + tools.sourced(guideFile), error);
+            }
+            return null;
+        }
+
+    }
 
     /**
      * Action to process "retrace" command.
@@ -123,7 +143,12 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         details.printStackTrace();
     }
 
-    public void read(File guideFile) throws IOException {
+    public void read(File guideFile) {
+        ReadWorker worker = new ReadWorker(guideFile);
+        worker.start();
+    }
+
+    public void doRead(File guideFile) throws IOException {
         File newTempFolder = createTempFolder();
         GuidePile newPile = null;
 
@@ -135,7 +160,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 setStatus("Reading " + guideFile);
                 newPile = GuidePile.createGuidePile(guideFile);
                 HtmlDomFactory factory = new HtmlDomFactory(newPile, newTempFolder);
-                
+
                 factory.copyStyleFile();
 
                 // Compute number of nodes in pile to show progress.
