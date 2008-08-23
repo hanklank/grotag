@@ -143,7 +143,8 @@ public class HtmlDomFactory extends AbstractDomFactory {
         } catch (IOException error) {
             result = createParagraph(Wrap.SMART, true);
             result.appendChild(getDom().createTextNode("Missing embedded file"));
-            result.appendChild(getDom().createTextNode("Cannot find file to @embed: " + tools.sourced(embeddedFile) + "."));
+            result.appendChild(getDom().createTextNode(
+                    "Cannot find file to @embed: " + tools.sourced(embeddedFile) + "."));
             result.appendChild(getDom().createTextNode("Reason: " + error.getMessage() + "."));
         }
 
