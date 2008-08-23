@@ -1,5 +1,5 @@
 /* CSS classes for HTML documents converted from Amigaguide by Grotag. */
-body {color: black; background: silver }
+body {background: silver; color: black; font-family: sans-serif; margin: 4pt}
 a:link {color: blue; text-decoration: none; outline: solid gray}
 a:visited {color: purple; text-decoration: none; outline: solid gray}
 .apen0 { color: silver }
