@@ -301,7 +301,9 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    public void copyStyleFile(File cssFile) throws IOException {
+    public void copyStyleFile() throws IOException {
+        // FIXME: Obtain style file from JAR or settings folder.
+        File cssFile = new File("source", "amigaguide.css");
         tools.copyFile(cssFile, getStyleFile());
     }
 

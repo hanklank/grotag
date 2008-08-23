@@ -171,8 +171,7 @@ public class Grotag {
         GuidePile pile = GuidePile.createGuidePile(inputFile);
         for (Guide guide : pile.getGuides()) {
             HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
-            // FIXME: Obtain amigaguide.css from proper location.
-            factory.copyStyleFile(new File("source", "amigaguide.css"));
+            factory.copyStyleFile();
             for (NodeInfo nodeInfo : guide.getNodeInfos()) {
                 Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
                 File targetFile = factory.getTargetFileFor(guide, nodeInfo);
