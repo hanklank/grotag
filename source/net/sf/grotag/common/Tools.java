@@ -15,6 +15,10 @@ import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 public class Tools {
+    public enum DeleteResult {
+        DELETED, DID_NOT_EXIST, FAILED
+    }
+
     private static final String LOGGING_PROPERTIES = "logging.properties";
     private static final String DEFAULT_TOKEN_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";
 
@@ -80,6 +84,43 @@ public class Tools {
 
     private boolean isEscapable(Character some) {
         return escapeMap.containsKey(some);
+    }
+
+    /**
+     * Attempt to recursively delete all files in <code>dir</code>. Every
+     * file or directory that cannot be deleted causes a warning in the log.
+     */
+    public void attemptToDeleteAll(File folder) {
+        assert folder != null;
+        if (folder.isDirectory()) {
+            File[] files = folder.listFiles();
+
+            for (int i = 0; i < files.length; i += 1) {
+                attemptToDeleteAll(files[i]);
+            }
+        }
+        deleteOrWarn(folder);
+    }
+
+    /**
+     * Attempt to delete <code>file</code>. If this fails, log a warning.
+     */
+    public DeleteResult deleteOrWarn(File file) {
+        assert file != null;
+        DeleteResult result;
+        boolean deleted = file.delete();
+
+        if (deleted) {
+            result = DeleteResult.DELETED;
+            log.fine("deleted \"" + file + "\"");
+        } else if (file.exists()) {
+            log.warning("cannot delete \"" + file + "\"");
+            result = DeleteResult.FAILED;
+        } else {
+            log.warning("cannot delete non-existent \"" + file + "\"");
+            result = DeleteResult.DID_NOT_EXIST;
+        }
+        return result;
     }
 
     /**

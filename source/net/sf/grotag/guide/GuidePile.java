@@ -18,7 +18,7 @@ import net.sf.grotag.parse.MessageItem;
 import net.sf.grotag.parse.MessagePool;
 
 /**
- * A "pile" of related Amigaguide documents.
+ * A "pile" of related Amigaguide documents connected via links.
  * 
  * @author Thomas Aglassinger
  */
@@ -44,6 +44,16 @@ public class GuidePile {
 
     public List<Guide> getGuides() {
         return guideList;
+    }
+
+    public File getFirstHtmlFile(File htmlBaseFolder) {
+        assert htmlBaseFolder != null;
+        assert getGuides() != null;
+        assert getGuides().size() > 0;
+        Guide firstGuide = getGuides().get(0);
+        String firstHtmlName = tools.getWithoutLastSuffix(firstGuide.getSourceFile().getName());
+        File result = new File(new File(htmlBaseFolder, firstHtmlName), "index.html");
+        return result;
     }
 
     /**
@@ -176,7 +186,7 @@ public class GuidePile {
                         link.setState(Link.State.VALID);
                     }
                 }
-                
+
                 // Validate the node.
                 NodeInfo nodeInfo;
                 if (linkedNodeName != null) {

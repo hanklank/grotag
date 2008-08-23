@@ -32,6 +32,8 @@ import com.martiansoftware.jsap.JSAPResult;
  * @author Thomas Aglassinger
  */
 public class Grotag {
+    private GrotagFrame viewer;
+
     private final class ViewRunnable implements Runnable {
         private File file;
 
@@ -42,24 +44,13 @@ public class Grotag {
 
         public void run() {
             try {
-                File tempHtmlFolder = File.createTempFile("grotag-", null);
-                tempHtmlFolder.delete();
-                tempHtmlFolder.mkdirs();
-                createHtml(file, tempHtmlFolder);
-                String firstHtmlName = Tools.getInstance().getWithoutLastSuffix(file.getName());
-                File firstHtmlFile = new File(new File(tempHtmlFolder, firstHtmlName), "index.html");
-                GrotagFrame viewer = new GrotagFrame();
-                viewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-                viewer.pack();
-                viewer.setVisible(true);
-                viewer.setPage(firstHtmlFile);
+                viewer.read(file);
             } catch (Exception error) {
                 String filePath = Tools.getInstance().sourced(file);
                 Logger viewLog = Logger.getLogger(ViewRunnable.class.getName());
                 viewLog.log(Level.WARNING, "cannot view file: " + filePath, error);
             }
         }
-
     }
 
     private GrotagJsap jsap;
@@ -121,6 +112,10 @@ public class Grotag {
             } else if (files.length > 1) {
                 throw new IllegalArgumentException("only one Amigaguide input file must be specified for viewing");
             }
+            viewer = new GrotagFrame();
+            viewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            viewer.pack();
+            viewer.setVisible(true);
             SwingUtilities.invokeLater(new ViewRunnable(files[0]));
         }
     }
