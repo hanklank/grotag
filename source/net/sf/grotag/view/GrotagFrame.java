@@ -71,7 +71,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private Logger log;
     private Tools tools;
     private Stack<URL> retraceStack;
-    private URL currentPageFile;
+    private URL currentPageUrl;
     private JProgressBar progressBar;
     private File tempFolder;
     private GuidePile pile;
@@ -135,6 +135,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 setStatus("Reading " + guideFile);
                 newPile = GuidePile.createGuidePile(guideFile);
                 HtmlDomFactory factory = new HtmlDomFactory(newPile, newTempFolder);
+                
+                factory.copyStyleFile();
+
+                // Compute number of nodes in pile to show progress.
+                // TODO: Use number of items as base for progress.
                 int nodeCount = 0;
                 for (Guide guide : newPile.getGuides()) {
                     nodeCount += guide.getNodeInfos().size();
@@ -195,11 +200,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             htmlPane.setPage(pageUrl);
             String title = String.valueOf(htmlPane.getDocument().getProperty(Document.TitleProperty));
             setTitle(title + " - Grotag");
-            if (currentPageFile != null) {
-                retraceStack.push(currentPageFile);
+            if ((currentPageUrl != null) && (retraceStack.isEmpty() || !currentPageUrl.equals(retraceStack.peek()))) {
+                retraceStack.push(currentPageUrl);
                 setRetraceButtonEnabled();
             }
-            currentPageFile = pageUrl;
+            currentPageUrl = pageUrl;
         }
     }
 
@@ -212,11 +217,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         JButton previousButton = new JButton("Previous");
         Dimension rigidSize = new Dimension(contentsButton.getPreferredSize().height, 0);
 
+        retraceButton = new JButton(new RetraceAction());
+
         contentsButton.setEnabled(false);
         indexButton.setEnabled(false);
         helpButton.setEnabled(false);
-        retraceButton = new JButton("Retrace");
-        retraceButton.setAction(new RetraceAction());
         retraceButton.setEnabled(false);
         nextButton.setEnabled(false);
         previousButton.setEnabled(false);
