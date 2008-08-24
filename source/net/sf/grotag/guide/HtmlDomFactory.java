@@ -218,9 +218,9 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    private String toHtmlRelation(NodeInfo.Relation relation) {
+    private String toHtmlRelation(Relation relation) {
         String result;
-        if (relation == NodeInfo.Relation.previous) {
+        if (relation == Relation.previous) {
             result = "prev";
         } else {
             result = relation.toString();
@@ -229,7 +229,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
     }
 
     private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo,
-            NodeInfo.Relation relation) {
+            Relation relation) {
         assert parent != null;
         assert sourceGuide != null;
         assert sourceNodeInfo != null;
@@ -273,7 +273,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         result.appendChild(createMetaElement("DC.title", dbInfo.getName()));
 
         // Append relations.
-        for (NodeInfo.Relation relation : nodeInfo.getRelationLinkMap().keySet()) {
+        for (Relation relation : nodeInfo.getRelationLinkMap().keySet()) {
             attemptToAppendRelation(result, guide, nodeInfo, relation);
         }
 

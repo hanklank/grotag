@@ -6,8 +6,7 @@ import java.util.List;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.HashCodeTools;
 import net.sf.grotag.common.Tools;
-import net.sf.grotag.guide.NodeInfo;
-import net.sf.grotag.guide.NodeInfo.Relation;
+import net.sf.grotag.guide.Relation;
 
 /**
  * Item representing an Amigaguide command.
@@ -43,7 +42,7 @@ public class CommandItem extends AbstractItem implements Comparable<CommandItem>
         // Find out if this is a relation command.
         // TODO: Stop looping as soon as isRelation is true.
         isRelation = false;
-        for (NodeInfo.Relation relationToCheck : Relation.values()) {
+        for (Relation relationToCheck : Relation.values()) {
             if (relationToCheck.toString().equals(commandName)) {
                 isRelation = true;
             }

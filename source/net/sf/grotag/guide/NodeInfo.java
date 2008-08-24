@@ -13,14 +13,6 @@ import net.sf.grotag.parse.CommandItem;
  * @author Thomas Aglassinger
  */
 public class NodeInfo extends AbstractInfo {
-    /**
-     * Possible relations to other nodes and/or files.
-     * @author Thomas Aglassinger
-     */
-    public enum Relation {
-        help, index, next, previous, toc
-    }
-
     private static final String[] MONOSPACED_FONTS = new String[] { "topaz", "xen" };
     private DatabaseInfo databaseInfo;
     private CommandItem startNode;

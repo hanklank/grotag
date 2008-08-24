@@ -215,9 +215,9 @@ public class GuidePile {
     
     private void completeRelations() {
         for (Guide guide: getGuides()) {
-            Link defaultHelpLink = guide.getRelation(NodeInfo.Relation.help);
-            Link defaultIndexLink = guide.getRelation(NodeInfo.Relation.index);
-            Link defaultTocLink = guide.getRelation(NodeInfo.Relation.toc);
+            Link defaultHelpLink = guide.getRelation(Relation.help);
+            Link defaultIndexLink = guide.getRelation(Relation.index);
+            Link defaultTocLink = guide.getRelation(Relation.toc);
             Link defaultPreviousLink = null;
            
             int nextNodeInfoIndex = 1;
@@ -233,11 +233,11 @@ public class GuidePile {
                 }
                 
                 // Possibly add default links.
-                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.help, defaultHelpLink);
-                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.index, defaultIndexLink);
-                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.next, defaultNextLink);
-                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.previous, defaultPreviousLink);
-                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.toc, defaultTocLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.help, defaultHelpLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.index, defaultIndexLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.next, defaultNextLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.previous, defaultPreviousLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.toc, defaultTocLink);
                 
                 // Prepare to proceed with next node.
                 defaultPreviousLink = new Link(nodeInfo.getStartNode());
