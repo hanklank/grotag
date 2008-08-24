@@ -1,6 +1,8 @@
 package net.sf.grotag.guide;
 
 import java.util.Arrays;
+import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
@@ -11,12 +13,21 @@ import net.sf.grotag.parse.CommandItem;
  * @author Thomas Aglassinger
  */
 public class NodeInfo extends AbstractInfo {
+    /**
+     * Possible relations to other nodes and/or files.
+     * @author Thomas Aglassinger
+     */
+    public enum Relation {
+        help, index, next, previous, toc
+    }
+
     private static final String[] MONOSPACED_FONTS = new String[] { "topaz", "xen" };
     private DatabaseInfo databaseInfo;
     private CommandItem startNode;
     private CommandItem endNode;
     private String title;
     private boolean isProportional;
+    private Map<Relation, Link> relationLinkMap;
 
     public NodeInfo(DatabaseInfo newDatabaseInfo, String newName, String newTitle) {
         super(newName.toLowerCase());
@@ -28,6 +39,7 @@ public class NodeInfo extends AbstractInfo {
         } else {
             title = newName;
         }
+        relationLinkMap = new TreeMap<Relation, Link>();
     }
 
     public String getTitle() {
@@ -102,5 +114,22 @@ public class NodeInfo extends AbstractInfo {
 
     public void setProportional(boolean newProportional) {
         isProportional = newProportional;
+    }
+
+    public Link getRelation(Relation relation) {
+        return relationLinkMap.get(relation);
+    }
+    
+    void setEmptyRelationToDefault(Relation relation, Link defaultLink) {
+        assert relation != null;
+
+        if ((getRelation(relation) == null) && (defaultLink != null)){
+            relationLinkMap.put(relation, defaultLink);
+            assert getRelation(relation) != null;
+        }
+    }
+
+    Map<Relation, Link> getRelationLinkMap() {
+        return relationLinkMap;
     }
 }

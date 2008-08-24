@@ -7,6 +7,7 @@ import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
 import net.sf.grotag.parse.FileSource;
+import net.sf.grotag.parse.Tag;
 
 public class Link {
     /**
@@ -32,12 +33,14 @@ public class Link {
     }
 
     /**
-     * Enumerator to represent the different types of Amigaguide links.
+     * Enumerator to represent the different types of Amigaguide links. The type
+     * <code>relation</code> is an internal type to represent relations to
+     * other nodes, expressed with commands like <code>@next</code>.
      * 
      * @author Thomas Aglassinger
      */
     public enum Type {
-        alink, beep, close, guide, link, quit, rx, rxs, system
+        alink, beep, close, guide, link, quit, relation, rx, rxs, system
     }
 
     public static final int NO_LINE = -1;
@@ -54,30 +57,58 @@ public class Link {
     private Tools tools;
 
     /**
-     * Create a new link.
+     * Create a new link from a command. There are 3 types of commands a link
+     * can be derived from:
+     * <ul>
+     * <li>Actual links, for example <code>@{"Overview" link "overview"}</code>.
+     *              <li>Relations to other nodes or documents, for example
+     *              <code>@next introduction</code>.
+     *       <li>Node definitions, for example
+     *       <code>@node overview "Overview of features"</code>.
+     *       </ul>
      */
     public Link(CommandItem newLinkCommand) {
         assert newLinkCommand != null;
-        assert newLinkCommand.isLink();
+        assert newLinkCommand.isLink() || newLinkCommand.isRelation()
+                || newLinkCommand.getCommandName().equals(Tag.Name.node.toString()) : newLinkCommand.toPrettyAmigaguide();
         assert newLinkCommand.getOption(0) != null;
 
         tools = Tools.getInstance();
         AmigaTools amigaTools = AmigaTools.getInstance();
         Logger log = Logger.getLogger(Link.class.getName());
 
+        String lineText;
+
         linkCommand = newLinkCommand;
         label = newLinkCommand.getOriginalCommandName();
-        label = label.substring(1, label.length() - 1);
-        state = State.UNCHECKED;
-
-        String typeText = linkCommand.getOption(0).toLowerCase();
-        try {
-            type = Type.valueOf(typeText);
-        } catch (IllegalArgumentException error) {
-            throw new IllegalLinkTypeException(typeText, error);
+        if (linkCommand.isLink()) {
+            // Remove trailing quotes.
+            label = label.substring(1, label.length() - 1);
+            String typeText = linkCommand.getOption(0).toLowerCase();
+            try {
+                if (typeText.equals(Type.relation.toString())) {
+                    typeText = "_" + typeText;
+                }
+                type = Type.valueOf(typeText);
+            } catch (IllegalArgumentException error) {
+                throw new IllegalLinkTypeException(typeText, error);
+            }
+            target = linkCommand.getOption(1);
+            lineText = linkCommand.getOption(2);
+            state = State.UNCHECKED;
+        } else if (linkCommand.isRelation()) {
+            type = Type.relation;
+            target = linkCommand.getOption(0);
+            lineText = null;
+            state = State.UNCHECKED;
+        } else {
+            label = "(internal node link)";
+            type = Type.relation;
+            target = linkCommand.getOption(0);
+            lineText = null;
+            state = State.VALID;
         }
-        target = linkCommand.getOption(1);
-        String lineText = linkCommand.getOption(2);
+
         if (lineText != null) {
             line = Integer.parseInt(lineText);
         } else {
@@ -89,7 +120,7 @@ public class Link {
             assert newLinkCommand.getFile() instanceof FileSource;
             targetFile = ((FileSource) newLinkCommand.getFile()).getFile();
             targetNode = null;
-        } else if ((type == Type.link) || (type == Type.alink)) {
+        } else if ((type == Type.link) || (type == Type.alink) || (type == Type.relation)) {
             // FIXME: Handle non-FileSource properly by using original file.
             // (For example from macros expanding to links.)
             assert newLinkCommand.getFile() instanceof FileSource;
@@ -119,7 +150,7 @@ public class Link {
      * The target as optional Amiga file path with a slash "/" and the required
      * node name. Example: "Help:MyApplication/Manual.guide/Main".
      */
-    public String getTarget() {
+    public String getAmigaTarget() {
         return target;
     }
 
@@ -146,14 +177,14 @@ public class Link {
      * another file or node?
      */
     public boolean isDataLink() {
-        return (getType() == Type.alink) || (getType() == Type.guide) || (getType() == Type.link);
+        return (getType() == Type.alink) || (getType() == Type.guide) || (getType() == Type.link || (getType() == Type.relation));
     }
 
     /**
      * The actual file on the local file system which contains the Amigaguide
      * document where the target node is defined.
      */
-    public File getTargetFile() {
+    public File getLocalTargetFile() {
         assert isDataLink() : "type=" + getType();
         return targetFile;
     }
@@ -161,7 +192,7 @@ public class Link {
     /**
      * The name of the node in the target file.
      */
-    public String getTargetNode() {
+    public String getTargetNodeName() {
         assert isDataLink() : "type=" + getType();
         return targetNode;
     }
@@ -188,18 +219,18 @@ public class Link {
      */
     // Package visibility because GuidePile.validateLinks() is the only sensible
     // place to call this from.
-    void setTargetNode(String newTargetNode) {
+    void setTargetNodeName(String newTargetNode) {
         assert getType() == Link.Type.guide : "type=" + getType();
-        assert getTargetNode() == null : "existing targetNode=" + tools.sourced(getTargetNode());
+        assert getTargetNodeName() == null : "existing targetNode=" + tools.sourced(getTargetNodeName());
         targetNode = newTargetNode;
     }
 
     @Override
     public String toString() {
         String result = "Link[command=" + getLinkCommand().toPrettyAmigaguide() + ", target="
-                + tools.sourced(getTarget()) + ", state=" + getState() + ", type=" + getType();
+                + tools.sourced(getAmigaTarget()) + ", state=" + getState() + ", type=" + getType();
         if (isDataLink()) {
-            result += ", file=" + tools.sourced(getTargetFile()) + ", node=" + tools.sourced(getTargetNode());
+            result += ", file=" + tools.sourced(getLocalTargetFile()) + ", node=" + tools.sourced(getTargetNodeName());
         }
         result += "]";
         return result;

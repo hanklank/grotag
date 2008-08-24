@@ -218,6 +218,42 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
+    private String toHtmlRelation(NodeInfo.Relation relation) {
+        String result;
+        if (relation == NodeInfo.Relation.previous) {
+            result = "prev";
+        } else {
+            result = relation.toString();
+        }
+        return result;
+    }
+
+    private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo,
+            NodeInfo.Relation relation) {
+        assert parent != null;
+        assert sourceGuide != null;
+        assert sourceNodeInfo != null;
+        assert relation != null;
+        Link relationLink = sourceNodeInfo.getRelation(relation);
+        if (relationLink != null) {
+            log.info("append relation: " + relation + "=" + relationLink);
+            // FIXME: Currently only works if relation link is a guide and node.
+            File linkedFile = relationLink.getLocalTargetFile();
+            String linkedNode = relationLink.getTargetNodeName();
+            Guide targetGuide = pile.getGuide(linkedFile);
+            NodeInfo targetNodeInfo = targetGuide.getNodeInfo(linkedNode);
+            File targetHtmlFile = getTargetFileFor(targetGuide, targetNodeInfo);
+            NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
+            File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
+            String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetHtmlFile);
+
+            Element linkElement = getDom().createElement("link");
+            linkElement.setAttribute("href", relativeTargetUrl);
+            linkElement.setAttribute("rel", toHtmlRelation(relation));
+            parent.appendChild(linkElement);
+        }
+    }
+
     /**
      * Create <code>&lt;head&gt;</code> including meta elements according to
      * <a href="http://dublincore.org/">Dublin Core</a>.
@@ -235,6 +271,11 @@ public class HtmlDomFactory extends AbstractDomFactory {
         title.appendChild(getDom().createTextNode(dbInfo.getName()));
         result.appendChild(title);
         result.appendChild(createMetaElement("DC.title", dbInfo.getName()));
+
+        // Append relations.
+        for (NodeInfo.Relation relation : nodeInfo.getRelationLinkMap().keySet()) {
+            attemptToAppendRelation(result, guide, nodeInfo, relation);
+        }
 
         // Append style sheet.
         String styleUrl = tools.getRelativeUrl(targetFileMap.get(nodeKey(guide, nodeInfo)), getStyleFile());

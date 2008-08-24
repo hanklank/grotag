@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
+import net.sf.grotag.guide.NodeInfo.Relation;
 import net.sf.grotag.parse.AbstractItem;
 import net.sf.grotag.parse.AbstractSource;
 import net.sf.grotag.parse.AbstractTextItem;
@@ -55,6 +56,7 @@ public class Guide {
     private DatabaseInfo databaseInfo;
     private Map<String, NodeInfo> nodeInfoMap;
     private List<Link> links;
+    private Map<NodeInfo.Relation, Link> globalRelationLinkMap;
 
     private Guide(AbstractSource newGuideSource) {
         assert newGuideSource != null;
@@ -66,6 +68,7 @@ public class Guide {
         guideSource = newGuideSource;
         tagPool = new TagPool();
         nodeInfoMap = new TreeMap<String, NodeInfo>();
+        globalRelationLinkMap = new TreeMap<NodeInfo.Relation, Link>();
     }
 
     private void defineMacros() {
@@ -178,6 +181,14 @@ public class Guide {
 
     private void collectLinks() {
         links = new ArrayList<Link>();
+
+        // Collect links from relations.
+        collectLinksFromRelationMap(globalRelationLinkMap);
+        for (NodeInfo nodeInfo : getNodeInfos()) {
+            collectLinksFromRelationMap(nodeInfo.getRelationLinkMap());
+        }
+
+        // Collect links from link commands.
         for (AbstractItem item : items) {
             if (item instanceof CommandItem) {
                 CommandItem command = (CommandItem) item;
@@ -223,6 +234,14 @@ public class Guide {
                     }
                 }
             }
+        }
+    }
+
+    private void collectLinksFromRelationMap(Map<NodeInfo.Relation, Link> relationMap) {
+        assert links != null;
+        for (NodeInfo.Relation relation : relationMap.keySet()) {
+            Link link = relationMap.get(relation);
+            links.add(link);
         }
     }
 
@@ -475,6 +494,20 @@ public class Guide {
                                 databaseInfo.setVersion(command.getAllOptionsText());
                             } else if (commandName.equals("(c)")) {
                                 databaseInfo.setCopyright(command.getAllOptionsText());
+                            } else if (command.isRelation()) {
+                                assert command.getOption(0) != null : "tag must be defined to require 1 option: "
+                                        + commandName;
+                                NodeInfo.Relation relation = NodeInfo.Relation.valueOf(commandName);
+                                Link link = new Link(command);
+                                if (currentNodeInfo == null) {
+                                    assert !globalRelationLinkMap.containsKey(relation) : "tag must be defined to be unique: "
+                                            + commandName;
+                                    globalRelationLinkMap.put(relation, link);
+                                } else {
+                                    assert currentNodeInfo.getRelation(relation) == null : "tag must be defined to be unique: "
+                                            + commandName;
+                                    currentNodeInfo.setEmptyRelationToDefault(relation, link);
+                                }
                             }
                         }
                     } else {
@@ -873,8 +906,8 @@ public class Guide {
     }
 
     /**
-     * Links to nodes or other files. This does not include pseudo links like
-     * "beep" or "rx".
+     * Links and relations to nodes or other files. This does not include pseudo
+     * links like "beep" or "rx".
      */
     public List<Link> getLinks() {
         return links;
@@ -893,5 +926,9 @@ public class Guide {
      */
     public File getSourceFile() {
         return ((FileSource) getSource()).getFile();
+    }
+
+    public Link getRelation(Relation relation) {
+        return globalRelationLinkMap.get(relation);
     }
 }

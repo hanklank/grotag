@@ -6,6 +6,8 @@ import java.util.List;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.HashCodeTools;
 import net.sf.grotag.common.Tools;
+import net.sf.grotag.guide.NodeInfo;
+import net.sf.grotag.guide.NodeInfo.Relation;
 
 /**
  * Item representing an Amigaguide command.
@@ -18,6 +20,7 @@ public class CommandItem extends AbstractItem implements Comparable<CommandItem>
     private String commandName;
     private String originalCommandName;
     private boolean isInline;
+    private boolean isRelation;
     private List<AbstractItem> items;
 
     public CommandItem(AbstractSource newSource, int newLine, int newColumn, String newCommandName,
@@ -35,6 +38,15 @@ public class CommandItem extends AbstractItem implements Comparable<CommandItem>
             items = new ArrayList<AbstractItem>(newItems.subList(0, Math.max(0, newItems.size() - 1)));
         } else {
             items = newItems;
+        }
+
+        // Find out if this is a relation command.
+        // TODO: Stop looping as soon as isRelation is true.
+        isRelation = false;
+        for (NodeInfo.Relation relationToCheck : Relation.values()) {
+            if (relationToCheck.toString().equals(commandName)) {
+                isRelation = true;
+            }
         }
     }
 
@@ -64,6 +76,14 @@ public class CommandItem extends AbstractItem implements Comparable<CommandItem>
         boolean result = getCommandName().startsWith("\"");
         assert !result || getCommandName().endsWith("\"");
         return result;
+    }
+
+    /**
+     * Does the command describe a relation to another node, for example
+     * <code>@toc "Table of Contents"</code> or <code>@help help.guide/main</code>?
+     */
+    public boolean isRelation() {
+        return isRelation;
     }
 
     /**

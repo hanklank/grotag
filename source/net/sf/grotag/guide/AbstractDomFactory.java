@@ -196,8 +196,8 @@ abstract public class AbstractDomFactory {
                                     // Valid link to Amigaguide document and
                                     // node.
                                     Link.Type linkType = link.getType();
-                                    String targetNode = link.getTargetNode();
-                                    File linkedFile = link.getTargetFile();
+                                    String targetNode = link.getTargetNodeName();
+                                    File linkedFile = link.getLocalTargetFile();
                                     Guide targetGuide = pile.getGuide(linkedFile);
 
                                     if (linkType == Link.Type.guide) {
@@ -229,7 +229,7 @@ abstract public class AbstractDomFactory {
                                 } else if (link.getState() == Link.State.VALID_OTHER_FILE) {
                                     // Valid link to non-Amigaguide file.
                                     log.log(Level.FINE, "connect to non-guide: {0}", command);
-                                    nodeToAppend = createLinkToNonGuideNode(guide, link.getTargetFile(), link
+                                    nodeToAppend = createLinkToNonGuideNode(guide, link.getLocalTargetFile(), link
                                             .getLabel());
                                 } else {
                                     log.warning("skipped link with state=" + link.getState() + ": "

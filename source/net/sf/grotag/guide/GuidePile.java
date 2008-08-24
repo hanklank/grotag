@@ -102,6 +102,7 @@ public class GuidePile {
         GuidePile result = new GuidePile();
         result.add(guideFile);
         result.validateLinks();
+        result.completeRelations();
         return result;
     }
 
@@ -116,7 +117,7 @@ public class GuidePile {
             Link link = linksToFollow.get(0);
             linkMap.put(link.getLinkCommand(), link);
             if (link.isDataLink()) {
-                File linkedFile = link.getTargetFile();
+                File linkedFile = link.getLocalTargetFile();
                 assert linkedFile != null;
                 if (!hasCachedGuideFor(linkedFile)) {
                     try {
@@ -131,7 +132,7 @@ public class GuidePile {
                     } catch (IOException error) {
                         link.setState(Link.State.BROKEN);
                         MessageItem message = new MessageItem(link.getLinkCommand(), "cannot read linked file for "
-                                + tools.sourced(link.getTarget()));
+                                + tools.sourced(link.getAmigaTarget()));
                         MessageItem seeAlso = new MessageItem(new FileSource(linkedFile),
                                 "related input/output error: " + error.getMessage());
                         message.setSeeAlso(seeAlso);
@@ -171,8 +172,8 @@ public class GuidePile {
         for (Link link : linksToValidate) {
             Link.State linkState = link.getState();
             if ((linkState == Link.State.UNCHECKED) || (linkState == Link.State.VALID_GUIDE_UNCHECKED_NODE)) {
-                File linkedFile = link.getTargetFile();
-                String linkedNodeName = link.getTargetNode();
+                File linkedFile = link.getLocalTargetFile();
+                String linkedNodeName = link.getTargetNodeName();
                 assert hasCachedGuideFor(linkedFile);
                 Guide guideContainingNode = getCachedGuideFor(linkedFile);
                 assert guideContainingNode != null;
@@ -182,7 +183,7 @@ public class GuidePile {
                     List<NodeInfo> targetNodeInfos = guideContainingNode.getNodeInfos();
                     if (targetNodeInfos.size() > 0) {
                         linkedNodeName = targetNodeInfos.get(0).getName();
-                        link.setTargetNode(linkedNodeName);
+                        link.setTargetNodeName(linkedNodeName);
                         link.setState(Link.State.VALID);
                     }
                 }
@@ -209,6 +210,39 @@ public class GuidePile {
         for (Link link : linkMap.values()) {
             assert link.getState() != Link.State.UNCHECKED : "unchecked link: "
                     + link.getLinkCommand().toPrettyAmigaguide();
+        }
+    }
+    
+    private void completeRelations() {
+        for (Guide guide: getGuides()) {
+            Link defaultHelpLink = guide.getRelation(NodeInfo.Relation.help);
+            Link defaultIndexLink = guide.getRelation(NodeInfo.Relation.index);
+            Link defaultTocLink = guide.getRelation(NodeInfo.Relation.toc);
+            Link defaultPreviousLink = null;
+           
+            int nextNodeInfoIndex = 1;
+            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+                // Attempt to find the default next node.
+                Link defaultNextLink;
+                if (nextNodeInfoIndex < guide.getNodeInfos().size()) {
+                    NodeInfo nextNodeInfo = guide.getNodeInfos().get(nextNodeInfoIndex);
+                    CommandItem nextNodeStartCommand = nextNodeInfo.getStartNode();
+                    defaultNextLink = new Link(nextNodeStartCommand);
+                } else {
+                    defaultNextLink = null;
+                }
+                
+                // Possibly add default links.
+                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.help, defaultHelpLink);
+                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.index, defaultIndexLink);
+                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.next, defaultNextLink);
+                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.previous, defaultPreviousLink);
+                nodeInfo.setEmptyRelationToDefault(NodeInfo.Relation.toc, defaultTocLink);
+                
+                // Prepare to proceed with next node.
+                defaultPreviousLink = new Link(nodeInfo.getStartNode());
+                nextNodeInfoIndex += 1;
+            }
         }
     }
 }
