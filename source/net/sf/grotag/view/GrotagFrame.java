@@ -23,7 +23,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
-import javax.swing.text.Document;
 
 import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.Tools;
@@ -180,7 +179,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     for (NodeInfo nodeInfo : guide.getNodeInfos()) {
                         File targetFile = factory.getTargetFileFor(guide, nodeInfo);
                         org.w3c.dom.Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
-                        DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
+                        DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.XHTML);
                         htmlWriter.write(htmlDocument, targetFile);
                         nodesWritten += 1;
                         progressBar.setValue(nodesWritten);
@@ -223,8 +222,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         synchronized (pageLock) {
             log.info("set page to: " + tools.sourced(pageUrl.toString()));
             htmlPane.setPage(pageUrl);
-            String title = String.valueOf(htmlPane.getDocument().getProperty(Document.TitleProperty));
-            setTitle(title + " - Grotag");
+
             if ((currentPageUrl != null) && (retraceStack.isEmpty() || !currentPageUrl.equals(retraceStack.peek()))) {
                 retraceStack.push(currentPageUrl);
                 setRetraceButtonEnabled();

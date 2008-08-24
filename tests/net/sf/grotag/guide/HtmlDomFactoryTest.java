@@ -41,7 +41,7 @@ public class HtmlDomFactoryTest {
             assertNotNull(htmlDocument);
 
             File targetFile = factory.getTargetFileFor(guide, nodeInfo);
-            DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
+            DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.XHTML);
             htmlWriter.write(htmlDocument, targetFile);
         }
     }

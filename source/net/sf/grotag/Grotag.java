@@ -8,7 +8,6 @@ import java.util.logging.Logger;
 
 import javax.swing.JFrame;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import net.sf.grotag.common.Tools;
@@ -56,10 +55,11 @@ public class Grotag {
         }
 
         boolean isDocBook = options.getBoolean(GrotagJsap.ARG_DOCBOOK);
+        boolean isXhtml = options.getBoolean(GrotagJsap.ARG_XHTML);
         boolean isHtml = options.getBoolean(GrotagJsap.ARG_HTML);
         boolean isPretty = options.getBoolean(GrotagJsap.ARG_PRETTY);
         boolean isValidate = options.getBoolean(GrotagJsap.ARG_VALIDATE);
-        if (isDocBook || isHtml || isPretty || isValidate) {
+        if (isDocBook || isHtml || isPretty || isValidate || isXhtml) {
             File files[] = options.getFileArray(GrotagJsap.ARG_FILE);
             // According to JSAP API documentation, this is never is null.
             assert files != null;
@@ -68,8 +68,8 @@ public class Grotag {
             }
             if (isDocBook) {
                 docBook(files);
-            } else if (isHtml) {
-                html(files);
+            } else if (isHtml || isXhtml) {
+                html(files, isXhtml);
             } else if (isPretty) {
                 pretty(files);
             } else if (isValidate) {
@@ -127,7 +127,22 @@ public class Grotag {
         domWriter.write(dom, outputFile);
     }
 
-    private void html(File[] files) throws IOException, ParserConfigurationException, TransformerException {
+    private void html(File[] files, boolean isXhtml) throws IOException, ParserConfigurationException,
+            TransformerException {
+        assert files != null;
+        String argumentName;
+        DomWriter.Dtd dtd;
+
+        // Process differences between HTML and XHTML.
+        if (isXhtml) {
+            argumentName = GrotagJsap.ARG_XHTML;
+            dtd = DomWriter.Dtd.XHTML;
+        } else {
+            argumentName = GrotagJsap.ARG_HTML;
+            dtd = DomWriter.Dtd.HTML;
+        }
+
+        // Process arguments.
         int fileCount = files.length;
         File inputFile;
         File outputFolder;
@@ -140,14 +155,11 @@ public class Grotag {
             inputFile = files[0];
             outputFolder = files[1];
         } else {
-            throw new IllegalArgumentException("with --" + GrotagJsap.ARG_HTML
-                    + " only 2 files must be specified instead of " + fileCount);
+            throw new IllegalArgumentException("with --" + argumentName + " only 2 files must be specified instead of "
+                    + fileCount);
         }
-        createHtml(inputFile, outputFolder);
-    }
 
-    private void createHtml(File inputFile, File outputFolder) throws IOException, ParserConfigurationException,
-            TransformerConfigurationException, TransformerException {
+        // Create the (X)HTML documents.
         GuidePile pile = GuidePile.createGuidePile(inputFile);
         for (Guide guide : pile.getGuides()) {
             HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
@@ -155,7 +167,7 @@ public class Grotag {
             for (NodeInfo nodeInfo : guide.getNodeInfos()) {
                 Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
                 File targetFile = factory.getTargetFileFor(guide, nodeInfo);
-                DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
+                DomWriter htmlWriter = new DomWriter(dtd);
                 htmlWriter.write(htmlDocument, targetFile);
             }
         }

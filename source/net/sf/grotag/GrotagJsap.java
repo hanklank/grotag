@@ -24,12 +24,13 @@ public class GrotagJsap extends JSAP {
     public static final String ARG_PRETTY = "pretty";
     public static final String ARG_VALIDATE = "validate";
     public static final String ARG_VERSION = "version";
+    public static final String ARG_XHTML = "xhtml";
 
     /**
      * Exactly one of these options must be specified.
      */
     private static final String[] ANY_REQUIRED = new String[] { ARG_DOCBOOK, ARG_HELP, ARG_HTML, ARG_LICENSE,
-            ARG_PRETTY, ARG_VERSION, ARG_VALIDATE };
+            ARG_PRETTY, ARG_VERSION, ARG_VALIDATE, ARG_XHTML };
 
     // TODO: Obtain copyright year from Version class.
     private static final String[] HEADING = new String[] {
@@ -103,6 +104,14 @@ public class GrotagJsap extends JSAP {
         versionSwitch.setLongFlag(ARG_VERSION);
         versionSwitch.setHelp("show version information");
         registerParameter(versionSwitch);
+
+        Switch xhtmlSwitch = new Switch(ARG_XHTML);
+        xhtmlSwitch.setShortFlag('x');
+        xhtmlSwitch.setLongFlag(ARG_XHTML);
+        xhtmlSwitch.setHelp("convert to XHTML using the first specified file as Amigaguide input "
+                + "and the second as output folder; if only one file is specified, the output "
+                + "is written to the current directory");
+        registerParameter(xhtmlSwitch);
     }
 
     @Override
