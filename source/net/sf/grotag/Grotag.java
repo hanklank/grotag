@@ -7,7 +7,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.JFrame;
-import javax.swing.SwingUtilities;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -39,12 +38,13 @@ public class Grotag {
         jsap = new GrotagJsap();
     }
 
+    @SuppressWarnings("unchecked")
     private void work(String[] arguments) throws IOException, ParserConfigurationException, TransformerException {
         JSAPResult options = jsap.parse(arguments);
 
         if (!options.success()) {
             // Throw exception for broken command line.
-            Iterator<String> errorRider = (Iterator<String>) options.getErrorMessageIterator();
+            Iterator<String> errorRider = options.getErrorMessageIterator();
             String errorMessage;
 
             if (errorRider.hasNext()) {

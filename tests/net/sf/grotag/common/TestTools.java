@@ -68,6 +68,7 @@ public class TestTools {
         assertFilesAreEqual(expectedFile, actualFile);
     }
 
+    @SuppressWarnings("unchecked")
     public String getTestName(Class classToTest, String methodToTest) {
         assert classToTest != null;
         assert methodToTest != null;
