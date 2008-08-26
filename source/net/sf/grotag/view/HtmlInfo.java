@@ -28,6 +28,7 @@ class HtmlInfo {
     private Map<String, Relation> relToRelationMap;
     private Logger log;
     private URL baseUrl;
+    private String title;
 
     /**
      * HTML parser callback to extract &lt;link&gt; relations.
@@ -35,8 +36,12 @@ class HtmlInfo {
      * @author Thomas Aglassinger
      */
     private class InfoCallback extends HTMLEditorKit.ParserCallback {
+        private boolean insideTitle;
+
         public InfoCallback() {
             relationMap.clear();
+            title = "";
+            insideTitle = false;
         }
 
         @Override
@@ -71,8 +76,10 @@ class HtmlInfo {
         }
 
         @Override
-        public void handleStartTag(Tag t, MutableAttributeSet a, int pos) {
-            // Do nothing.
+        public void handleStartTag(Tag tag, MutableAttributeSet a, int pos) {
+            if (tag == HTML.Tag.TITLE) {
+                insideTitle = true;
+            }
         }
 
         @Override
@@ -86,13 +93,17 @@ class HtmlInfo {
         }
 
         @Override
-        public void handleEndTag(Tag t, int pos) {
-            // Do nothing.
+        public void handleEndTag(Tag tag, int pos) {
+            if (tag == HTML.Tag.TITLE) {
+                insideTitle = false;
+            }
         }
 
         @Override
         public void handleText(char[] data, int pos) {
-            // Do nothing.
+            if (insideTitle) {
+                title += new String(data);
+            }
         }
     }
 
@@ -119,7 +130,18 @@ class HtmlInfo {
         }
     }
 
+    /**
+     * The document relations as specified with
+     * <code>&lt;link rel="..." href="..."&gt;</code>.
+     */
     Map<Relation, URL> getRelationMap() {
         return relationMap;
+    }
+
+    /**
+     * The document title as specified with <code>&lt;title&gt;</code>.
+     */
+    String getTitle() {
+        return title;
     }
 }

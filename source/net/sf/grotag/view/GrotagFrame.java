@@ -268,11 +268,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         retraceButton.setEnabled(retraceStack.size() > 0);
     }
 
-    private Map<Relation, URL> getRelationMap(URL baseUrl) throws IOException {
-        HtmlInfo htmlInfo = new HtmlInfo(baseUrl);
-        return htmlInfo.getRelationMap();
-    }
-
     public void setPage(URL pageUrl) throws IOException {
         assert pageUrl != null;
         synchronized (pageLock) {
@@ -285,7 +280,16 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             }
             currentPageUrl = pageUrl;
 
-            relationMap = getRelationMap(pageUrl);
+            HtmlInfo htmlInfo = new HtmlInfo(pageUrl);
+            String title = htmlInfo.getTitle();
+
+            if (title != null) {
+                setTitle(title + " - Grotag");
+            } else {
+                setTitle("Grotag");
+            }
+
+            relationMap = htmlInfo.getRelationMap();
             for (JButton button : relationButtons) {
                 Relation buttonRelation = ((RelationAction) button.getAction()).getRelation();
                 boolean relationEnabled = relationMap.containsKey(buttonRelation);
