@@ -7,7 +7,12 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Stack;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,6 +36,7 @@ import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
 import net.sf.grotag.guide.HtmlDomFactory;
 import net.sf.grotag.guide.NodeInfo;
+import net.sf.grotag.guide.Relation;
 
 /**
  * JFrame to browse an Amigaguide documents converted to HTML.
@@ -38,6 +44,13 @@ import net.sf.grotag.guide.NodeInfo;
  * @author Thomas Aglassinger
  */
 public class GrotagFrame extends JFrame implements HyperlinkListener {
+
+    /**
+     * Worker to read Amigaguide document in the background while updating the
+     * progress bar and status.
+     * 
+     * @author Thomas Aglassinger
+     */
     private class ReadWorker extends SwingWorker {
         private File guideFile;
 
@@ -52,10 +65,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 doRead(guideFile);
             } catch (IOException error) {
                 showError("cannot read " + tools.sourced(guideFile), error);
+            } catch (Exception error) {
+                showError("cannot process " + tools.sourced(guideFile), error);
             }
             return null;
         }
-
     }
 
     /**
@@ -82,6 +96,35 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         }
     }
 
+    /**
+     * Action to change URL according to a relation.
+     * 
+     * @author Thomas Aglassinger
+     */
+    public class RelationAction extends AbstractAction {
+        private Relation relation;
+
+        public RelationAction(String name, Relation newRelation) {
+            super(name);
+            assert name != null;
+            assert newRelation != null;
+            relation = newRelation;
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            try {
+                URL pageToGo = relationMap.get(relation);
+                setPage(pageToGo);
+            } catch (Exception error) {
+                showError("cannot go to " + relation + " page", error);
+            }
+        }
+
+        public Relation getRelation() {
+            return relation;
+        }
+    }
+
     private JLabel statusLabel;
     private JTextPane htmlPane;
     private JScrollPane htmlScrollPane;
@@ -94,6 +137,9 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JProgressBar progressBar;
     private File tempFolder;
     private GuidePile pile;
+    private Map<Relation, URL> relationMap;
+    private List<JButton> relationButtons;
+    private Map<URL, NodeInfo> urlToNodeMap;
 
     /**
      * Lock to synchronize on for page or file operations.
@@ -108,6 +154,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         tools = Tools.getInstance();
 
         retraceStack = new Stack<URL>();
+        relationMap = new TreeMap<Relation, URL>();
+        relationButtons = new LinkedList<JButton>();
         pageLock = "pageLock";
         setLayout(new BorderLayout());
         setUpButtonPane();
@@ -147,7 +195,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         worker.start();
     }
 
-    public void doRead(File guideFile) throws IOException {
+    private void doRead(File guideFile) throws IOException {
         File newTempFolder = createTempFolder();
         GuidePile newPile = null;
 
@@ -172,15 +220,18 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 progressBar.setMinimum(0);
                 progressBar.setMaximum(nodeCount);
                 progressBar.setIndeterminate(false);
-                setStatus("Creating pages");
 
+                urlToNodeMap = new HashMap<URL, NodeInfo>();
                 int nodesWritten = 0;
                 for (Guide guide : newPile.getGuides()) {
                     for (NodeInfo nodeInfo : guide.getNodeInfos()) {
+                        setStatus("Reading " + guide.getDatabaseInfo().getName() + "/" + nodeInfo.getName());
                         File targetFile = factory.getTargetFileFor(guide, nodeInfo);
+                        URL targetUrl = targetFile.toURL();
                         org.w3c.dom.Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
-                        DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.XHTML);
+                        DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
                         htmlWriter.write(htmlDocument, targetFile);
+                        urlToNodeMap.put(targetUrl, nodeInfo);
                         nodesWritten += 1;
                         progressBar.setValue(nodesWritten);
                     }
@@ -217,6 +268,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         retraceButton.setEnabled(retraceStack.size() > 0);
     }
 
+    private Map<Relation, URL> getRelationMap(URL baseUrl) throws IOException {
+        HtmlInfo htmlInfo = new HtmlInfo(baseUrl);
+        return htmlInfo.getRelationMap();
+    }
+
     public void setPage(URL pageUrl) throws IOException {
         assert pageUrl != null;
         synchronized (pageLock) {
@@ -228,26 +284,40 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 setRetraceButtonEnabled();
             }
             currentPageUrl = pageUrl;
+
+            relationMap = getRelationMap(pageUrl);
+            for (JButton button : relationButtons) {
+                Relation buttonRelation = ((RelationAction) button.getAction()).getRelation();
+                boolean relationEnabled = relationMap.containsKey(buttonRelation);
+                button.setEnabled(relationEnabled);
+            }
         }
+    }
+
+    private JButton createRelationButton(String label, Relation relation) {
+        JButton result = new JButton(new RelationAction(label, relation));
+        result.setEnabled(false);
+        return result;
     }
 
     private final void setUpButtonPane() {
         buttonPane = new JPanel();
-        JButton contentsButton = new JButton("Contents");
-        JButton indexButton = new JButton("Index");
-        JButton helpButton = new JButton("Help");
-        JButton nextButton = new JButton("Next");
-        JButton previousButton = new JButton("Previous");
+        JButton contentsButton = createRelationButton("Contents", Relation.toc);
+        JButton indexButton = createRelationButton("Index", Relation.index);
+        JButton helpButton = createRelationButton("Help", Relation.help);
+        JButton nextButton = createRelationButton("Next", Relation.next);
+        JButton previousButton = createRelationButton("Previous", Relation.previous);
+
+        relationButtons.add(contentsButton);
+        relationButtons.add(indexButton);
+        relationButtons.add(helpButton);
+        relationButtons.add(nextButton);
+        relationButtons.add(previousButton);
+
         Dimension rigidSize = new Dimension(contentsButton.getPreferredSize().height, 0);
 
         retraceButton = new JButton(new RetraceAction());
-
-        contentsButton.setEnabled(false);
-        indexButton.setEnabled(false);
-        helpButton.setEnabled(false);
         retraceButton.setEnabled(false);
-        nextButton.setEnabled(false);
-        previousButton.setEnabled(false);
 
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
         buttonPane.add(contentsButton);
