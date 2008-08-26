@@ -56,13 +56,16 @@ public class DomWriter {
         transformer = transformerFactory.newTransformer();
         transformer.setOutputProperty(OutputKeys.INDENT, "yes");
         if (dtd == Dtd.DOCBOOK) {
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//OASIS//DTD DocBook XML V4.5//EN");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM,
                     "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd");
         } else if (dtd == Dtd.HTML) {
+            transformer.setOutputProperty(OutputKeys.METHOD, "html");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//W3C//DTD HTML 4.01//EN");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "http://www.w3.org/TR/html4/strict.dtd");
         } else if (dtd == Dtd.XHTML) {
+            transformer.setOutputProperty(OutputKeys.METHOD, "xml");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//W3C//DTD XHTML 1.0 Strict//EN");
             transformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd");
         } else {
