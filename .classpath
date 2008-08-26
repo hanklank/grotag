@@ -8,5 +8,6 @@
 	<classpathentry kind="lib" path="external/twelvemonkeys-imageio-core.jar"/>
 	<classpathentry kind="lib" path="external/twelvemonkeys-imageio-iff.jar"/>
 	<classpathentry kind="lib" path="external/twelvemonkeys-core.jar"/>
+	<classpathentry kind="lib" path="external/xalan.jar"/>
 	<classpathentry kind="output" path="classes"/>
 </classpath>
