@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JFrame;
+import javax.swing.WindowConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -93,7 +93,7 @@ public class Grotag {
                 throw new IllegalArgumentException("only one Amigaguide input file must be specified for viewing");
             }
             viewer = new GrotagFrame();
-            viewer.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            viewer.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             viewer.pack();
             viewer.setVisible(true);
             viewer.read(files[0]);
