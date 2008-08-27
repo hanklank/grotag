@@ -125,6 +125,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         }
     }
 
+    private static final String DEFAULT_TITLE = "Grotag";
+
     private JLabel statusLabel;
     private JTextPane htmlPane;
     private JScrollPane htmlScrollPane;
@@ -148,7 +150,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JButton retraceButton;
 
     public GrotagFrame() {
-        super("Grotag");
+        super(DEFAULT_TITLE);
 
         log = Logger.getLogger(GrotagFrame.class.getName());
         tools = Tools.getInstance();
@@ -286,7 +288,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             if (title != null) {
                 setTitle(title + " - Grotag");
             } else {
-                setTitle("Grotag");
+                setTitle(DEFAULT_TITLE);
             }
 
             relationMap = htmlInfo.getRelationMap();
