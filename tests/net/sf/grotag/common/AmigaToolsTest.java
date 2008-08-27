@@ -23,7 +23,7 @@ public class AmigaToolsTest {
     }
 
     private void testGetFilePathString(String amigaPath, File expected) {
-        File actual = amigaTools.getFileFor(amigaPath);
+        File actual = amigaTools.getFileFor(amigaPath, new AmigaPathList());
         assertEquals(expected.getAbsolutePath(), actual.getAbsolutePath());
     }
 

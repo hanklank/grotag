@@ -14,6 +14,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
@@ -56,15 +57,18 @@ public class Guide {
     private Map<String, NodeInfo> nodeInfoMap;
     private List<Link> links;
     private Map<Relation, Link> globalRelationLinkMap;
+    private AmigaPathList amigaPaths;
 
-    private Guide(AbstractSource newGuideSource) {
+    private Guide(AbstractSource newGuideSource, AmigaPathList newAmigaPaths) {
         assert newGuideSource != null;
+        assert newAmigaPaths != null;
 
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
         log = Logger.getLogger(Guide.class.getName());
 
         guideSource = newGuideSource;
+        amigaPaths = newAmigaPaths;
         tagPool = new TagPool();
         nodeInfoMap = new TreeMap<String, NodeInfo>();
         globalRelationLinkMap = new TreeMap<Relation, Link>();
@@ -204,7 +208,7 @@ public class Guide {
                             assert target != null : "empty target: " + command;
                             if (target.length() > 0) {
                                 try {
-                                    Link link = new Link(command);
+                                    Link link = new Link(command, amigaPaths);
                                     links.add(link);
                                 } catch (NumberFormatException error) {
                                     String lineText = command.getOption(2);
@@ -215,7 +219,7 @@ public class Guide {
                                             "ignored broken line number: " + tools.sourced(lineText));
                                     messagePool.add(message);
                                     command.cutOptionsAt(2);
-                                    Link link = new Link(command);
+                                    Link link = new Link(command, amigaPaths);
                                     links.add(link);
                                 }
                             } else {
@@ -497,7 +501,7 @@ public class Guide {
                                 assert command.getOption(0) != null : "tag must be defined to require 1 option: "
                                         + commandName;
                                 Relation relation = Relation.valueOf(commandName);
-                                Link link = new Link(command);
+                                Link link = new Link(command, amigaPaths);
                                 if (currentNodeInfo == null) {
                                     assert !globalRelationLinkMap.containsKey(relation) : "tag must be defined to be unique: "
                                             + commandName;
@@ -744,9 +748,10 @@ public class Guide {
         }
     }
 
-    public static Guide createGuide(File newGuideFile) throws IOException {
+    public static Guide createGuide(File newGuideFile, AmigaPathList newAmigaPaths) throws IOException {
+        assert newGuideFile != null;
 
-        Guide result = new Guide(new FileSource(newGuideFile));
+        Guide result = new Guide(new FileSource(newGuideFile), newAmigaPaths);
         result.checkForGuideId(newGuideFile);
         result.readItems();
         result.defineMacros();

@@ -11,6 +11,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.AbstractItem;
@@ -40,15 +41,22 @@ abstract public class AbstractDomFactory {
     private Logger log;
     private Tools tools;
     private AmigaTools amigaTools;
+    private AmigaPathList amigaPaths;
 
     protected AbstractDomFactory(GuidePile newPile) throws ParserConfigurationException {
+        this(newPile, new AmigaPathList());
+    }
+
+    protected AbstractDomFactory(GuidePile newPile, AmigaPathList newAmigaPaths) throws ParserConfigurationException {
         assert newPile != null;
+        assert newAmigaPaths != null;
 
         log = Logger.getLogger(AbstractDomFactory.class.getName());
         tools = Tools.getInstance();
         amigaTools = AmigaTools.getInstance();
 
         pile = newPile;
+        amigaPaths = newAmigaPaths;
 
         createDom();
     }
@@ -253,7 +261,9 @@ abstract public class AbstractDomFactory {
                         } else if (commandTag == Tag.Name.embed) {
                             // Include content specified by @embed
                             // FIXME: Add @embed base path.
-                            File embeddedFile = amigaTools.getFileFor(command.getOption(0));
+                            File baseFolder = guide.getSourceFile().getParentFile();
+                            String amigaPathToFileToEmbed = command.getOption(0);
+                            File embeddedFile = amigaTools.getFileFor(amigaPathToFileToEmbed, baseFolder, amigaPaths);
                             flushText = true;
                             flushParagraph = true;
                             log.log(Level.INFO, "embed: {0}", tools.sourced(embeddedFile));

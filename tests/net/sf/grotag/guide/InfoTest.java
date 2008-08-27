@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.TestTools;
 
 import org.junit.Before;
@@ -31,7 +32,7 @@ public class InfoTest {
     private Guide getBasicsGuide() throws IOException {
         testTools = TestTools.getInstance();
         File testFile = testTools.getTestInputFile("basics.guide");
-        Guide result = Guide.createGuide(testFile);
+        Guide result = Guide.createGuide(testFile, new AmigaPathList());
         assertNotNull(result);
         return result;
     }

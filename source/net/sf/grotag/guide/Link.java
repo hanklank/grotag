@@ -3,6 +3,7 @@ package net.sf.grotag.guide;
 import java.io.File;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.AmigaTools;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
@@ -67,11 +68,12 @@ public class Link {
      *       <code>@node overview "Overview of features"</code>.
      *       </ul>
      */
-    public Link(CommandItem newLinkCommand) {
+    public Link(CommandItem newLinkCommand, AmigaPathList amigaPaths) {
         assert newLinkCommand != null;
         assert newLinkCommand.isLink() || newLinkCommand.isRelation()
                 || newLinkCommand.getCommandName().equals(Tag.Name.node.toString()) : newLinkCommand.toPrettyAmigaguide();
         assert newLinkCommand.getOption(0) != null;
+        assert amigaPaths != null;
 
         tools = Tools.getInstance();
         AmigaTools amigaTools = AmigaTools.getInstance();
@@ -129,7 +131,7 @@ public class Link {
             if (slashIndex >= 0) {
                 String linkAmigaPath = target.substring(0, slashIndex);
                 File baseFolder = guideFile.getParentFile();
-                targetFile = amigaTools.getFileFor(linkAmigaPath, baseFolder);
+                targetFile = amigaTools.getFileFor(linkAmigaPath, baseFolder, amigaPaths);
                 targetNode = target.substring(slashIndex + 1);
                 log.fine("mapping link: " + tools.sourced(linkAmigaPath) + " -> " + tools.sourced(targetFile) + ", "
                         + tools.sourced(targetNode));

@@ -228,8 +228,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo,
-            Relation relation) {
+    private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo, Relation relation) {
         assert parent != null;
         assert sourceGuide != null;
         assert sourceNodeInfo != null;
@@ -241,16 +240,18 @@ public class HtmlDomFactory extends AbstractDomFactory {
             File linkedFile = relationLink.getLocalTargetFile();
             String linkedNode = relationLink.getTargetNodeName();
             Guide targetGuide = pile.getGuide(linkedFile);
-            NodeInfo targetNodeInfo = targetGuide.getNodeInfo(linkedNode);
-            File targetHtmlFile = getTargetFileFor(targetGuide, targetNodeInfo);
-            NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
-            File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
-            String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetHtmlFile);
+            if (targetGuide != null) {
+                NodeInfo targetNodeInfo = targetGuide.getNodeInfo(linkedNode);
+                File targetHtmlFile = getTargetFileFor(targetGuide, targetNodeInfo);
+                NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
+                File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
+                String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetHtmlFile);
 
-            Element linkElement = getDom().createElement("link");
-            linkElement.setAttribute("href", relativeTargetUrl);
-            linkElement.setAttribute("rel", toHtmlRelation(relation));
-            parent.appendChild(linkElement);
+                Element linkElement = getDom().createElement("link");
+                linkElement.setAttribute("href", relativeTargetUrl);
+                linkElement.setAttribute("rel", toHtmlRelation(relation));
+                parent.appendChild(linkElement);
+            }
         }
     }
 

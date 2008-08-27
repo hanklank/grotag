@@ -29,6 +29,7 @@ import javax.swing.JTextPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DomWriter;
@@ -53,16 +54,19 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      */
     private class ReadWorker extends SwingWorker {
         private File guideFile;
+        private AmigaPathList amigaPaths;
 
-        public ReadWorker(File newGuideFile) {
+        public ReadWorker(File newGuideFile, AmigaPathList newAmigaPaths) {
             assert newGuideFile != null;
+            assert newAmigaPaths != null;
             guideFile = newGuideFile;
+            amigaPaths = newAmigaPaths;
         }
 
         @Override
         public Object construct() {
             try {
-                doRead(guideFile);
+                doRead(guideFile, amigaPaths);
             } catch (IOException error) {
                 showError("cannot read " + tools.sourced(guideFile), error);
             } catch (Exception error) {
@@ -192,12 +196,17 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         details.printStackTrace();
     }
 
-    public void read(File guideFile) {
-        ReadWorker worker = new ReadWorker(guideFile);
+    public void read(File guideFile, AmigaPathList newAmigaPaths) {
+        assert guideFile != null;
+        assert newAmigaPaths != null;
+        ReadWorker worker = new ReadWorker(guideFile, newAmigaPaths);
         worker.start();
     }
 
-    private void doRead(File guideFile) throws IOException {
+    private void doRead(File guideFile, AmigaPathList newAmigaPaths) throws IOException {
+        assert guideFile != null;
+        assert newAmigaPaths != null;
+
         File newTempFolder = createTempFolder();
         GuidePile newPile = null;
 
@@ -207,7 +216,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             progressBar.setVisible(true);
             try {
                 setStatus("Reading " + guideFile);
-                newPile = GuidePile.createGuidePile(guideFile);
+                newPile = GuidePile.createGuidePile(guideFile, newAmigaPaths);
                 HtmlDomFactory factory = new HtmlDomFactory(newPile, newTempFolder);
 
                 factory.copyStyleFile();

@@ -11,6 +11,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.parse.CommandItem;
 import net.sf.grotag.parse.FileSource;
@@ -30,12 +31,16 @@ public class GuidePile {
     private Logger log;
     private MessagePool messagePool;
     private Tools tools;
+    private AmigaPathList amigaPaths;
 
-    private GuidePile() {
+    private GuidePile(AmigaPathList newAmigaPaths) {
+        assert newAmigaPaths != null;
+
         log = Logger.getLogger(GuidePile.class.getName());
         tools = Tools.getInstance();
         messagePool = MessagePool.getInstance();
 
+        amigaPaths = newAmigaPaths;
         guideMap = new TreeMap<String, Guide>();
         guideList = new ArrayList<Guide>();
         linksToValidate = new ArrayList<Link>();
@@ -82,7 +87,7 @@ public class GuidePile {
         String guideKey = guideFile.getAbsolutePath();
         result = guideMap.get(guideKey);
         if (result == null) {
-            result = Guide.createGuide(guideFile);
+            result = Guide.createGuide(guideFile, amigaPaths);
             guideMap.put(guideKey, result);
             guideList.add(result);
         }
@@ -97,9 +102,10 @@ public class GuidePile {
         return result;
     }
 
-    public static GuidePile createGuidePile(File guideFile) throws IOException {
+    public static GuidePile createGuidePile(File guideFile, AmigaPathList newAmigaPaths) throws IOException {
         assert guideFile != null;
-        GuidePile result = new GuidePile();
+        assert newAmigaPaths != null;
+        GuidePile result = new GuidePile(newAmigaPaths);
         result.add(guideFile);
         result.validateLinks();
         result.completeRelations();
@@ -227,7 +233,7 @@ public class GuidePile {
                 if (nextNodeInfoIndex < guide.getNodeInfos().size()) {
                     NodeInfo nextNodeInfo = guide.getNodeInfos().get(nextNodeInfoIndex);
                     CommandItem nextNodeStartCommand = nextNodeInfo.getStartNode();
-                    defaultNextLink = new Link(nextNodeStartCommand);
+                    defaultNextLink = new Link(nextNodeStartCommand, amigaPaths);
                 } else {
                     defaultNextLink = null;
                 }
@@ -240,7 +246,7 @@ public class GuidePile {
                 nodeInfo.setEmptyRelationToDefault(Relation.toc, defaultTocLink);
                 
                 // Prepare to proceed with next node.
-                defaultPreviousLink = new Link(nodeInfo.getStartNode());
+                defaultPreviousLink = new Link(nodeInfo.getStartNode(), amigaPaths);
                 nextNodeInfoIndex += 1;
             }
         }

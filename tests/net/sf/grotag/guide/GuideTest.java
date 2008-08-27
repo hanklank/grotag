@@ -5,6 +5,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.IOException;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.TestTools;
 
 import org.junit.Before;
@@ -26,7 +27,7 @@ public class GuideTest {
     private void testGuide(String fileName) throws IOException {
         File inFile = testTools.getTestInputFile(fileName);
         File outFile = testTools.getTestActualFile(fileName);
-        Guide guide = Guide.createGuide(inFile);
+        Guide guide = Guide.createGuide(inFile, new AmigaPathList());
 
         assertNotNull(guide);
         guide.writePretty(outFile);
@@ -45,7 +46,7 @@ public class GuideTest {
 
     @Test
     public void testMacroGuide() throws Exception {
-        Guide guide = Guide.createGuide(testTools.getTestInputFile("macros.guide"));
+        Guide guide = Guide.createGuide(testTools.getTestInputFile("macros.guide"), new AmigaPathList());
         assertNotNull(guide);
     }
 }

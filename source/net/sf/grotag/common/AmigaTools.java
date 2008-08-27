@@ -2,6 +2,8 @@ package net.sf.grotag.common;
 
 import java.io.File;
 
+import net.sf.grotag.common.AmigaPathList.AmigaPathFilePair;
+
 /**
  * Amiga related tools.
  * 
@@ -15,10 +17,8 @@ public class AmigaTools {
 
     private static AmigaTools instance;
 
-    private Tools tools;
-
     private AmigaTools() {
-        tools = Tools.getInstance();
+        super();
     }
 
     public static final synchronized AmigaTools getInstance() {
@@ -28,20 +28,51 @@ public class AmigaTools {
         return instance;
     }
 
-    public File getFileFor(String amigaPath) {
+    public File getFileFor(String amigaPath, AmigaPathList amigaPaths) {
+        assert amigaPath != null;
+        assert amigaPaths != null;
         String currentFolderPath = System.getProperty("user.dir");
-        return getFileFor(amigaPath, new File(currentFolderPath));
+        return getFileFor(amigaPath, new File(currentFolderPath), amigaPaths);
     }
 
-    public File getFileFor(String amigaPath, File currentFolder) {
+    public File getFileFor(String amigaPath, File currentFolder, AmigaPathList amigaPaths) {
+        assert amigaPath != null;
+        assert currentFolder != null;
+        assert amigaPaths != null;
+
         String result = "";
         int charIndex = 0;
 
         int colonIndex = amigaPath.indexOf(':');
         if (colonIndex >= 0) {
-            // FIXME: Implement absolute Amiga paths.
-            charIndex = colonIndex + 1;
-            assert false : "cannot resolve absolute Amiga path: " + tools.sourced(amigaPath);
+            // Resolve absolute Amiga path.
+            String lowerAmigaPath = amigaPath.toLowerCase();
+            int amigaPathIndex = 0;
+            boolean pathFound = false;
+            while (!pathFound && (amigaPathIndex < amigaPaths.items().size())) {
+                AmigaPathFilePair pair = amigaPaths.items().get(amigaPathIndex);
+                if (lowerAmigaPath.startsWith(pair.getAmigaPath())) {
+                    pathFound = true;
+                } else {
+                    amigaPathIndex += 1;
+                }
+            }
+            if (pathFound) {
+                AmigaPathFilePair pairFound = amigaPaths.items().get(amigaPathIndex);
+                File localFolder = pairFound.getLocalFolder();
+                if (localFolder != null) {
+                    result = localFolder.getAbsolutePath();
+                    charIndex = pairFound.getAmigaPath().length();
+                } else {
+                    pathFound = false;
+                    amigaPaths.addUndefined(amigaPath.substring(0, colonIndex));
+                }
+            }
+            if (!pathFound) {
+                // Assign unknown Amiga paths to the temporary folder.
+                result = System.getProperty("java.io.tmpdir");
+                charIndex = colonIndex + 1;
+            }
         } else {
             charIndex = 0;
         }
@@ -104,5 +135,4 @@ public class AmigaTools {
         }
         return result;
     }
-
 }

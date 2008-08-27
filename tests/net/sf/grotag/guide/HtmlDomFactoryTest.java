@@ -3,11 +3,8 @@ package net.sf.grotag.guide;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
-import java.io.IOException;
 
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
-
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.TestTools;
 
 import org.junit.Before;
@@ -27,12 +24,14 @@ public class HtmlDomFactoryTest {
         testTools = TestTools.getInstance();
     }
 
-    private void testCreateNodeDocument(String guideBaseName) throws IOException, ParserConfigurationException, TransformerException {
+    private void testCreateNodeDocument(String guideBaseName) throws Exception {
         File guideFile = testTools.getTestInputFile(guideBaseName + ".guide");
         String testName = testTools.getTestName(HtmlDomFactoryTest.class, "testCreateNodeDocument");
         File targetFolder = testTools.getTestActualFile(testName);
+        AmigaPathList amigaPaths = new AmigaPathList();
+        amigaPaths.read(testTools.getTestInputFile("grotag_root.xml"));
 
-        GuidePile pile = GuidePile.createGuidePile(guideFile);
+        GuidePile pile = GuidePile.createGuidePile(guideFile, amigaPaths);
         Guide guide = pile.getGuides().get(0);
         HtmlDomFactory factory = new HtmlDomFactory(pile, targetFolder);
         factory.copyStyleFile();
@@ -47,12 +46,12 @@ public class HtmlDomFactoryTest {
     }
 
     @Test
-    public void testCreateBasicsDocument() throws IOException, ParserConfigurationException, TransformerException {
+    public void testCreateBasicsDocument() throws Exception {
         testCreateNodeDocument("basics");
     }
 
     @Test
-    public void testCreateRootDocument() throws IOException, ParserConfigurationException, TransformerException {
+    public void testCreateRootDocument() throws Exception {
         testCreateNodeDocument("root");
     }
 }

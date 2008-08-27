@@ -1,6 +1,7 @@
 package net.sf.grotag;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.logging.Level;
@@ -10,6 +11,7 @@ import javax.swing.WindowConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
+import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DocBookDomFactory;
 import net.sf.grotag.guide.DomWriter;
@@ -20,6 +22,7 @@ import net.sf.grotag.guide.NodeInfo;
 import net.sf.grotag.view.GrotagFrame;
 
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -32,13 +35,23 @@ import com.martiansoftware.jsap.JSAPResult;
 public class Grotag {
     private GrotagFrame viewer;
     private GrotagJsap jsap;
+    private AmigaPathList amigaPaths;
 
     private Grotag() throws JSAPException {
         jsap = new GrotagJsap();
     }
 
+    private void setAmigaPaths() throws SAXException, IOException, ParserConfigurationException {
+        amigaPaths = new AmigaPathList();
+        try {
+            amigaPaths.read(new File("grotag.xml"));
+        } catch (FileNotFoundException errorToIgnore) {
+            Logger.getLogger(Grotag.class.getName()).fine("ignored missing grotag.xml");
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    private void work(String[] arguments) throws IOException, ParserConfigurationException, TransformerException {
+    private void work(String[] arguments) throws IOException, ParserConfigurationException, TransformerException, SAXException {
         JSAPResult options = jsap.parse(arguments);
 
         if (!options.success()) {
@@ -66,6 +79,7 @@ public class Grotag {
             if (files.length == 0) {
                 throw new IllegalArgumentException("Amigaguide input file must be specified");
             }
+            setAmigaPaths();
             if (isDocBook) {
                 docBook(files);
             } else if (isHtml || isXhtml) {
@@ -92,11 +106,12 @@ public class Grotag {
             } else if (files.length > 1) {
                 throw new IllegalArgumentException("only one Amigaguide input file must be specified for viewing");
             }
+            setAmigaPaths();
             viewer = new GrotagFrame();
             viewer.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             viewer.pack();
             viewer.setVisible(true);
-            viewer.read(files[0]);
+            viewer.read(files[0], amigaPaths);
         }
     }
 
@@ -119,7 +134,7 @@ public class Grotag {
             throw new IllegalArgumentException("with --" + GrotagJsap.ARG_DOCBOOK
                     + " only 2 files must be specified instead of " + fileCount);
         }
-        GuidePile pile = GuidePile.createGuidePile(inputFile);
+        GuidePile pile = GuidePile.createGuidePile(inputFile, amigaPaths);
         DocBookDomFactory domFactory = new DocBookDomFactory(pile);
         Document dom = domFactory.createBook();
         DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
@@ -160,7 +175,7 @@ public class Grotag {
         }
 
         // Create the (X)HTML documents.
-        GuidePile pile = GuidePile.createGuidePile(inputFile);
+        GuidePile pile = GuidePile.createGuidePile(inputFile, amigaPaths);
         for (Guide guide : pile.getGuides()) {
             HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
             factory.copyStyleFile();
@@ -175,14 +190,14 @@ public class Grotag {
 
     private void pretty(File[] files) throws IOException {
         for (File guideFile : files) {
-            Guide guide = Guide.createGuide(guideFile);
+            Guide guide = Guide.createGuide(guideFile, amigaPaths);
             guide.writePretty(guideFile);
         }
     }
 
     private void validate(File[] files) throws IOException {
         for (File guideFile : files) {
-            GuidePile.createGuidePile(guideFile);
+            GuidePile.createGuidePile(guideFile, amigaPaths);
         }
     }
 
