@@ -3,6 +3,7 @@ package net.sf.grotag.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,17 +18,25 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
+import javax.swing.text.DefaultEditorKit;
+import javax.swing.text.JTextComponent;
 
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
@@ -45,6 +54,126 @@ import net.sf.grotag.guide.Relation;
  * @author Thomas Aglassinger
  */
 public class GrotagFrame extends JFrame implements HyperlinkListener {
+    /**
+     * Menu bar to interact with the Grotag viewer.
+     * 
+     * @author Thomas Aglassinger
+     */
+    private class GrotagMenuBar extends JMenuBar {
+        private int commandMask;
+
+        public GrotagMenuBar() {
+            super();
+            if (tools.isMacOsX()) {
+                commandMask = ActionEvent.META_MASK;
+            } else {
+                commandMask = ActionEvent.CTRL_MASK;
+            }
+            add(createFileMenu());
+            add(createEditMenu());
+            add(createGoMenu());
+        }
+
+        private void setAccelerator(JMenuItem item, int code) {
+            item.setAccelerator(KeyStroke.getKeyStroke(code, commandMask));
+        }
+
+        private final JMenu createFileMenu() {
+            JMenu result = new JMenu("File");
+            JMenuItem openItem = new JMenuItem(new OpenAction());
+            openItem.setMnemonic(KeyEvent.VK_O);
+            setAccelerator(openItem, KeyEvent.VK_O);
+            result.add(openItem);
+            if (!tools.isMacOsX()) {
+                JMenuItem exitItem = new JMenuItem(new ExitAction());
+                exitItem.setMnemonic(KeyEvent.VK_X);
+                setAccelerator(exitItem, KeyEvent.VK_X);
+                result.add(exitItem);
+            }
+            result.setMnemonic(KeyEvent.VK_F);
+            return result;
+        }
+
+        private final JMenu createEditMenu() {
+            JMenu result = new JMenu("Edit");
+            Action copyAction = getActionByName(DefaultEditorKit.copyAction);
+            Action selectAllAction = getActionByName(DefaultEditorKit.selectAllAction);
+            JMenuItem copyItem = new JMenuItem(copyAction);
+            JMenuItem selectAllItem = new JMenuItem(selectAllAction);
+            copyItem.setAction(copyAction);
+            copyItem.setText("Copy");
+            copyItem.setMnemonic(KeyEvent.VK_C);
+            setAccelerator(copyItem, KeyEvent.VK_C);
+            selectAllItem.setText("Select all");
+            selectAllItem.setMnemonic(KeyEvent.VK_A);
+            setAccelerator(selectAllItem, KeyEvent.VK_A);
+            result.add(copyItem);
+            result.add(selectAllItem);
+            result.setMnemonic(KeyEvent.VK_E);
+            return result;
+        }
+
+        private final JMenu createGoMenu() {
+            JMenu result = new JMenu("Go");
+            JMenuItem nextItem = new JMenuItem(new RelationAction("Next", Relation.next));
+            nextItem.setMnemonic(KeyEvent.VK_N);
+            setAccelerator(nextItem, KeyEvent.VK_RIGHT);
+            JMenuItem previousItem = new JMenuItem(new RelationAction("Previous", Relation.previous));
+            previousItem.setMnemonic(KeyEvent.VK_P);
+            setAccelerator(previousItem, KeyEvent.VK_LEFT);
+            JMenuItem tocItem = new JMenuItem(new RelationAction("Contents", Relation.toc));
+            tocItem.setMnemonic(KeyEvent.VK_C);
+            setAccelerator(tocItem, KeyEvent.VK_T);
+            JMenuItem indexItem = new JMenuItem(new RelationAction("Index", Relation.index));
+            indexItem.setMnemonic(KeyEvent.VK_I);
+            setAccelerator(indexItem, KeyEvent.VK_N);
+            result.add(nextItem);
+            result.add(previousItem);
+            result.add(tocItem);
+            result.add(indexItem);
+            result.setMnemonic(KeyEvent.VK_G);
+            return result;
+        }
+    }
+
+    /**
+     * Action to close the window and exit.
+     * 
+     * @author Thomas Aglassinger
+     */
+    private class ExitAction extends AbstractAction {
+        public ExitAction() {
+            super("Exit");
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            dispose();
+            System.exit(0);
+        }
+    }
+
+    /**
+     * Action to open a new guide using a dialog.
+     * 
+     * @author Thomas Aglassinger
+     */
+    private class OpenAction extends AbstractAction {
+        public OpenAction() {
+            super("Open...");
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            try {
+                int userAction = openChooser.showOpenDialog(getGrotagFrame());
+                if (userAction == JFileChooser.APPROVE_OPTION) {
+                    // FIXME: Read grotag.xml.
+                    read(openChooser.getSelectedFile(), new AmigaPathList());
+                }
+            } catch (Exception error) {
+                showError("cannot open file", error);
+            }
+        }
+    }
 
     /**
      * Worker to read Amigaguide document in the background while updating the
@@ -146,6 +275,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private Map<Relation, URL> relationMap;
     private List<JButton> relationButtons;
     private Map<URL, NodeInfo> urlToNodeMap;
+    private Map<Object, Action> editorKitActionMap;
+    private JFileChooser openChooser;
 
     /**
      * Lock to synchronize on for page or file operations.
@@ -163,13 +294,32 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         relationMap = new TreeMap<Relation, URL>();
         relationButtons = new LinkedList<JButton>();
         pageLock = "pageLock";
+        openChooser = new JFileChooser();
         setLayout(new BorderLayout());
         setUpButtonPane();
         setUpHtmlPane();
+        setUpEditorActionTable(htmlPane);
         setUpStatusPane();
         clearStatus();
         pack();
+        setJMenuBar(new GrotagMenuBar());
         progressBar.setVisible(false);
+    }
+
+    /**
+     * Build a map to find editor actions by name.
+     */
+    private void setUpEditorActionTable(JTextComponent textComponent) {
+        editorKitActionMap = new HashMap<Object, Action>();
+        Action[] actionsArray = textComponent.getActions();
+        for (int i = 0; i < actionsArray.length; i++) {
+            Action a = actionsArray[i];
+            editorKitActionMap.put(a.getValue(Action.NAME), a);
+        }
+    }
+
+    private Action getActionByName(String name) {
+        return editorKitActionMap.get(name);
     }
 
     public void clearStatus() {
@@ -214,12 +364,16 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             progressBar.setValue(0);
             progressBar.setIndeterminate(true);
             progressBar.setVisible(true);
+            openChooser.setCurrentDirectory(guideFile.getParentFile());
             try {
                 setStatus("Reading " + guideFile);
                 newPile = GuidePile.createGuidePile(guideFile, newAmigaPaths);
                 HtmlDomFactory factory = new HtmlDomFactory(newPile, newTempFolder);
 
                 factory.copyStyleFile();
+                factory.setAddDublinCore(false);
+                factory.setAddNavigationBar(false);
+                factory.setCopyNonGuides(false);
 
                 // Compute number of nodes in pile to show progress.
                 // TODO: Use number of items as base for progress.
@@ -370,6 +524,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         statusPane.add(progressBar);
         statusPane.add(Box.createRigidArea(new Dimension(rigidSize, 0)));
         add(statusPane, BorderLayout.PAGE_END);
+    }
+
+    /**
+     * Handle to this frame for inner classes which cannot refer to it using
+     * <code>this</code>.
+     */
+    private JFrame getGrotagFrame() {
+        return this;
     }
 
     public void hyperlinkUpdate(HyperlinkEvent linkEvent) {

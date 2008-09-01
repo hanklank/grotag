@@ -4,14 +4,18 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,13 +35,28 @@ import org.w3c.dom.Text;
 import com.twelvemonkeys.imageio.oldplugins.iff.IFFImageReaderSpi;
 
 public class HtmlDomFactory extends AbstractDomFactory {
+    /**
+     * Resource to copy the CSS from.
+     */
+    public static final String CSS_RESOURCE = "/net/sf/grotag/styles/amigaguide.css";
+
+    /**
+     * Link relation to express style sheet.
+     */
+    public static final String REL_STYLESHEET = "stylesheet";
+
     private GuidePile pile;
     private File pileBaseFolder;
     private File pileTargetFolder;
     private Tools tools;
     private Map<String, File> targetFileMap;
+    private Map<Relation, String> relationToNavigationLabelMap;
     private File styleFile;
     private Logger log;
+    private boolean isCopyNonGuides;
+    private boolean isConvertIffIlbm;
+    private boolean isAddDublinCore;
+    private boolean isAddNavigationBar;
 
     public HtmlDomFactory(GuidePile newPile, File newPileTargetFolder) throws ParserConfigurationException {
         super(newPile);
@@ -54,13 +73,30 @@ public class HtmlDomFactory extends AbstractDomFactory {
         assert guides.size() > 0;
         Guide baseGuide = guides.get(0);
         pileBaseFolder = baseGuide.getSourceFile().getParentFile();
+        relationToNavigationLabelMap = createRelationToNavigationLabelMap();
         targetFileMap = createTargetFileMap();
+        
+        
         styleFile = new File(pileTargetFolder, "amigaguide.css");
+        isAddDublinCore = true;
+        isAddNavigationBar = true;
+        isConvertIffIlbm = true;
+        isCopyNonGuides = true;
     }
 
     public File getTargetFileFor(Guide guide, NodeInfo nodeInfo) {
         File result = targetFileMap.get(nodeKey(guide, nodeInfo));
         assert result != null;
+        return result;
+    }
+
+    private Map<Relation, String> createRelationToNavigationLabelMap() {
+        Map<Relation, String> result = new TreeMap<Relation, String>();
+        result.put(Relation.toc, "Contents");
+        result.put(Relation.index, "Index");
+        result.put(Relation.next, "Next");
+        result.put(Relation.previous, "Previous");
+        
         return result;
     }
 
@@ -157,6 +193,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         Element head = createHead(guide, nodeInfo);
         html.appendChild(head);
         Element body = createNodeBody(guide, nodeInfo);
+        appendNavigationBar(body, guide, nodeInfo);
         appendNodeContent(body, guide, nodeInfo);
         getDom().appendChild(html);
         html.appendChild(body);
@@ -184,19 +221,24 @@ public class HtmlDomFactory extends AbstractDomFactory {
         File targetBaseFolder = sourceHtmlFile.getParentFile();
         File targetFile;
 
-        if (isIffImageFile(linkedFile)) {
+        if (isIffImageFile(linkedFile) && isConvertIffIlbm()) {
             relativeLinkedFile = tools.getWithoutLastSuffix(relativeLinkedFile) + ".png";
             targetFile = new File(targetBaseFolder, relativeLinkedFile);
             targetFile.getParentFile().mkdirs();
             log.log(Level.INFO, "convert {0} to {1}", new Object[] { tools.sourced(linkedFile),
                     tools.sourced(targetFile) });
             BufferedImage image = ImageIO.read(linkedFile);
+            if (image == null) {
+                throw new IOException("cannot read image: " + tools.sourced(linkedFile));
+            }
             ImageIO.write(image, "png", targetFile);
-        } else {
+        } else if (isCopyNonGuides()) {
             targetFile = new File(targetBaseFolder, relativeLinkedFile);
             log.log(Level.INFO, "copy {0} to {1}",
                     new Object[] { tools.sourced(linkedFile), tools.sourced(targetFile) });
             tools.copyFile(linkedFile, targetFile);
+        } else {
+            targetFile = linkedFile;
         }
 
         String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetFile);
@@ -228,14 +270,14 @@ public class HtmlDomFactory extends AbstractDomFactory {
         return result;
     }
 
-    private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo, Relation relation) {
-        assert parent != null;
+    private String getRelationUrl(Guide sourceGuide, NodeInfo sourceNodeInfo, Relation relation) {
         assert sourceGuide != null;
         assert sourceNodeInfo != null;
         assert relation != null;
+        String result;
         Link relationLink = sourceNodeInfo.getRelation(relation);
         if (relationLink != null) {
-            log.info("append relation: " + relation + "=" + relationLink);
+            log.info("link for relation: " + relation + "=" + relationLink);
             // FIXME: Currently only works if relation link is a guide and node.
             File linkedFile = relationLink.getLocalTargetFile();
             String linkedNode = relationLink.getTargetNodeName();
@@ -245,14 +287,64 @@ public class HtmlDomFactory extends AbstractDomFactory {
                 File targetHtmlFile = getTargetFileFor(targetGuide, targetNodeInfo);
                 NodeInfo anySourceNode = sourceGuide.getNodeInfos().get(0);
                 File sourceHtmlFile = getTargetFileFor(sourceGuide, anySourceNode);
-                String relativeTargetUrl = tools.getRelativeUrl(sourceHtmlFile, targetHtmlFile);
-
-                Element linkElement = getDom().createElement("link");
-                linkElement.setAttribute("href", relativeTargetUrl);
-                linkElement.setAttribute("rel", toHtmlRelation(relation));
-                parent.appendChild(linkElement);
+                result = tools.getRelativeUrl(sourceHtmlFile, targetHtmlFile);
+            } else {
+                result = null;
             }
+        } else {
+            result = null;
         }
+        log.info("url for relation: " + relation + "=" + result);
+
+        return result;
+    }
+
+    private void attemptToAppendRelation(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo, Relation relation) {
+        assert parent != null;
+        assert sourceGuide != null;
+        assert sourceNodeInfo != null;
+        assert relation != null;
+        Link relationLink = sourceNodeInfo.getRelation(relation);
+        String relativeTargetUrl = getRelationUrl(sourceGuide, sourceNodeInfo, relation);
+        if (relativeTargetUrl != null) {
+            log.info("append relation: " + relation + "=" + relationLink);
+            Element linkElement = getDom().createElement("link");
+            linkElement.setAttribute("href", relativeTargetUrl);
+            linkElement.setAttribute("rel", toHtmlRelation(relation));
+            parent.appendChild(linkElement);
+        }
+    }
+
+    private void attemptToAppendNavigationLink(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo,
+            Relation relation, boolean isFirstLinkInBar) {
+        assert parent != null;
+        assert sourceGuide != null;
+        assert sourceNodeInfo != null;
+        assert relation != null;
+
+        if (!isFirstLinkInBar) {
+            parent.appendChild(getDom().createTextNode(" | "));
+        }
+        String relationUrl = getRelationUrl(sourceGuide, sourceNodeInfo, relation);
+        String relationLabel = relationToNavigationLabelMap.get(relation);
+        assert relationLabel != null : "label for relation must be defined: " + relation;
+        Text linkLabel = getDom().createTextNode(relationLabel);
+        if (relationUrl != null) {
+            Element aElement = getDom().createElement("a");
+            aElement.setAttribute("href", relationUrl);
+            aElement.appendChild(linkLabel);
+            parent.appendChild(aElement);
+        } else {
+            parent.appendChild(linkLabel);
+        }
+    }
+
+    private void appendNavigationBar(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo) {
+        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.toc, true);
+        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.index, false);
+        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.next, false);
+        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.previous, false);
+        parent.appendChild(getDom().createElement("hr"));
     }
 
     /**
@@ -264,14 +356,18 @@ public class HtmlDomFactory extends AbstractDomFactory {
         assert nodeInfo != null;
 
         Element result = getDom().createElement("head");
-        result.setAttribute("profile", "http://dublincore.org/documents/2008/08/04/dc-html/");
+        if (isAddDublinCore()) {
+            result.setAttribute("profile", "http://dublincore.org/documents/2008/08/04/dc-html/");
+        }
 
         // Append title.
         Element title = getDom().createElement("title");
         DatabaseInfo dbInfo = guide.getDatabaseInfo();
         title.appendChild(getDom().createTextNode(dbInfo.getName()));
         result.appendChild(title);
-        result.appendChild(createMetaElement("DC.title", dbInfo.getName()));
+        if (isAddDublinCore()) {
+            result.appendChild(createMetaElement("DC.title", dbInfo.getName()));
+        }
 
         // Append relations.
         for (Relation relation : nodeInfo.getRelationLinkMap().keySet()) {
@@ -281,21 +377,23 @@ public class HtmlDomFactory extends AbstractDomFactory {
         // Append style sheet.
         String styleUrl = tools.getRelativeUrl(targetFileMap.get(nodeKey(guide, nodeInfo)), getStyleFile());
         Element style = getDom().createElement("link");
-        style.setAttribute("rel", "stylesheet");
+        style.setAttribute("rel", REL_STYLESHEET);
         style.setAttribute("type", "text/css");
         style.setAttribute("href", styleUrl);
         result.appendChild(style);
 
-        // Append author.
-        String author = dbInfo.getAuthor();
-        if (author != null) {
-            result.appendChild(createMetaElement("DC.creator", author));
-        }
+        if (isAddDublinCore()) {
+            // Append author.
+            String author = dbInfo.getAuthor();
+            if (author != null) {
+                result.appendChild(createMetaElement("DC.creator", author));
+            }
 
-        // Append copyright.
-        String copyright = dbInfo.getCopyright();
-        if (copyright != null) {
-            result.appendChild(createMetaElement("DC.rights", copyright));
+            // Append copyright.
+            String copyright = dbInfo.getCopyright();
+            if (copyright != null) {
+                result.appendChild(createMetaElement("DC.rights", copyright));
+            }
         }
 
         // Append keywords.
@@ -345,8 +443,24 @@ public class HtmlDomFactory extends AbstractDomFactory {
 
     public void copyStyleFile() throws IOException {
         // FIXME: Obtain style file from JAR or settings folder.
-        File cssFile = new File("source", "amigaguide.css");
-        tools.copyFile(cssFile, getStyleFile());
+        InputStream cssIn = HtmlDomFactory.class.getResourceAsStream(CSS_RESOURCE);
+        if (cssIn == null) {
+            File cssFile = new File("source", "amigaguide.css");
+            log.fine("using style from local file: " + tools.sourced(cssFile));
+            cssIn = new FileInputStream(cssFile);
+        } else {
+            log.fine("using style from resource: " + CSS_RESOURCE);
+        }
+        try {
+            OutputStream cssOut = new FileOutputStream(getStyleFile());
+            try {
+                tools.copy(cssIn, cssOut);
+            } finally {
+                cssOut.close();
+            }
+        } finally {
+            cssIn.close();
+        }
     }
 
     /**
@@ -354,5 +468,37 @@ public class HtmlDomFactory extends AbstractDomFactory {
      */
     public File getStyleFile() {
         return styleFile;
+    }
+
+    public boolean isCopyNonGuides() {
+        return isCopyNonGuides;
+    }
+
+    public void setCopyNonGuides(boolean newCopyNonGuides) {
+        isCopyNonGuides = newCopyNonGuides;
+    }
+
+    public boolean isConvertIffIlbm() {
+        return isConvertIffIlbm;
+    }
+
+    public void setConvertIffIlbm(boolean newConvertIffIlbm) {
+        isConvertIffIlbm = newConvertIffIlbm;
+    }
+
+    public boolean isAddDublinCore() {
+        return isAddDublinCore;
+    }
+
+    public void setAddDublinCore(boolean newAddDublinCore) {
+        isAddDublinCore = newAddDublinCore;
+    }
+
+    public boolean isAddNavigationBar() {
+        return isAddNavigationBar;
+    }
+
+    public void setAddNavigationBar(boolean newAddNavigationBar) {
+        isAddNavigationBar = newAddNavigationBar;
     }
 }

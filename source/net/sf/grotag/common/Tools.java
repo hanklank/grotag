@@ -397,6 +397,57 @@ public class Tools {
         }
     }
 
+    /**
+     * Copy all data from <code>in</code> to <code>out</code>.
+     */
+    public void copy(InputStream in, OutputStream out) throws IOException {
+        assert in != null;
+        assert out != null;
+
+        byte[] buffer = new byte[BUFFER_SIZE];
+        int bytesRead;
+
+        do {
+            bytesRead = in.read(buffer);
+            if (bytesRead > 0) {
+                out.write(buffer);
+            }
+        } while (bytesRead > 0);
+    }
+
+    /**
+     * Copy all data from <code>in</code> to <code>out</code>, and close
+     * both streams.
+     */
+    public void copyAndClose(InputStream in, OutputStream out) throws IOException {
+        assert in != null;
+        assert out != null;
+
+        try {
+            copy(in, out);
+        } finally {
+            Exception cause = null;
+
+            try {
+                out.close();
+            } catch (Exception error) {
+                cause = error;
+            }
+            try {
+                in.close();
+            } catch (Exception error) {
+                if (cause == null) {
+                    cause = error;
+                }
+            }
+            if (cause != null) {
+                IOException error = new IOException("cannot copy stream");
+                error.initCause(cause);
+                throw error;
+            }
+        }
+    }
+
     public String[] getRelativePaths(File baseDir, File[] filesInBaseDir) {
         String[] result = new String[filesInBaseDir.length];
 
@@ -498,6 +549,13 @@ public class Tools {
         } else {
             result = null;
         }
+        return result;
+    }
+
+    public boolean isMacOsX() {
+        boolean result;
+        String osName = System.getProperty("os.name").toLowerCase();
+        result = osName.startsWith("mac os x");
         return result;
     }
 }

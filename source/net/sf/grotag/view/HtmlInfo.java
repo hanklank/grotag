@@ -16,6 +16,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.HTML.Tag;
 import javax.swing.text.html.parser.ParserDelegator;
 
+import net.sf.grotag.guide.HtmlDomFactory;
 import net.sf.grotag.guide.Relation;
 
 /**
@@ -63,7 +64,7 @@ class HtmlInfo {
                                 // FIXME: Add stack trace to log.
                                 error.printStackTrace();
                             }
-                        } else {
+                        } else if (!rel.equals(HtmlDomFactory.REL_STYLESHEET)) {
                             log.warning("ignored unknown rel: " + rel);
                         }
                     } else {

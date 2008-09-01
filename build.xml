@@ -7,6 +7,7 @@
   <property name="actual.dir" location="${tests.dir}/actual" />
   <property name="input.dir" location="${tests.dir}/input" />
   <property name="classes.dir" location="${basedir}/classes" />
+  <property name="styles.dir" location="${classes.dir}/net/sf/grotag/styles" />
   <property name="external.dir" location="${basedir}/external" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
   <property name="Grotag.zip" location="${basedir}/Grotag.zip" />
@@ -47,6 +48,21 @@
     </sequential>
   </macrodef>
 
+  <macrodef name="grotagToHtml">
+    <attribute name="guide" />
+    <sequential>
+      <mkdir dir="${actual.dir}/html" />
+      <java jar="${Grotag.jar}" fork="true" failonerror="true">
+        <arg value="--html" />
+        <arg value="@{guide}" />
+        <arg value="${actual.dir}/html" />
+        <assertions>
+          <enable />
+        </assertions>
+      </java>
+    </sequential>
+  </macrodef>
+
   <target depends="jar" description="Build distribution archive Grotag.zip." name="build">
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
@@ -57,7 +73,12 @@
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
-    <jar basedir="${classes.dir}" destfile="${Grotag.jar}" excludes="**/*Test.class" includes="**/*.class">
+    <mkdir dir="${styles.dir}" />
+    <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
+    <jar basedir="${classes.dir}"
+         destfile="${Grotag.jar}"
+         excludes="**/*Test.class"
+         includes="**/*.class, **/*.css, **/*.properties">
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger" />
         <attribute name="Implementation-Title" value="Grotag" />
@@ -79,39 +100,47 @@
     <delete file="${site.dir}/license.txt" />
   </target>
 
-  <target name="lha.html" depends="jar">
+  <target name="root.html" depends="jar">
+    <grotagToHtml guide="${input.dir}/root.guide" />
+  </target>
+
+  <target name="dev.html" depends="jar">
+    <grotagToHtml guide="${guides.dir}/reference_library/devices/Dev_1" />
+  </target>
+
+  <target name="lha.dbh" depends="jar">
     <grotagDocBookToHtml guide="${guides.dir}/LhA.guide" html="${actual.dir}/lha.html" xml="${actual.dir}/lha.xml" />
   </target>
 
-  <target name="agr_test.html" depends="jar">
+  <target name="agr_test.dbh" depends="jar">
     <grotagDocBookToHtml guide="${guides.dir}/agr_test.guide"
                          html="${actual.dir}/agr_test.html"
                          xml="${actual.dir}/agr_test.xml" />
   </target>
 
-  <target name="basics.html" depends="jar">
+  <target name="basics.dbh" depends="jar">
     <grotagDocBookToHtml guide="${input.dir}/basics.guide"
                          html="${actual.dir}/basics.html"
                          xml="${actual.dir}/basics.xml" />
   </target>
 
-  <target name="dev.html" depends="jar">
+  <target name="dev.dbh" depends="jar">
     <grotagDocBookToHtml guide="${guides.dir}/reference_library/devices/Dev_1"
                          html="${actual.dir}/dev.html"
                          xml="${actual.dir}/dev.xml" />
   </target>
 
-  <target name="lib.html" depends="jar">
+  <target name="lib.dbh" depends="jar">
     <grotagDocBookToHtml guide="${guides.dir}/reference_library//libraries/Lib_1"
                          html="${actual.dir}/lib.html"
                          xml="${actual.dir}/lib.xml" />
   </target>
 
-  <target name="root.html" depends="jar">
+  <target name="root.dbh" depends="jar">
     <grotagDocBookToHtml guide="${input.dir}/root.guide" html="${actual.dir}/root.html" xml="${actual.dir}/root.xml" />
   </target>
 
-  <target name="amigaguide.html" depends="jar">
+  <target name="amigaguide.dbh" depends="jar">
     <grotagDocBookToHtml guide="${guides.dir}/amigaguide.guide"
                          html="${actual.dir}/amigaguide.html"
                          xml="${actual.dir}/amigaguide.xml" />
@@ -133,7 +162,7 @@
     <zip destfile="site.zip" basedir="${site.dir}" />
   </target>
 
-  <target name="examples" depends="basics.html, root.html"> 
+  <target name="examples" depends="basics.dbh, root.dbh">
     <mkdir dir="${site.dir}/examples" />
     <copy file="${source.dir}/site/index.html" todir="${site.dir}" />
     <copy file="license.txt" todir="${site.dir}" />
