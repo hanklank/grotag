@@ -211,6 +211,7 @@ public class Grotag {
         } catch (IllegalArgumentException error) {
             mainLog.log(Level.FINE, "cannot process command line options: " + error.getMessage(), error);
             System.err.println("cannot process command line options: " + error.getMessage());
+            error.printStackTrace();
         } catch (Exception error) {
             mainLog.log(Level.SEVERE, "cannot run Grotag: " + error.getMessage(), error);
         }
