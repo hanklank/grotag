@@ -1,5 +1,6 @@
 package net.sf.grotag.common;
 
+import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,6 +14,11 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+
+import javax.swing.JTable;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
 
 public class Tools {
     public enum DeleteResult {
@@ -557,5 +563,46 @@ public class Tools {
         String osName = System.getProperty("os.name").toLowerCase();
         result = osName.startsWith("mac os x");
         return result;
+    }
+    
+    /**
+     *  This method picks good column sizes. If all column heads are wider than the column's cells'
+     *  contents, then you can just use column.sizeWidthToFit().
+     */
+    public void initColumnWidths(JTable table) {
+        assert table != null;
+        TableModel tableModel = table.getModel();
+        TableColumn columnModel = null;
+        Component componet = null;
+        int headerWidth = 0;
+        int cellWidth = 0;
+        TableCellRenderer headerRenderer = table.getTableHeader().getDefaultRenderer();
+
+        for (int column = 0; column < table.getColumnCount(); column += 1) {
+            columnModel = table.getColumnModel().getColumn(column);
+
+            componet = headerRenderer.getTableCellRendererComponent(
+                    null, columnModel.getHeaderValue(), false, false, 0, 0);
+            headerWidth = componet.getPreferredSize().width;
+
+            int maxCellWidth = 0;
+
+            for (int row = 0; row < table.getRowCount(); row += 1) {
+                componet =
+                        table.getDefaultRenderer(tableModel.getColumnClass(column)).getTableCellRendererComponent(
+                        table,
+                        table.getValueAt(row, column),
+                        false,
+                        false,
+                        0,
+                        column);
+                cellWidth = componet.getPreferredSize().width;
+                if (cellWidth > maxCellWidth) {
+                    maxCellWidth = cellWidth;
+                }
+            }
+
+            columnModel.setPreferredWidth(Math.max(headerWidth, maxCellWidth));
+        }
     }
 }

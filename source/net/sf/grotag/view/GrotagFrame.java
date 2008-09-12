@@ -31,6 +31,8 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
 import javax.swing.event.HyperlinkEvent;
@@ -265,6 +267,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JScrollPane htmlScrollPane;
     private JPanel statusPane;
     private JPanel buttonPane;
+    private JSplitPane splitPane;
+    private JScrollPane messagePane;
     private Logger log;
     private Tools tools;
     private Stack<URL> retraceStack;
@@ -277,12 +281,15 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private Map<URL, NodeInfo> urlToNodeMap;
     private Map<Object, Action> editorKitActionMap;
     private JFileChooser openChooser;
+    private MessageItemTableModel messageModel;
 
     /**
      * Lock to synchronize on for page or file operations.
      */
     private Object pageLock;
     private JButton retraceButton;
+
+    private JTable messageTable;
 
     public GrotagFrame() {
         super(DEFAULT_TITLE);
@@ -299,11 +306,30 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         setUpButtonPane();
         setUpHtmlPane();
         setUpEditorActionTable(htmlPane);
+        setUpMessagePane();
+        setUpSplitPane();
         setUpStatusPane();
         clearStatus();
-        pack();
+        add(buttonPane, BorderLayout.PAGE_START);
+        add(splitPane, BorderLayout.CENTER);
+        add(statusPane, BorderLayout.PAGE_END);
         setJMenuBar(new GrotagMenuBar());
+        pack();
         progressBar.setVisible(false);
+    }
+
+    private void setUpMessagePane() {
+        messageModel = new MessageItemTableModel();
+        messageTable = new JTable(messageModel);
+        messageTable.setAutoResizeMode(JTable.AUTO_RESIZE_LAST_COLUMN);
+        tools.initColumnWidths(messageTable);
+        messagePane = new JScrollPane(messageTable);
+    }
+
+    private void setUpSplitPane() {
+        splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, htmlScrollPane, messagePane);
+        splitPane.setOneTouchExpandable(true);
+        splitPane.setResizeWeight(0.90);
     }
 
     /**
@@ -418,6 +444,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     tools.attemptToDeleteAll(newTempFolder);
                 }
                 clearStatus();
+                messageModel.update();
+                tools.initColumnWidths(messageTable);
                 progressBar.setVisible(false);
             }
         }
@@ -497,8 +525,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         buttonPane.add(nextButton);
         buttonPane.add(previousButton);
         buttonPane.add(Box.createHorizontalGlue());
-
-        add(buttonPane, BorderLayout.PAGE_START);
     }
 
     private final void setUpHtmlPane() {
@@ -507,7 +533,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         htmlPane.setPreferredSize(new Dimension(640, 512));
         htmlPane.setEditable(false);
         htmlScrollPane = new JScrollPane(htmlPane);
-        add(htmlScrollPane, BorderLayout.CENTER);
     }
 
     private final void setUpStatusPane() {
@@ -523,7 +548,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         statusPane.add(Box.createHorizontalGlue());
         statusPane.add(progressBar);
         statusPane.add(Box.createRigidArea(new Dimension(rigidSize, 0)));
-        add(statusPane, BorderLayout.PAGE_END);
     }
 
     /**
