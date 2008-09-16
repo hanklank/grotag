@@ -68,6 +68,35 @@
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
 
+  <target depends="build" description="Create Mac OS X DMG" name="dmg">
+    <!-- Copy Grotag.app to temp dir. -->
+    <tempfile property="dmg-temp.dir"/>
+    <copy todir="${dmg-temp.dir}">
+      <fileset dir="${basedir}">
+        <include name="Grotag.app/**"/>
+      </fileset>
+    </copy>
+    <copy file="license.txt" tofile="${dmg-temp.dir}/License.txt"/>
+    <chmod perm="ugo+x">
+      <fileset dir="${dmg-temp.dir}/Grotag.app/Contents">
+        <include name="MacOS/JavaApplicationStub"/>
+      </fileset>
+    </chmod>
+    <!-- Create Grotag.dmg. -->
+    <delete file="Grotag.dmg" quiet="true"/>
+    <exec dir="${dmg-temp.dir}" executable="hdiutil">
+      <arg value="create"/>
+      <arg value="${basedir}/Grotag.dmg"/>
+      <arg value="-srcfolder"/>
+      <arg value="."/>
+      <arg value="-format"/>
+      <arg value="UDZO"/>
+      <arg value="-volname"/>
+      <arg value="Grotag"/>
+    </exec>
+    <delete dir="${dmg-temp.dir}"/>
+  </target>
+
   <target description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
