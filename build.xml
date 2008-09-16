@@ -64,6 +64,7 @@
   </macrodef>
 
   <target depends="jar" description="Build distribution archive Grotag.zip." name="build">
+    <copy file="${Grotag.jar}" todir="Grotag.app/Contents/Resources/Java" />
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
 
