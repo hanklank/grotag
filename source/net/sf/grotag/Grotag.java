@@ -101,9 +101,7 @@ public class Grotag {
             File files[] = options.getFileArray(GrotagJsap.ARG_FILE);
             // According to JSAP API documentation, this is never is null.
             assert files != null;
-            if (files.length == 0) {
-                throw new IllegalArgumentException("Amigaguide input file must be specified");
-            } else if (files.length > 1) {
+            if (files.length > 1) {
                 throw new IllegalArgumentException("only one Amigaguide input file must be specified for viewing");
             }
             setAmigaPaths();
@@ -111,7 +109,9 @@ public class Grotag {
             viewer.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
             viewer.pack();
             viewer.setVisible(true);
-            viewer.read(files[0], amigaPaths);
+            if (files.length != 0) {
+                viewer.read(files[0], amigaPaths);
+            }
         }
     }
 
