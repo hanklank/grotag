@@ -306,6 +306,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         relationButtons = new LinkedList<JButton>();
         pageLock = "pageLock";
         openChooser = new JFileChooser();
+        openChooser.addChoosableFileFilter(new GuideFileFilter());
+        openChooser.setAcceptAllFileFilterUsed(false);
         setLayout(new BorderLayout());
         setUpButtonPane();
         setUpHtmlPane();

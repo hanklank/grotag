@@ -1,6 +1,8 @@
 package net.sf.grotag.common;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import net.sf.grotag.common.AmigaPathList.AmigaPathFilePair;
 
@@ -15,10 +17,18 @@ public class AmigaTools {
      */
     public static final String ENCODING = "ISO-8859-1";
 
+    /**
+     * Magic text to detect Amigaguide documents.
+     */
+    private static final String GUIDE_ID = "@database";
+
     private static AmigaTools instance;
+
+    private Tools tools;
 
     private AmigaTools() {
         super();
+        tools = Tools.getInstance();
     }
 
     public static final synchronized AmigaTools getInstance() {
@@ -26,6 +36,37 @@ public class AmigaTools {
             instance = new AmigaTools();
         }
         return instance;
+    }
+
+    public boolean isAmigaguide(File file) throws IOException {
+        boolean result;
+        try {
+            ensureIsAmigaguide(file);
+            result = true;
+        } catch (IllegalArgumentException errorToIgnore) {
+            result = false;
+        }
+        return result;
+    }
+
+    /**
+     * Validate that <code>file</code> starts with <code>@database</code>.
+     * @throws IllegalArgumentException
+     *                 if the file does not start with the expected header
+     */
+    public void ensureIsAmigaguide(File file) throws IOException {
+        FileInputStream in = new FileInputStream(file);
+        try {
+            byte[] first9Bytes = new byte[GUIDE_ID.length()];
+            in.read(first9Bytes);
+            String id = new String(first9Bytes, AmigaTools.ENCODING);
+            if (!id.toLowerCase().equals(GUIDE_ID)) {
+                throw new IllegalArgumentException("Amigaguide document must start with " + tools.sourced(GUIDE_ID)
+                        + " instead of " + tools.sourced(id) + ": ");
+            }
+        } finally {
+            in.close();
+        }
     }
 
     public File getFileFor(String amigaPath, AmigaPathList amigaPaths) {

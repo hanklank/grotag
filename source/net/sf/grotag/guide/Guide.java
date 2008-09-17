@@ -2,7 +2,6 @@ package net.sf.grotag.guide;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -39,7 +38,6 @@ import net.sf.grotag.parse.TextItem;
  * @author Thomas Aglassinger
  */
 public class Guide {
-    private static final String GUIDE_ID = "@database";
     private Logger log;
     private AbstractSource guideSource;
     private List<AbstractItem> items;
@@ -728,31 +726,12 @@ public class Guide {
         return result;
     }
 
-    /**
-     * Validate that guide starts with <code>@database</code>.
-     * @throws IllegalArgumentException
-     *                 if the file does not start with the expected header
-     */
-    private void checkForGuideId(File newGuideFile) throws IOException {
-        FileInputStream in = new FileInputStream(newGuideFile);
-        try {
-            byte[] first9Bytes = new byte[GUIDE_ID.length()];
-            in.read(first9Bytes);
-            String id = new String(first9Bytes, AmigaTools.ENCODING);
-            if (!id.toLowerCase().equals(GUIDE_ID)) {
-                throw new IllegalArgumentException("Amigaguide document must start with " + tools.sourced(GUIDE_ID)
-                        + " instead of " + tools.sourced(id) + ": ");
-            }
-        } finally {
-            in.close();
-        }
-    }
-
     public static Guide createGuide(File newGuideFile, AmigaPathList newAmigaPaths) throws IOException {
         assert newGuideFile != null;
 
+        AmigaTools amigaTools = AmigaTools.getInstance();
         Guide result = new Guide(new FileSource(newGuideFile), newAmigaPaths);
-        result.checkForGuideId(newGuideFile);
+        amigaTools.ensureIsAmigaguide(newGuideFile);
         result.readItems();
         result.defineMacros();
         result.resolveMacros();
