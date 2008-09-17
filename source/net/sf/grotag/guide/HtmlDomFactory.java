@@ -75,8 +75,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         pileBaseFolder = baseGuide.getSourceFile().getParentFile();
         relationToNavigationLabelMap = createRelationToNavigationLabelMap();
         targetFileMap = createTargetFileMap();
-        
-        
+
         styleFile = new File(pileTargetFolder, "amigaguide.css");
         isAddDublinCore = true;
         isAddNavigationBar = true;
@@ -96,7 +95,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         result.put(Relation.index, "Index");
         result.put(Relation.next, "Next");
         result.put(Relation.previous, "Previous");
-        
+
         return result;
     }
 
@@ -193,7 +192,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         Element head = createHead(guide, nodeInfo);
         html.appendChild(head);
         Element body = createNodeBody(guide, nodeInfo);
-        appendNavigationBar(body, guide, nodeInfo);
+        attemptToAppendNavigationBar(body, guide, nodeInfo);
         appendNodeContent(body, guide, nodeInfo);
         getDom().appendChild(html);
         html.appendChild(body);
@@ -315,8 +314,8 @@ public class HtmlDomFactory extends AbstractDomFactory {
         }
     }
 
-    private void attemptToAppendNavigationLink(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo,
-            Relation relation, boolean isFirstLinkInBar) {
+    private void appendNavigationLink(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo, Relation relation,
+            boolean isFirstLinkInBar) {
         assert parent != null;
         assert sourceGuide != null;
         assert sourceNodeInfo != null;
@@ -339,12 +338,14 @@ public class HtmlDomFactory extends AbstractDomFactory {
         }
     }
 
-    private void appendNavigationBar(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo) {
-        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.toc, true);
-        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.index, false);
-        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.next, false);
-        attemptToAppendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.previous, false);
-        parent.appendChild(getDom().createElement("hr"));
+    private void attemptToAppendNavigationBar(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo) {
+        if (isAddNavigationBar()) {
+            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.toc, true);
+            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.index, false);
+            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.next, false);
+            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.previous, false);
+            parent.appendChild(getDom().createElement("hr"));
+        }
     }
 
     /**
