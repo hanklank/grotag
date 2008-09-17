@@ -59,7 +59,7 @@
 <key>JVMVersion</key>
 <string>1.5+</string>
 <key>MainClass</key>
-<string>net.sf.grotag.Grotag</string>
+<string>net.sf.grotag.MacGrotag</string>
 <key>VMOptions</key>
 <string>-enableassertions</string>
 <key>Properties</key>

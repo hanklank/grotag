@@ -5,6 +5,7 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -39,6 +40,9 @@ import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
 
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
@@ -370,6 +374,28 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         log.log(Level.SEVERE, message, details);
         // TODO: Print Stack trace to log.
         details.printStackTrace();
+    }
+
+    public void read(File guideFile) throws SAXException, ParserConfigurationException, IOException {
+        assert guideFile != null;
+
+        AmigaPathList amigaPaths = new AmigaPathList();
+        File baseFolder = guideFile.getParentFile();
+        File[] possibleGrotaxXmlFolders = new File[] { baseFolder, new File(System.getProperty("user.dir")) };
+        int folderIndex = 0;
+        boolean grotagXmlFound = false;
+
+        while (!grotagXmlFound && (folderIndex < possibleGrotaxXmlFolders.length)) {
+            File grotagXml = new File(possibleGrotaxXmlFolders[folderIndex], "grotag.xml");
+            try {
+                amigaPaths.read(grotagXml);
+                grotagXmlFound = true;
+            } catch (FileNotFoundException errorToIgnore) {
+                // Just move on and try the next file.
+                folderIndex += 1;
+            }
+        }
+        read(guideFile, amigaPaths);
     }
 
     public void read(File guideFile, AmigaPathList newAmigaPaths) {
