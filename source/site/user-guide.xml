@@ -8,9 +8,9 @@
     <keywordset>
       <keyword>Amigaguide</keyword>
 
-      <keyword>convert</keyword>
+      <keyword>view convert</keyword>
 
-      <keyword>pretty print</keyword>
+      <keyword>pretty</keyword>
 
       <keyword>DocBook</keyword>
 
@@ -54,14 +54,14 @@
     applications uses Amigaguide. Outside of AmigaOS however Amigaguide is
     unused and consequently hardly any viewers exist.</para>
 
-    <para>Altough most Amigaguide documents are useless without access to an
-    Amiga (real or emulated), occasionally a need arises to read such
-    documentation on other platforms. Grotag is designed to address this need.
-    It allows to convert Amigaguide documents to the platform independent HTML
-    format, for which viewers exist on any reasonably modern system.
-    Furthermore you can convert to DocBook, a format popular for technical
-    documentations, allowing to bring along existing manuals into the 21st
-    century for further editing.</para>
+    <para>Altough most Amigaguide documents are not particular useful without
+    access to an Amiga (real or emulated), occasionally a need arises to read
+    such documentation on other platforms. Grotag is designed to address this
+    need. It allows to convert Amigaguide documents to the platform
+    independent HTML format, for which viewers exist on any reasonably modern
+    system. Furthermore you can convert to DocBook, a format popular for
+    technical documentations, allowing to bring along existing manuals into
+    the 21st century for further editing.</para>
 
     <para>Grotag is written in Java (version 1.5 or later), which is supported
     by many current platforms such as Mac OS X (version 10.5 or later),
@@ -77,9 +77,89 @@
     <title>Installation</title>
 
     <section id="download">
-      <title>Download</title>
+      <title>Mac OS X</title>
 
-      <para>...</para>
+      <para>For Mac OS X, visit <ulink
+      url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>
+      and download <filename>Grotag-x.y.dmg</filename>. Double click the disk
+      archive to mount its contents as new device and open it in the Finder.
+      It contains an application named Grotag resp. Grotag.app. Simply drag
+      and drop this application in any folder you like to launch it from, for
+      example <filename>/Applications</filename> or
+      <filename>~/Applications</filename>.</para>
+
+      <para>To launch Grotag, simply double click the application icon or drop
+      a <filename>*.guide</filename> file on it.</para>
+    </section>
+
+    <section>
+      <title>Other platforms</title>
+
+      <para>For other platforms, visit <ulink
+      url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>
+      and download <filename>Grotag-x.y.zip</filename>. After extracting the
+      archive, you should see at least the following files:</para>
+
+      <screen>Grotag.jar
+license.txt</screen>
+
+      <para>Now simply move Grotag.jar to a folder from where you want to
+      start it. Under Windows, this could be in <filename>C:\Programe
+      Files</filename>, under Unix it might be
+      <filename>/usr/local/bin</filename> or
+      <filename>~/bin</filename>.</para>
+
+      <para>To launch Grotag from most Desktop environtment, simply double
+      click Grotag.jar. In case this does not work you have to use the command
+      line as described in <xref linkend="command-line-usage" />.</para>
+    </section>
+  </chapter>
+
+  <chapter>
+    <title>The user interface</title>
+
+    <para>This chapter describes how to perform common tasks with Grotag using
+    the graphical user interface. This provides a comfortable way to access
+    most functions using the mouse and keyboard. For repetetive tasks and
+    automatization a probaly better choice is described in <xref
+    linkend="command-line-usage" />.</para>
+
+    <section>
+      <title>Launch Grotag</title>
+
+      <para>To launch Grotag on most platforms, simply click Grotag.jar on the
+      desktop.</para>
+
+      <para>In case this does not work, open a terminal window (console) and
+      enter:</para>
+
+      <para><userinput>java -jar .../path/to/Grotag.jar</userinput></para>
+
+      <para>Soon after that Grotag should present you an empty window.</para>
+    </section>
+
+    <section>
+      <title>Open an Amigaguide document</title>
+
+      <para>In order to read an Amigaguide document, you have to open one
+      using the menu entry <menuchoice>
+          <guimenu>File</guimenu>
+
+          <guimenuitem>Open</guimenuitem>
+        </menuchoice>. In the resulting dialog select the file and click the
+      <guibutton>Open</guibutton> button. Grotag loads the document, including
+      all linked documents. For complex guides (such as the Amiga ROM Kernel
+      Reference Manuals) this may take a while. Watch the progress bar in the
+      lower right corner of the window to estimate how long it still going to
+      take.</para>
+    </section>
+
+    <section>
+      <title>Browse a document</title>
+
+      <para>Once the document has been loaded, you can browse it. As
+      Amigaguide is a hyper text format just like HTML, viewers for it are
+      fairly similar similar to web browsers.</para>
     </section>
   </chapter>
 
@@ -115,13 +195,13 @@
       <para><userinput>grotag --help</userinput></para>
 
       <para>to get same result as before. To avoid having to retype the alias
-      each time you open a new terminal, add it to the shell startup file
-      (<filename>~/.bashrc</filename> or <filename>~/.profile</filename>
-      depending on your platform.)</para>
+      each time you open a new terminal, add it to the shell startup file (for
+      example <filename>~/.bashrc</filename> or
+      <filename>~/.profile</filename> depending on your platform.)</para>
     </section>
 
     <section>
-      <title>Showing help and other information</title>
+      <title>Show help and other information</title>
 
       <para>To read a short description of all options available for Grotag,
       run:</para>
