@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="build" name="Grotag">
-  <!-- Set up version information. --> 
+  <!-- Set up version information. -->
   <xmlproperty file="version.xml"/>
   <property name="version-tag" value="${grotag-version.version}.${grotag-version.release}.${grotag-version.revision}"/>
 
