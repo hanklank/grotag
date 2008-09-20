@@ -18,6 +18,7 @@
   <property name="Grotag.zip" location="${basedir}/Grotag-${version-tag}.zip" />
   <property name="Grotag.dmg" location="${basedir}/Grotag-${version-tag}.dmg" />
   <property name="docbook-xsl-version" value="1.74.0" />
+  <property name="version.java" location="${source.dir}/net/sf/grotag/common/Version.java" />
 
   <xmlcatalog id="catalogs">
     <dtd location="dtds/docbook-xml/docbookx.dtd" publicId="-//OASIS//DTD DocBook XML V4.5//EN" />
@@ -69,9 +70,8 @@
     </sequential>
   </macrodef>
 
-  <target depends="zip" description="Build distribution archive Grotag.zip." name="build">
-    <copy file="${Grotag.jar}" todir="Grotag.app/Contents/Resources/Java" />
-    <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
+  <target depends="jar, app" description="Build applications." name="build">
+    <!-- Do nothing. -->
   </target>
 
   <target depends="jar" description="Build Mac OS X application Grotag.app." name="app">
@@ -117,7 +117,7 @@
     <delete dir="${dmg-temp.dir}" />
   </target>
 
-  <target description="Build Grotag.jar." name="jar">
+  <target depends="version" description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
@@ -140,6 +140,10 @@
         <attribute name="Main-Class" value="net.sf.grotag.Grotag" />
       </manifest>
     </jar>
+  </target>
+
+  <target description="Update version information." name="version">
+    <style in="version.xml" out="${version.java}" style="source/Version.java.xsl" />
   </target>
 
   <target description="Clean up." name="clean">

@@ -81,15 +81,13 @@
 
       <para>For Mac OS X, visit <ulink
       url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>
-      and download <filename>Grotag-x.y.dmg</filename>. Double click the disk
-      archive to mount its contents as new device and open it in the Finder.
-      It contains an application named Grotag resp. Grotag.app. Simply drag
-      and drop this application in any folder you like to launch it from, for
-      example <filename>/Applications</filename> or
+      and download <filename>Grotag-x.y-z.dmg</filename>, where
+      <filename>x.y.z</filename> refers to the current version number. Double
+      click the disk archive to mount its contents as new device and open it
+      in the Finder. It contains an application named Grotag resp. Grotag.app.
+      Simply drag and drop this application in any folder you like to launch
+      it from, for example <filename>/Applications</filename> or
       <filename>~/Applications</filename>.</para>
-
-      <para>To launch Grotag, simply double click the application icon or drop
-      a <filename>*.guide</filename> file on it.</para>
     </section>
 
     <section>
@@ -97,11 +95,24 @@
 
       <para>For other platforms, visit <ulink
       url="http://grotag.sourceforge.net/">http://grotag.sourceforge.net</ulink>
-      and download <filename>Grotag-x.y.zip</filename>. After extracting the
-      archive, you should see at least the following files:</para>
+      and download <filename>Grotag-x.y.zip</filename>, where
+      <filename>x.y.z</filename> refers to the current version number. After
+      extracting the archive, you should see at least the following
+      files:</para>
 
-      <screen>Grotag.jar
-license.txt</screen>
+      <itemizedlist>
+        <listitem>
+          <para>Grotag.jar - The application Java archive.</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>license.txt - A text file describing your rights related to
+          Grotag. In short: It is an Open Source application and you do not
+          have to pay money for it.</para>
+        </listitem>
+      </itemizedlist>
 
       <para>Now simply move Grotag.jar to a folder from where you want to
       start it. Under Windows, this could be in <filename>C:\Programe
@@ -109,9 +120,10 @@ license.txt</screen>
       <filename>/usr/local/bin</filename> or
       <filename>~/bin</filename>.</para>
 
-      <para>To launch Grotag from most Desktop environtment, simply double
-      click Grotag.jar. In case this does not work you have to use the command
-      line as described in <xref linkend="command-line-usage" />.</para>
+      <para>To launch Grotag from most Desktop environtments, simply double
+      click <filename>Grotag.jar</filename>. In case this does not work you
+      have to use the command line as described in <xref
+      linkend="command-line-usage" />.</para>
     </section>
   </chapter>
 
@@ -127,8 +139,12 @@ license.txt</screen>
     <section>
       <title>Launch Grotag</title>
 
-      <para>To launch Grotag on most platforms, simply click Grotag.jar on the
-      desktop.</para>
+      <para>To launch Grotag under Mac OS X, simply double click the
+      application icon or drop a <filename>*.guide</filename> file on
+      it.</para>
+
+      <para>To launch Grotag on most other platforms, simply double click
+      <filename>Grotag.jar</filename> on the desktop.</para>
 
       <para>In case this does not work, open a terminal window (console) and
       enter:</para>
@@ -323,7 +339,7 @@ license.txt</screen>
     Grotag.</para>
 
     <section id="v0.0">
-      <title>Version 0.0, xx-Aug-2008</title>
+      <title>Version 0.1.0, 19-Sep-2008</title>
 
       <itemizedlist>
         <listitem>

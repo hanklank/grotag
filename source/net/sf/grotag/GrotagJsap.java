@@ -2,6 +2,8 @@ package net.sf.grotag;
 
 import java.io.PrintStream;
 
+import net.sf.grotag.common.Version;
+
 import com.martiansoftware.jsap.JSAP;
 import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
@@ -32,10 +34,9 @@ public class GrotagJsap extends JSAP {
     private static final String[] ANY_REQUIRED = new String[] { ARG_DOCBOOK, ARG_HELP, ARG_HTML, ARG_LICENSE,
             ARG_PRETTY, ARG_VERSION, ARG_VALIDATE, ARG_XHTML };
 
-    // TODO: Obtain copyright year from Version class.
     private static final String[] HEADING = new String[] {
-            "Grotag - Convert, validate and pretty print Amigaguide documents.",
-            "Copyright (C) 2008  Thomas Aglassinger <http://grotag.sourceforge.net/>" };
+            "Grotag - View, convert, validate and pretty print Amigaguide documents.",
+            Version.COPYRIGHT + " <http://grotag.sourceforge.net/>" };
 
     private static final String[] LICENSE = new String[] { "",
             "This program is free software: you can redistribute it and/or modify",
@@ -156,8 +157,7 @@ public class GrotagJsap extends JSAP {
      * Print version number.
      */
     public void printVersion(PrintStream stream) {
-        // TODO: Obtain version number from Version class.
-        stream.println("Grotag 0.0");
+        stream.println("Grotag " + Version.VERSION_TAG);
     }
 
     private void parseAnyRequired(JSAPResult options) {

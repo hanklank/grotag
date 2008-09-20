@@ -7,6 +7,7 @@ import javax.swing.AbstractAction;
 
 import net.roydesign.app.Application;
 import net.roydesign.ui.StandardMacAboutFrame;
+import net.sf.grotag.common.Version;
 
 /**
  * Action to show About window.
@@ -29,9 +30,8 @@ public class AboutAction extends AbstractAction {
             log.info("handle \"about\" event");
             synchronized (aboutFrameLock) {
                 if (aboutFrame == null) {
-                    // FIXME: Use Version class.
-                    aboutFrame = new StandardMacAboutFrame("Grotag", "0.1.0");
-                    aboutFrame.setCopyright("Copyright 2008 Thomas Aglassinger.");
+                    aboutFrame = new StandardMacAboutFrame("Grotag", Version.VERSION_TAG);
+                    aboutFrame.setCopyright(Version.COPYRIGHT);
                     aboutFrame.pack();
                 }
                 aboutFrame.setVisible(true);

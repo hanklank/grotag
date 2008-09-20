@@ -28,7 +28,7 @@ import com.martiansoftware.jsap.JSAPException;
 import com.martiansoftware.jsap.JSAPResult;
 
 /**
- * Grotag - Amigaguide converter and pretty printer.
+ * Grotag - View, convert, validate and pretty print Amigaguide documents.
  * 
  * @author Thomas Aglassinger
  */
@@ -51,7 +51,8 @@ public class Grotag {
     }
 
     @SuppressWarnings("unchecked")
-    private void work(String[] arguments) throws IOException, ParserConfigurationException, TransformerException, SAXException {
+    private void work(String[] arguments) throws IOException, ParserConfigurationException, TransformerException,
+            SAXException {
         JSAPResult options = jsap.parse(arguments);
 
         if (!options.success()) {
