@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project basedir="." default="build" name="Grotag">
   <!-- Set up version information. -->
-  <xmlproperty file="version.xml"/>
-  <property name="version-tag" value="${grotag-version.version}.${grotag-version.release}.${grotag-version.revision}"/>
+  <xmlproperty file="version.xml" />
+  <property name="version-tag" value="${grotag-version.version}.${grotag-version.release}.${grotag-version.revision}" />
 
   <property name="source.dir" location="${basedir}/source" />
   <property name="site.dir" location="${basedir}/site" />
@@ -78,8 +78,8 @@
     <copy file="${Grotag.jar}" todir="${appjava.dir}" />
     <copy todir="${appjava.dir}">
       <fileset dir="${external.dir}">
-      	<include name="MRJAdapter.jar"/>
-      	<include name="*quaqua*"/>
+        <include name="MRJAdapter.jar" />
+        <include name="*quaqua*" />
       </fileset>
     </copy>
   </target>
@@ -90,31 +90,31 @@
 
   <target depends="app" description="Create Mac OS X distribution archive Grotag.dmg." name="dmg">
     <!-- Copy Grotag.app to temp dir. -->
-    <tempfile property="dmg-temp.dir"/>
+    <tempfile property="dmg-temp.dir" />
     <copy todir="${dmg-temp.dir}">
       <fileset dir="${basedir}">
-        <include name="Grotag.app/**"/>
+        <include name="Grotag.app/**" />
       </fileset>
     </copy>
-    <copy file="license.txt" tofile="${dmg-temp.dir}/License.txt"/>
+    <copy file="license.txt" tofile="${dmg-temp.dir}/License.txt" />
     <chmod perm="ugo+x">
       <fileset dir="${dmg-temp.dir}/Grotag.app/Contents">
-        <include name="MacOS/JavaApplicationStub"/>
+        <include name="MacOS/JavaApplicationStub" />
       </fileset>
     </chmod>
     <!-- Create Grotag.dmg. -->
-    <delete file="${Grotag.dmg}" quiet="true"/>
+    <delete file="${Grotag.dmg}" quiet="true" />
     <exec dir="${dmg-temp.dir}" executable="hdiutil">
-      <arg value="create"/>
-      <arg value="${Grotag.dmg}"/>
-      <arg value="-srcfolder"/>
-      <arg value="."/>
-      <arg value="-format"/>
-      <arg value="UDZO"/>
-      <arg value="-volname"/>
-      <arg value="Grotag"/>
+      <arg value="create" />
+      <arg value="${Grotag.dmg}" />
+      <arg value="-srcfolder" />
+      <arg value="." />
+      <arg value="-format" />
+      <arg value="UDZO" />
+      <arg value="-volname" />
+      <arg value="Grotag" />
     </exec>
-    <delete dir="${dmg-temp.dir}"/>
+    <delete dir="${dmg-temp.dir}" />
   </target>
 
   <target description="Build Grotag.jar." name="jar">
