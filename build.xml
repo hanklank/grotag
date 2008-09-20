@@ -13,6 +13,7 @@
   <property name="classes.dir" location="${basedir}/classes" />
   <property name="styles.dir" location="${classes.dir}/net/sf/grotag/styles" />
   <property name="external.dir" location="${basedir}/external" />
+  <property name="appjava.dir" location="${basedir}/Grotag.app/Contents/Resources/Java" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
   <property name="Grotag.zip" location="${basedir}/Grotag-${version-tag}.zip" />
   <property name="Grotag.dmg" location="${basedir}/Grotag-${version-tag}.dmg" />
@@ -74,7 +75,13 @@
   </target>
 
   <target depends="jar" description="Build Mac OS X application Grotag.app." name="app">
-    <copy file="${Grotag.jar}" todir="Grotag.app/Contents/Resources/Java" />
+    <copy file="${Grotag.jar}" todir="${appjava.dir}" />
+    <copy todir="${appjava.dir}">
+      <fileset dir="${external.dir}">
+      	<include name="MRJAdapter.jar"/>
+      	<include name="*quaqua*"/>
+      </fileset>
+    </copy>
   </target>
 
   <target depends="jar" description="Build distribution archive Grotag.zip." name="zip">
@@ -140,6 +147,9 @@
     <delete file="${Grotag.zip}" />
     <delete includeemptydirs="true">
       <fileset dir="${classes.dir}" includes="**/*" />
+    </delete>
+    <delete includeemptydirs="true">
+      <fileset dir="${appjava.dir}" includes="*.jar, *.jnilib" />
     </delete>
     <delete dir="${tests.dir}/actual" />
     <delete dir="${site.dir}/examples" />
