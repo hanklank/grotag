@@ -68,12 +68,20 @@
     </sequential>
   </macrodef>
 
-  <target depends="jar" description="Build distribution archive Grotag.zip." name="build">
+  <target depends="zip" description="Build distribution archive Grotag.zip." name="build">
     <copy file="${Grotag.jar}" todir="Grotag.app/Contents/Resources/Java" />
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
 
-  <target depends="build" description="Create Mac OS X DMG" name="dmg">
+  <target depends="jar" description="Build Mac OS X application Grotag.app." name="app">
+    <copy file="${Grotag.jar}" todir="Grotag.app/Contents/Resources/Java" />
+  </target>
+
+  <target depends="jar" description="Build distribution archive Grotag.zip." name="zip">
+    <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
+  </target>
+
+  <target depends="app" description="Create Mac OS X distribution archive Grotag.dmg." name="dmg">
     <!-- Copy Grotag.app to temp dir. -->
     <tempfile property="dmg-temp.dir"/>
     <copy todir="${dmg-temp.dir}">
@@ -104,11 +112,14 @@
 
   <target description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
-    <unjar src="${external.dir}/MRJAdapter.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
-    <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
+    <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5">
+      <classpath>
+        <pathelement location="${external.dir}/MRJAdapter.jar" />
+      </classpath>
+    </javac>
     <mkdir dir="${styles.dir}" />
     <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
     <jar basedir="${classes.dir}"

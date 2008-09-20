@@ -52,9 +52,7 @@
 <string>$JAVAROOT/Grotag.jar</string>
 <string>$JAVAROOT/libquaqua.jnilib</string>
 <string>$JAVAROOT/quaqua.jar</string>
-<!-- TODO: Add possible JARs.
 <string>$JAVAROOT/MRJAdapter.jar</string>
--->
 </array>
 <key>JVMVersion</key>
 <string>1.5+</string>
