@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -18,6 +19,8 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.imageio.IIOException;
+import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
@@ -36,6 +39,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.DefaultEditorKit;
@@ -591,7 +595,21 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             if (linkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
                 URL urlToOpen = linkEvent.getURL();
                 try {
-                    setPage(urlToOpen);
+                    BufferedImage possibleImage = null;
+                    try {
+                        possibleImage = ImageIO.read(urlToOpen);
+                    } catch (IIOException error) {
+                        log.fine("assume url is not an image: " + urlToOpen);
+                    }
+                    if (possibleImage == null) {
+                        setPage(urlToOpen);
+                    } else {
+                        ImageFrame imageFrame = new ImageFrame(possibleImage);
+                        imageFrame.setTitle(tools.getName(urlToOpen));
+                        imageFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+                        imageFrame.pack();
+                        imageFrame.setVisible(true);
+                    }
                 } catch (IOException error) {
                     showError("cannot open URL: " + tools.sourced(urlToOpen.toExternalForm()), error);
                 }

@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -564,10 +565,11 @@ public class Tools {
         result = osName.startsWith("mac os x");
         return result;
     }
-    
+
     /**
-     *  This method picks good column sizes. If all column heads are wider than the column's cells'
-     *  contents, then you can just use column.sizeWidthToFit().
+     * This method picks good column sizes. If all column heads are wider than
+     * the column's cells' contents, then you can just use
+     * column.sizeWidthToFit().
      */
     public void initColumnWidths(JTable table) {
         assert table != null;
@@ -581,21 +583,15 @@ public class Tools {
         for (int column = 0; column < table.getColumnCount(); column += 1) {
             columnModel = table.getColumnModel().getColumn(column);
 
-            componet = headerRenderer.getTableCellRendererComponent(
-                    null, columnModel.getHeaderValue(), false, false, 0, 0);
+            componet = headerRenderer.getTableCellRendererComponent(null, columnModel.getHeaderValue(), false, false,
+                    0, 0);
             headerWidth = componet.getPreferredSize().width;
 
             int maxCellWidth = 0;
 
             for (int row = 0; row < table.getRowCount(); row += 1) {
-                componet =
-                        table.getDefaultRenderer(tableModel.getColumnClass(column)).getTableCellRendererComponent(
-                        table,
-                        table.getValueAt(row, column),
-                        false,
-                        false,
-                        0,
-                        column);
+                componet = table.getDefaultRenderer(tableModel.getColumnClass(column)).getTableCellRendererComponent(
+                        table, table.getValueAt(row, column), false, false, 0, column);
                 cellWidth = componet.getPreferredSize().width;
                 if (cellWidth > maxCellWidth) {
                     maxCellWidth = cellWidth;
@@ -604,5 +600,19 @@ public class Tools {
 
             columnModel.setPreferredWidth(Math.max(headerWidth, maxCellWidth));
         }
+    }
+
+    /**
+     * The file name part of <code>url</code>. For example,
+     * <code>www.hugo.com/sepp/resi.png</code> yields "resi.png".
+     */
+    public String getName(URL url) {
+        assert url != null;
+        String result = url.getPath();
+        int indexOfLastSlash = result.lastIndexOf('/');
+        if (indexOfLastSlash >= 0) {
+            result = result.substring(indexOfLastSlash + 1);
+        }
+        return result;
     }
 }
