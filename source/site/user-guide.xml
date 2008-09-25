@@ -44,6 +44,10 @@
   <preface id="introduction">
     <title>Introduction</title>
 
+    <para>Grotag views Amigaguide documents or converts them to HTML and
+    DocBook XML. Additionally it can validate and pretty print such
+    documents.</para>
+
     <para>Amigaguide is a file format and application for AmigaOS<footnote>
         <para>The original Amigaguide is still available from any Aminet
         mirror, for example <ulink
@@ -338,7 +342,17 @@
     <para>This chapter describes improvements compared to earlier versions of
     Grotag.</para>
 
-    <section id="v0.0">
+    <section id="v0.1.1">
+      <title>Version 0.1.1, xx-Oct-2008</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section id="v0.1.0">
       <title>Version 0.1.0, 19-Sep-2008</title>
 
       <itemizedlist>
