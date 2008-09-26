@@ -240,8 +240,7 @@ public class Guide {
 
     private void collectLinksFromRelationMap(Map<Relation, Link> relationMap) {
         assert links != null;
-        for (Relation relation : relationMap.keySet()) {
-            Link link = relationMap.get(relation);
+        for (Link link : relationMap.values()) {
             links.add(link);
         }
     }
@@ -879,12 +878,21 @@ public class Guide {
 
     public void writePretty(File targetFile) throws IOException {
         checkNoMacrosHaveBeenDefined();
-        BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile),
-                AmigaTools.ENCODING));
+        FileOutputStream fileOutStream = new FileOutputStream(targetFile);
         try {
-            writePretty(writer);
+            OutputStreamWriter outStreamWriter = new OutputStreamWriter(fileOutStream, AmigaTools.ENCODING);
+            try {
+                BufferedWriter writer = new BufferedWriter(outStreamWriter);
+                try {
+                    writePretty(writer);
+                } finally {
+                    writer.close();
+                }
+            } finally {
+                outStreamWriter.close();
+            }
         } finally {
-            writer.close();
+            fileOutStream.close();
         }
     }
 

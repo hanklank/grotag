@@ -1,10 +1,7 @@
 package net.sf.grotag.guide;
 
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -84,8 +81,8 @@ public class DomWriter {
 
         log.log(Level.INFO, "write dom to {0} using encoding {1}", new Object[] { tools.sourced(targetFile),
                 tools.sourced(encoding) });
-        targetFile.getParentFile().mkdirs();
-        Writer targetWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(targetFile), encoding));
+        tools.mkdirs(targetFile.getParentFile());
+        Writer targetWriter = tools.createBufferedWriter(targetFile, encoding);
         try {
             transformer.setOutputProperty(OutputKeys.ENCODING, encoding);
             transformer.transform(new DOMSource(dom), new StreamResult(targetWriter));

@@ -1,14 +1,18 @@
 package net.sf.grotag.common;
 
 import java.awt.Component;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.net.URL;
+import java.io.OutputStreamWriter;
+import java.net.URI;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -48,6 +52,52 @@ public class Tools {
         return instance;
     }
 
+    public BufferedReader createBufferedReader(File file) throws IOException {
+        return createBufferedReader(file, null);
+    }
+
+    public BufferedReader createBufferedReader(File file, String encoding) throws IOException {
+        assert file != null;
+        BufferedReader result = null;
+        FileInputStream fileInStream = new FileInputStream(file);
+        try {
+            InputStreamReader inStreamReader = new InputStreamReader(fileInStream, encoding);
+            try {
+                result = new BufferedReader(inStreamReader);
+            } finally {
+                if (result == null) {
+                    inStreamReader.close();
+                }
+            }
+        } finally {
+            if (result == null) {
+                fileInStream.close();
+            }
+        }
+        return result;
+    }
+
+    public BufferedWriter createBufferedWriter(File file, String encoding) throws IOException {
+        BufferedWriter result = null;
+        FileOutputStream fileOutStream = new FileOutputStream(file);
+        try {
+            OutputStreamWriter outStreamWriter = new OutputStreamWriter(fileOutStream, encoding);
+            try {
+                result = new BufferedWriter(outStreamWriter);
+            } finally {
+                if (result == null) {
+                    outStreamWriter.close();
+                }
+            }
+        } finally {
+            if (result == null) {
+                fileOutStream.close();
+            }
+        }
+
+        return result;
+    }
+
     private Tools() {
         // Attempt to setup logging.
         String userDir = System.getProperty("user.dir");
@@ -79,14 +129,14 @@ public class Tools {
         }
 
         escapeMap = new TreeMap<Character, String>();
-        escapeMap.put(new Character('\"'), "\\\"");
-        escapeMap.put(new Character('\''), "\\\'");
-        escapeMap.put(new Character('\\'), "\\\\");
-        escapeMap.put(new Character('\b'), "\\b");
-        escapeMap.put(new Character('\f'), "\\f");
-        escapeMap.put(new Character('\n'), "\\n");
-        escapeMap.put(new Character('\r'), "\\r");
-        escapeMap.put(new Character('\t'), "\\t");
+        escapeMap.put(Character.valueOf('\"'), "\\\"");
+        escapeMap.put(Character.valueOf('\''), "\\\'");
+        escapeMap.put(Character.valueOf('\\'), "\\\\");
+        escapeMap.put(Character.valueOf('\b'), "\\b");
+        escapeMap.put(Character.valueOf('\f'), "\\f");
+        escapeMap.put(Character.valueOf('\n'), "\\n");
+        escapeMap.put(Character.valueOf('\r'), "\\r");
+        escapeMap.put(Character.valueOf('\t'), "\\t");
     }
 
     private boolean isEscapable(Character some) {
@@ -240,7 +290,7 @@ public class Tools {
             buffer.append('\"');
             for (int i = 0; i < some.length(); i += 1) {
                 char c = some.charAt(i);
-                Character cAsCharacter = new Character(c);
+                Character cAsCharacter = Character.valueOf(c);
                 String escaped = null;
 
                 if (isEscapable(cAsCharacter)) {
@@ -362,6 +412,31 @@ public class Tools {
         return result;
     }
 
+    /**
+     * Same as File.delete(), but throws an IOException if the file can not be
+     * deleted.
+     */
+    public void delete(File file) throws IOException {
+        assert file != null;
+        if (!file.delete()) {
+            throw new IOException("cannot delete file: " + sourced(file));
+        }
+    }
+
+    /**
+     * Same as <code>File.mkdirs()</code> but throws an
+     * <code>IOException</code> if the directory does not yet exist and also
+     * cannot be created.
+     * 
+     * @see File#mkdirs()
+     */
+    public void mkdirs(File folder) throws FileNotFoundException {
+        assert folder != null;
+        if (!folder.mkdirs() && !folder.exists()) {
+            throw new FileNotFoundException("cannot create folder: " + sourced(folder));
+        }
+    }
+
     public String getRelativePath(File baseDir, File fileInBaseDir) {
         String basePath = baseDir.getAbsolutePath();
         String filePath = fileInBaseDir.getAbsolutePath();
@@ -374,10 +449,10 @@ public class Tools {
 
     public void copyFile(File source, File target) throws IOException {
         boolean copied = false;
+
+        mkdirs(target.getParentFile());
+
         InputStream in = new FileInputStream(source);
-
-        target.getParentFile().mkdirs();
-
         try {
             OutputStream out = new FileOutputStream(target);
 
@@ -396,7 +471,7 @@ public class Tools {
             } finally {
                 out.close();
                 if (!copied) {
-                    target.delete();
+                    delete(target);
                 }
             }
         } finally {
@@ -606,9 +681,9 @@ public class Tools {
      * The file name part of <code>url</code>. For example,
      * <code>www.hugo.com/sepp/resi.png</code> yields "resi.png".
      */
-    public String getName(URL url) {
-        assert url != null;
-        String result = url.getPath();
+    public String getName(URI uri) {
+        assert uri != null;
+        String result = uri.getPath();
         int indexOfLastSlash = result.lastIndexOf('/');
         if (indexOfLastSlash >= 0) {
             result = result.substring(indexOfLastSlash + 1);

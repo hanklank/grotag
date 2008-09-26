@@ -39,6 +39,7 @@ public class MacGrotag implements ActionListener {
 
     public void actionPerformed(ActionEvent actionEvent) {
         try {
+            assert actionEvent instanceof ApplicationEvent;
             ApplicationEvent event = (ApplicationEvent) actionEvent;
             int type = event.getType();
             if (type == ApplicationEvent.OPEN_DOCUMENT) {

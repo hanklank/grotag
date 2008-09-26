@@ -6,6 +6,7 @@ import java.io.File;
 
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.TestTools;
+import net.sf.grotag.common.Tools;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -18,10 +19,12 @@ import org.w3c.dom.Document;
  */
 public class HtmlDomFactoryTest {
     private TestTools testTools;
+    private Tools tools;
 
     @Before
     public void setUp() throws Exception {
         testTools = TestTools.getInstance();
+        tools = Tools.getInstance();
     }
 
     private void testCreateNodeDocument(String guideBaseName) throws Exception {
@@ -34,6 +37,7 @@ public class HtmlDomFactoryTest {
         GuidePile pile = GuidePile.createGuidePile(guideFile, amigaPaths);
         Guide guide = pile.getGuides().get(0);
         HtmlDomFactory factory = new HtmlDomFactory(pile, targetFolder);
+        tools.mkdirs(factory.getStyleFile().getParentFile());
         factory.copyStyleFile();
         for (NodeInfo nodeInfo : guide.getNodeInfos()) {
             Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);

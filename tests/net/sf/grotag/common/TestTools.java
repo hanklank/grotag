@@ -53,7 +53,10 @@ public class TestTools {
         // Make sure target folder for "actual" files exists, as it is not part
         // of the repository.
         if ((baseFolder == Folder.ACTUAL) && !folder.exists()) {
-            folder.mkdirs();
+            if (!folder.mkdirs() && !folder.exists()) {
+                throw new IllegalStateException("cannot create folder: " + folder.getAbsolutePath());
+            }
+
         }
         return result;
     }
@@ -80,24 +83,44 @@ public class TestTools {
     }
 
     public void assertFilesAreEqual(File expected, File actual) throws IOException {
-        BufferedReader expectedReader = new BufferedReader(new InputStreamReader(new FileInputStream(expected)));
+        FileInputStream expectedFileInStream = new FileInputStream(expected);
         try {
-            BufferedReader actualReader = new BufferedReader(new InputStreamReader(new FileInputStream(actual)));
+            InputStreamReader expectedInStreamReader = new InputStreamReader(expectedFileInStream);
             try {
-                int lineNumber = 0;
-                String expectedLine;
-                String actualLine;
+                BufferedReader expectedReader = new BufferedReader(expectedInStreamReader);
+                try {
+                    FileInputStream actualFileInStream = new FileInputStream(actual);
+                    try {
+                        InputStreamReader actualInStreamReader = new InputStreamReader(actualFileInStream);
+                        try {
+                            BufferedReader actualReader = new BufferedReader(actualInStreamReader);
+                            try {
+                                int lineNumber = 0;
+                                String expectedLine;
+                                String actualLine;
 
-                do {
-                    lineNumber += 1;
-                    expectedLine = expectedReader.readLine();
-                    actualLine = actualReader.readLine();
-                } while ((expectedLine != null) && (actualLine != null));
+                                do {
+                                    lineNumber += 1;
+                                    expectedLine = expectedReader.readLine();
+                                    actualLine = actualReader.readLine();
+                                } while ((expectedLine != null) && (actualLine != null));
+                            } finally {
+                                actualReader.close();
+                            }
+                        } finally {
+                            actualInStreamReader.close();
+                        }
+                    } finally {
+                        actualFileInStream.close();
+                    }
+                } finally {
+                    expectedReader.close();
+                }
             } finally {
-                actualReader.close();
+                expectedInStreamReader.close();
             }
         } finally {
-            expectedReader.close();
+            expectedFileInStream.close();
         }
     }
 }

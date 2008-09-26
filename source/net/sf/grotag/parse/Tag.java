@@ -1,5 +1,7 @@
 package net.sf.grotag.parse;
 
+import net.sf.grotag.common.HashCodeTools;
+
 /**
  * Amigaguide tag
  * 
@@ -196,12 +198,29 @@ public class Tag implements Comparable<Tag> {
      * Compare with <code>other</code> concerning scope and name and yield -1,
      * 0 or 1.
      */
-    // TODO: Implement equals() and hashCode() too.
     public int compareTo(Tag other) {
         int result = getScope().ordinal() - other.getScope().ordinal();
         if (result == 0) {
             result = getName().compareToIgnoreCase(other.getName());
         }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        boolean result = (other instanceof Tag);
+        if (result) {
+            result = compareTo((Tag) other) == 0;
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = HashCodeTools.SEED;
+        HashCodeTools hashCodeTools = HashCodeTools.getInstance();
+        result = hashCodeTools.hash(result, getScope().ordinal());
+        result = hashCodeTools.hash(result, getName());
         return result;
     }
 

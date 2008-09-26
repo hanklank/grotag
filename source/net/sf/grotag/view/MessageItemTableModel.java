@@ -19,11 +19,12 @@ public class MessageItemTableModel extends AbstractTableModel {
     private static final String[] TITLES = new String[] { "File", "Location", "Description" };
 
     private MessageItem[] items;
-    private String updateLock = "x";
+    private Object updateLock;
 
     public MessageItemTableModel() {
         super();
         items = new MessageItem[] {};
+        updateLock = new Object();
     }
 
     /**

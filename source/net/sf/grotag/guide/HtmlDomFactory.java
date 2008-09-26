@@ -223,7 +223,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         if (isIffImageFile(linkedFile) && isConvertIffIlbm()) {
             relativeLinkedFile = tools.getWithoutLastSuffix(relativeLinkedFile) + ".png";
             targetFile = new File(targetBaseFolder, relativeLinkedFile);
-            targetFile.getParentFile().mkdirs();
+            tools.mkdirs(targetFile.getParentFile());
             log.log(Level.INFO, "convert {0} to {1}", new Object[] { tools.sourced(linkedFile),
                     tools.sourced(targetFile) });
             BufferedImage image = ImageIO.read(linkedFile);

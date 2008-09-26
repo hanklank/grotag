@@ -25,7 +25,7 @@ public class AmigaPathList {
      * 
      * @author Thomas Aglassinger
      */
-    public class AmigaPathFilePair {
+    public static class AmigaPathFilePair {
         private String amigaPath;
         private File localFolder;
 
@@ -34,9 +34,9 @@ public class AmigaPathList {
             amigaPath = newAmigaPath;
         }
 
-        private void setLocalFile(String newFile) {
-            assert newFile != null;
-            localFolder = new File(newFile);
+        private void setLocalFolder(String newLocalFolder) {
+            assert newLocalFolder != null;
+            localFolder = new File(newLocalFolder);
         }
 
         public String getAmigaPath() {
@@ -77,7 +77,7 @@ public class AmigaPathList {
                 currentPair = new AmigaPathFilePair(text.toLowerCase());
             } else if (lowerName.equals("local")) {
                 if (currentPair != null) {
-                    currentPair.setLocalFile(text);
+                    currentPair.setLocalFolder(text);
                     targetList.add(currentPair);
                 } else {
                     logXml.warning("ignored <local> without previous <amiga>: " + text);

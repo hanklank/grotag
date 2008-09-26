@@ -8,8 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,8 +45,6 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.xml.sax.SAXException;
-
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.Tools;
@@ -57,6 +54,8 @@ import net.sf.grotag.guide.GuidePile;
 import net.sf.grotag.guide.HtmlDomFactory;
 import net.sf.grotag.guide.NodeInfo;
 import net.sf.grotag.guide.Relation;
+
+import org.xml.sax.SAXException;
 
 /**
  * JFrame to browse an Amigaguide documents converted to HTML.
@@ -229,7 +228,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             try {
                 synchronized (pageLock) {
                     log.info("action: retrace");
-                    URL previousHtmlFile = retraceStack.pop();
+                    URI previousHtmlFile = retraceStack.pop();
                     setPage(previousHtmlFile);
                     setRetraceButtonEnabled();
                 }
@@ -256,7 +255,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
         public void actionPerformed(ActionEvent event) {
             try {
-                URL pageToGo = relationMap.get(relation);
+                URI pageToGo = relationMap.get(relation);
                 setPage(pageToGo);
             } catch (Exception error) {
                 showError("cannot go to " + relation + " page", error);
@@ -279,14 +278,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JScrollPane messagePane;
     private Logger log;
     private Tools tools;
-    private Stack<URL> retraceStack;
-    private URL currentPageUrl;
+    private Stack<URI> retraceStack;
+    private URI currentPageUrl;
     private JProgressBar progressBar;
     private File tempFolder;
     private GuidePile pile;
-    private Map<Relation, URL> relationMap;
+    private Map<Relation, URI> relationMap;
     private List<JButton> relationButtons;
-    private Map<URL, NodeInfo> urlToNodeMap;
+    private Map<URI, NodeInfo> urlToNodeMap;
     private Map<Object, Action> editorKitActionMap;
     private JFileChooser openChooser;
     private MessageItemTableModel messageModel;
@@ -305,10 +304,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         log = Logger.getLogger(GrotagFrame.class.getName());
         tools = Tools.getInstance();
 
-        retraceStack = new Stack<URL>();
-        relationMap = new TreeMap<Relation, URL>();
+        retraceStack = new Stack<URI>();
+        relationMap = new TreeMap<Relation, URI>();
         relationButtons = new LinkedList<JButton>();
-        pageLock = "pageLock";
+        pageLock = new Object();
         openChooser = new JFileChooser();
         openChooser.addChoosableFileFilter(new GuideFileFilter());
         openChooser.setAcceptAllFileFilterUsed(false);
@@ -368,8 +367,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     private File createTempFolder() throws IOException {
         File result = File.createTempFile("grotag-view-", null);
-        result.delete();
-        result.mkdirs();
+        tools.delete(result);
+        tools.mkdirs(result);
         return result;
     }
 
@@ -444,13 +443,13 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 progressBar.setMaximum(nodeCount);
                 progressBar.setIndeterminate(false);
 
-                urlToNodeMap = new HashMap<URL, NodeInfo>();
+                urlToNodeMap = new HashMap<URI, NodeInfo>();
                 int nodesWritten = 0;
                 for (Guide guide : newPile.getGuides()) {
                     for (NodeInfo nodeInfo : guide.getNodeInfos()) {
                         setStatus("Reading " + guide.getDatabaseInfo().getName() + "/" + nodeInfo.getName());
                         File targetFile = factory.getTargetFileFor(guide, nodeInfo);
-                        URL targetUrl = targetFile.toURL();
+                        URI targetUrl = targetFile.toURI();
                         org.w3c.dom.Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
                         DomWriter htmlWriter = new DomWriter(DomWriter.Dtd.HTML);
                         htmlWriter.write(htmlDocument, targetFile);
@@ -483,9 +482,9 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         }
     }
 
-    public void setPage(File pageFile) throws MalformedURLException, IOException {
+    public void setPage(File pageFile) throws IOException {
         assert pageFile != null;
-        URL pageUrl = pageFile.toURL();
+        URI pageUrl = pageFile.toURI();
         setPage(pageUrl);
     }
 
@@ -493,19 +492,19 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         retraceButton.setEnabled(retraceStack.size() > 0);
     }
 
-    public void setPage(URL pageUrl) throws IOException {
-        assert pageUrl != null;
+    public void setPage(URI pageUri) throws IOException {
+        assert pageUri != null;
         synchronized (pageLock) {
-            log.info("set page to: " + tools.sourced(pageUrl.toString()));
-            htmlPane.setPage(pageUrl);
+            log.info("set page to: " + tools.sourced(pageUri.toString()));
+            htmlPane.setPage(pageUri.toURL());
 
             if ((currentPageUrl != null) && (retraceStack.isEmpty() || !currentPageUrl.equals(retraceStack.peek()))) {
                 retraceStack.push(currentPageUrl);
                 setRetraceButtonEnabled();
             }
-            currentPageUrl = pageUrl;
+            currentPageUrl = pageUri;
 
-            HtmlInfo htmlInfo = new HtmlInfo(pageUrl);
+            HtmlInfo htmlInfo = new HtmlInfo(pageUri);
             String title = htmlInfo.getTitle();
 
             if (title != null) {
@@ -593,25 +592,25 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     public void hyperlinkUpdate(HyperlinkEvent linkEvent) {
         try {
             if (linkEvent.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-                URL urlToOpen = linkEvent.getURL();
+                URI uriToOpen = linkEvent.getURL().toURI();
                 try {
                     BufferedImage possibleImage = null;
                     try {
-                        possibleImage = ImageIO.read(urlToOpen);
+                        possibleImage = ImageIO.read(uriToOpen.toURL());
                     } catch (IIOException error) {
-                        log.fine("assume url is not an image: " + urlToOpen);
+                        log.fine("assume url is not an image: " + uriToOpen);
                     }
                     if (possibleImage == null) {
-                        setPage(urlToOpen);
+                        setPage(uriToOpen);
                     } else {
                         ImageFrame imageFrame = new ImageFrame(possibleImage);
-                        imageFrame.setTitle(tools.getName(urlToOpen));
+                        imageFrame.setTitle(tools.getName(uriToOpen));
                         imageFrame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
                         imageFrame.pack();
                         imageFrame.setVisible(true);
                     }
                 } catch (IOException error) {
-                    showError("cannot open URL: " + tools.sourced(urlToOpen.toExternalForm()), error);
+                    showError("cannot open URL: " + tools.sourced(uriToOpen.toString()), error);
                 }
             } else if (linkEvent.getEventType() == HyperlinkEvent.EventType.ENTERED) {
                 setStatus("Go to " + linkEvent.getURL().toExternalForm());

@@ -22,7 +22,7 @@ public class AboutAction extends AbstractAction {
     public AboutAction() {
         super(Application.getInstance().getAboutJMenuItem().getText());
         log = Logger.getLogger(AboutAction.class.getName());
-        aboutFrameLock = "x";
+        aboutFrameLock = new Object();
     }
 
     public void actionPerformed(ActionEvent actionEvent) {

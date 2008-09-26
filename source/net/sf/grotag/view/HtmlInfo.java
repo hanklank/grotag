@@ -3,11 +3,9 @@ package net.sf.grotag.view;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.text.MutableAttributeSet;
@@ -25,10 +23,10 @@ import net.sf.grotag.guide.Relation;
  * @author Thomas Aglassinger
  */
 class HtmlInfo {
-    private Map<Relation, URL> relationMap;
+    private Map<Relation, URI> relationMap;
     private Map<String, Relation> relToRelationMap;
     private Logger log;
-    private URL baseUrl;
+    private URI baseUri;
     private String title;
 
     /**
@@ -56,14 +54,8 @@ class HtmlInfo {
                     if (href != null) {
                         Relation relation = relToRelationMap.get(rel);
                         if (relation != null) {
-                            try {
-                                relationMap.put(relation, new URL(baseUrl, href));
+                                relationMap.put(relation, baseUri.resolve(href));
                                 log.info("added relation: " + relation + "=" + relationMap.get(relation));
-                            } catch (MalformedURLException error) {
-                                log.log(Level.SEVERE, "cannot add related href: " + href, error);
-                                // FIXME: Add stack trace to log.
-                                error.printStackTrace();
-                            }
                         } else if (!rel.equals(HtmlDomFactory.REL_STYLESHEET)) {
                             log.warning("ignored unknown rel: " + rel);
                         }
@@ -108,11 +100,11 @@ class HtmlInfo {
         }
     }
 
-    HtmlInfo(URL newBaseUrl) throws IOException {
+    HtmlInfo(URI newBaseUrl) throws IOException {
         assert newBaseUrl != null;
 
         log = Logger.getLogger(HtmlInfo.class.getName());
-        relationMap = new TreeMap<Relation, URL>();
+        relationMap = new TreeMap<Relation, URI>();
         relToRelationMap = new TreeMap<String, Relation>();
         relToRelationMap.put("help", Relation.help);
         relToRelationMap.put("index", Relation.index);
@@ -120,10 +112,10 @@ class HtmlInfo {
         relToRelationMap.put("prev", Relation.previous);
         relToRelationMap.put("toc", Relation.toc);
 
-        baseUrl = newBaseUrl;
+        baseUri = newBaseUrl;
         InfoCallback callback = new InfoCallback();
         ParserDelegator parser = new ParserDelegator();
-        Reader reader = new InputStreamReader(baseUrl.openStream());
+        Reader reader = new InputStreamReader(baseUri.toURL().openStream());
         try {
             parser.parse(reader, callback, true);
         } finally {
@@ -135,7 +127,7 @@ class HtmlInfo {
      * The document relations as specified with
      * <code>&lt;link rel="..." href="..."&gt;</code>.
      */
-    Map<Relation, URL> getRelationMap() {
+    Map<Relation, URI> getRelationMap() {
         return relationMap;
     }
 

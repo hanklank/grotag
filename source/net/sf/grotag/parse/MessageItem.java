@@ -1,5 +1,7 @@
 package net.sf.grotag.parse;
 
+import net.sf.grotag.common.HashCodeTools;
+
 /**
  * A message generated during parsing.
  * 
@@ -80,6 +82,25 @@ public class MessageItem implements Comparable<MessageItem> {
                 }
             }
         }
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        boolean result = (other instanceof MessageItem);
+        if (result) {
+            result = (compareTo((MessageItem) other) == 0);
+        }
+        return result;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = HashCodeTools.SEED;
+        HashCodeTools hashCodeTools = HashCodeTools.getInstance();
+        result = hashCodeTools.hash(result, getFile().getFullName());
+        result = hashCodeTools.hash(result, getLine());
+        result = hashCodeTools.hash(result, getColumn());
         return result;
     }
 }
