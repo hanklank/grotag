@@ -9,11 +9,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Stack;
 import java.util.TreeMap;
 import java.util.logging.Logger;
 
@@ -226,9 +226,13 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             try {
                 synchronized (pageLock) {
                     log.info("action: retrace");
-                    URI previousHtmlFile = retraceStack.pop();
-                    setPage(previousHtmlFile);
+                    logRetrace();
+                    assert retraceIndex > 0;
+                    URI previousHtmlFile = retraceStack.get(retraceIndex - 1);
+                    setPageWithoutRetrace(previousHtmlFile);
+                    retraceIndex -= 1;
                     setRetraceButtonEnabled();
+                    logRetrace();
                 }
             } catch (Throwable error) {
                 showError("cannot retrace", error);
@@ -266,6 +270,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     }
 
     private static final String DEFAULT_TITLE = "Grotag";
+    private static final int NO_INDEX = -1;
 
     private JLabel statusLabel;
     private JTextPane htmlPane;
@@ -276,8 +281,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JScrollPane messagePane;
     private Logger log;
     private Tools tools;
-    private Stack<URI> retraceStack;
-    private URI currentPageUrl;
+    private int retraceIndex;
+    private List<URI> retraceStack;
     private JProgressBar progressBar;
     private File tempFolder;
     private GuidePile pile;
@@ -302,7 +307,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         log = Logger.getLogger(GrotagFrame.class.getName());
         tools = Tools.getInstance();
 
-        retraceStack = new Stack<URI>();
+        retraceIndex = NO_INDEX;
+        retraceStack = new ArrayList<URI>();
         relationMap = new TreeMap<Relation, URI>();
         relationButtons = new LinkedList<JButton>();
         pageLock = new Object();
@@ -473,8 +479,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     }
                     tempFolder = newTempFolder;
                     pile = newPile;
+                    URI firstPageUri = pile.getFirstHtmlFile(tempFolder).toURI();
+                    setPageWithoutRetrace(firstPageUri);
                     retraceStack.clear();
-                    setPage(pile.getFirstHtmlFile(tempFolder));
+                    retraceStack.add(firstPageUri);
+                    retraceIndex = 0;
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
@@ -494,20 +503,43 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     }
 
     private void setRetraceButtonEnabled() {
-        retraceButton.setEnabled(retraceStack.size() > 0);
+        retraceButton.setEnabled(retraceIndex > 0);
     }
 
     public void setPage(URI pageUri) throws IOException {
+        synchronized (pageLock) {
+            setPageWithoutRetrace(pageUri);
+            while (retraceStack.size() > retraceIndex) {
+                retraceStack.remove(retraceStack.size() - 1);
+            }
+            retraceStack.add(pageUri);
+            retraceIndex += 1;
+            logRetrace();
+            setRetraceButtonEnabled();
+        }
+    }
+
+    private void logRetrace() {
+        int i = 0;
+        log.info("retrace stack at " + retraceIndex);
+        for (URI uri : retraceStack) {
+            String line;
+            if (i == retraceIndex) {
+                line = "-->";
+            } else {
+                line = "   ";
+            }
+            line += " " + uri;
+            i += 1;
+            log.info("  " + line);
+        }
+    }
+
+    private void setPageWithoutRetrace(URI pageUri) throws IOException {
         assert pageUri != null;
         synchronized (pageLock) {
             log.info("set page to: " + tools.sourced(pageUri.toString()));
             htmlPane.setPage(pageUri.toURL());
-
-            if ((currentPageUrl != null) && (retraceStack.isEmpty() || !currentPageUrl.equals(retraceStack.peek()))) {
-                retraceStack.push(currentPageUrl);
-                setRetraceButtonEnabled();
-            }
-            currentPageUrl = pageUri;
 
             HtmlInfo htmlInfo = new HtmlInfo(pageUri);
             String title = htmlInfo.getTitle();
