@@ -175,8 +175,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             try {
                 int userAction = openChooser.showOpenDialog(getGrotagFrame());
                 if (userAction == JFileChooser.APPROVE_OPTION) {
-                    // FIXME: Read grotag.xml.
-                    read(openChooser.getSelectedFile(), new AmigaPathList());
+                    read(openChooser.getSelectedFile());
                 }
             } catch (Exception error) {
                 showError("cannot open file", error);
@@ -381,6 +380,12 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         details.printStackTrace();
     }
 
+    /**
+     * Read the GuidePile to browse starting with <code>guideFile</code>. In
+     * order to resolve Amiga paths, look for <code>grotag.xml</code> in the
+     * current folder, otherwise in the in the folder <code>guideFile</code>
+     * is located in.
+     */
     public void read(File guideFile) throws SAXException, ParserConfigurationException, IOException {
         assert guideFile != null;
 
@@ -403,6 +408,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         read(guideFile, amigaPaths);
     }
 
+    /**
+     * Read the GuidePile to browse starting with <code>guideFile</code>. In
+     * order to resolve Amiga paths, use <code>newAmigaPaths</code>.
+     */
     public void read(File guideFile, AmigaPathList newAmigaPaths) {
         assert guideFile != null;
         assert newAmigaPaths != null;
