@@ -17,9 +17,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -689,5 +692,26 @@ public class Tools {
             result = result.substring(indexOfLastSlash + 1);
         }
         return result;
+    }
+
+    /**
+     * Show error <code>message</code> in a dialog, and also log it.
+     */
+    public void showError(JFrame frame, String message, Throwable details) {
+        assert message != null;
+        assert details != null;
+        log.log(Level.SEVERE, message, details);
+        // FIXME: Figure out how to actually print stack trace using log.log.
+        details.printStackTrace();
+        JOptionPane.showMessageDialog(frame, message, "Grotag error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    /**
+     * Show error <code>message</code> in a dialog, and also log it.
+     */
+    public void showError(String message, Throwable details) {
+        assert message != null;
+        assert details != null;
+        showError(null, message, details);
     }
 }

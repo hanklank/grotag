@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.TreeMap;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.imageio.IIOException;
@@ -374,10 +373,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private void showError(String message, Throwable details) {
         assert message != null;
         assert details != null;
-        // TODO: Add dialog to show error message.
-        log.log(Level.SEVERE, message, details);
-        // TODO: Print Stack trace to log.
-        details.printStackTrace();
+        tools.showError(this, message, details);
     }
 
     /**
