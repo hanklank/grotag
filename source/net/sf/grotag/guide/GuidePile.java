@@ -223,7 +223,7 @@ public class GuidePile {
         for (Guide guide: getGuides()) {
             Link defaultHelpLink = guide.getRelation(Relation.help);
             Link defaultIndexLink = guide.getRelation(Relation.index);
-            Link defaultTocLink = guide.getRelation(Relation.toc);
+            Link defaultTocLink = guide.getRelation(Relation.contents);
             Link defaultPreviousLink = null;
            
             int nextNodeInfoIndex = 1;
@@ -243,7 +243,7 @@ public class GuidePile {
                 nodeInfo.setEmptyRelationToDefault(Relation.index, defaultIndexLink);
                 nodeInfo.setEmptyRelationToDefault(Relation.next, defaultNextLink);
                 nodeInfo.setEmptyRelationToDefault(Relation.previous, defaultPreviousLink);
-                nodeInfo.setEmptyRelationToDefault(Relation.toc, defaultTocLink);
+                nodeInfo.setEmptyRelationToDefault(Relation.contents, defaultTocLink);
                 
                 // Prepare to proceed with next node.
                 defaultPreviousLink = new Link(nodeInfo.getStartNode(), amigaPaths);

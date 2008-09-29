@@ -110,7 +110,7 @@ class HtmlInfo {
         relToRelationMap.put("index", Relation.index);
         relToRelationMap.put("next", Relation.next);
         relToRelationMap.put("prev", Relation.previous);
-        relToRelationMap.put("toc", Relation.toc);
+        relToRelationMap.put("toc", Relation.contents);
 
         baseUri = newBaseUrl;
         InfoCallback callback = new InfoCallback();

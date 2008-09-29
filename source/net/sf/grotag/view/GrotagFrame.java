@@ -2,13 +2,17 @@ package net.sf.grotag.view;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -23,6 +27,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -129,7 +134,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             JMenuItem previousItem = new JMenuItem(new RelationAction("Previous", Relation.previous));
             previousItem.setMnemonic(KeyEvent.VK_P);
             setAccelerator(previousItem, KeyEvent.VK_LEFT);
-            JMenuItem tocItem = new JMenuItem(new RelationAction("Contents", Relation.toc));
+            JMenuItem tocItem = new JMenuItem(new RelationAction("Contents", Relation.contents));
             tocItem.setMnemonic(KeyEvent.VK_C);
             setAccelerator(tocItem, KeyEvent.VK_T);
             JMenuItem indexItem = new JMenuItem(new RelationAction("Index", Relation.index));
@@ -213,29 +218,29 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     }
 
     /**
-     * Action to process "retrace" command.
+     * Action to process the "back" command.
      * 
      * @author Thomas Aglassinger
      */
-    public class RetraceAction extends AbstractAction {
-        private RetraceAction() {
-            super("Retrace");
+    public class BackAction extends AbstractAction {
+        private BackAction() {
+            super("Back");
         }
 
         public void actionPerformed(ActionEvent event) {
             try {
                 synchronized (pageLock) {
-                    log.info("action: retrace");
+                    log.info("action: back");
                     logRetrace();
-                    assert retraceIndex > 0;
-                    URI previousHtmlFile = retraceStack.get(retraceIndex - 1);
+                    assert pageHistoryIndex > 0;
+                    URI previousHtmlFile = pageHistory.get(pageHistoryIndex - 1);
                     setPageWithoutRetrace(previousHtmlFile);
-                    retraceIndex -= 1;
+                    pageHistoryIndex -= 1;
                     setRetraceButtonEnabled();
                     logRetrace();
                 }
             } catch (Throwable error) {
-                showError("cannot retrace", error);
+                showError("cannot go back", error);
             }
         }
     }
@@ -281,8 +286,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JScrollPane messagePane;
     private Logger log;
     private Tools tools;
-    private int retraceIndex;
-    private List<URI> retraceStack;
+    private int pageHistoryIndex;
+    private List<URI> pageHistory;
     private JProgressBar progressBar;
     private File tempFolder;
     private GuidePile pile;
@@ -307,8 +312,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         log = Logger.getLogger(GrotagFrame.class.getName());
         tools = Tools.getInstance();
 
-        retraceIndex = NO_INDEX;
-        retraceStack = new ArrayList<URI>();
+        pageHistoryIndex = NO_INDEX;
+        pageHistory = new ArrayList<URI>();
         relationMap = new TreeMap<Relation, URI>();
         relationButtons = new LinkedList<JButton>();
         pageLock = new Object();
@@ -481,9 +486,9 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     pile = newPile;
                     URI firstPageUri = pile.getFirstHtmlFile(tempFolder).toURI();
                     setPageWithoutRetrace(firstPageUri);
-                    retraceStack.clear();
-                    retraceStack.add(firstPageUri);
-                    retraceIndex = 0;
+                    pageHistory.clear();
+                    pageHistory.add(firstPageUri);
+                    pageHistoryIndex = 0;
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
@@ -503,17 +508,17 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     }
 
     private void setRetraceButtonEnabled() {
-        retraceButton.setEnabled(retraceIndex > 0);
+        retraceButton.setEnabled(pageHistoryIndex > 0);
     }
 
     public void setPage(URI pageUri) throws IOException {
         synchronized (pageLock) {
             setPageWithoutRetrace(pageUri);
-            while (retraceStack.size() > retraceIndex) {
-                retraceStack.remove(retraceStack.size() - 1);
+            while (pageHistory.size() > pageHistoryIndex) {
+                pageHistory.remove(pageHistory.size() - 1);
             }
-            retraceStack.add(pageUri);
-            retraceIndex += 1;
+            pageHistory.add(pageUri);
+            pageHistoryIndex += 1;
             logRetrace();
             setRetraceButtonEnabled();
         }
@@ -521,10 +526,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     private void logRetrace() {
         int i = 0;
-        log.info("retrace stack at " + retraceIndex);
-        for (URI uri : retraceStack) {
+        log.info("retrace stack at " + pageHistoryIndex);
+        for (URI uri : pageHistory) {
             String line;
-            if (i == retraceIndex) {
+            if (i == pageHistoryIndex) {
                 line = "-->";
             } else {
                 line = "   ";
@@ -559,15 +564,37 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         }
     }
 
-    private JButton createRelationButton(String label, Relation relation) {
-        JButton result = new JButton(new RelationAction(label, relation));
+    private JButton createToolbarButton(String iconName, Action action) {
+        JButton result;
+        String imageName = iconName + ".png";
+        URL imageResourceUrl = getClass().getResource("/images/" + imageName);
+        if (imageResourceUrl == null) {
+            try {
+                imageResourceUrl = new File(new File("source", "images"), imageName).toURL();
+            } catch (MalformedURLException error) {
+                throw new IllegalStateException("cannot create URL for button image " + tools.sourced(imageName));
+            }
+        }
+        Image image = Toolkit.getDefaultToolkit().createImage(imageResourceUrl);
+        if (image == null) {
+            throw new IllegalStateException("cannot read image " + tools.sourced(imageName));
+        }
+        result = new JButton(action);
+        result.setIcon(new ImageIcon(image));
+        result.setToolTipText(result.getText());
+        result.setText(null);
         result.setEnabled(false);
+        return result;
+    }
+
+    private JButton createRelationButton(String label, Relation relation) {
+        JButton result = createToolbarButton(relation.toString().toLowerCase(), new RelationAction(label, relation));
         return result;
     }
 
     private final void setUpButtonPane() {
         buttonPane = new JPanel();
-        JButton contentsButton = createRelationButton("Contents", Relation.toc);
+        JButton contentsButton = createRelationButton("Contents", Relation.contents);
         JButton indexButton = createRelationButton("Index", Relation.index);
         JButton helpButton = createRelationButton("Help", Relation.help);
         JButton nextButton = createRelationButton("Next", Relation.next);
@@ -579,19 +606,18 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         relationButtons.add(nextButton);
         relationButtons.add(previousButton);
 
-        Dimension rigidSize = new Dimension(contentsButton.getPreferredSize().height, 0);
+        Dimension rigidSize = new Dimension(contentsButton.getPreferredSize().height / 2, 0);
 
-        retraceButton = new JButton(new RetraceAction());
-        retraceButton.setEnabled(false);
+        retraceButton = createToolbarButton("back", new BackAction());
 
         buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
+        buttonPane.add(retraceButton);
+        buttonPane.add(previousButton);
+        buttonPane.add(nextButton);
+        buttonPane.add(Box.createRigidArea(rigidSize));
         buttonPane.add(contentsButton);
         buttonPane.add(indexButton);
         buttonPane.add(helpButton);
-        buttonPane.add(Box.createRigidArea(rigidSize));
-        buttonPane.add(retraceButton);
-        buttonPane.add(nextButton);
-        buttonPane.add(previousButton);
         buttonPane.add(Box.createHorizontalGlue());
     }
 

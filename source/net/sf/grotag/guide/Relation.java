@@ -6,5 +6,5 @@ package net.sf.grotag.guide;
  * @author Thomas Aglassinger
  */
 public enum Relation {
-    help, index, next, previous, toc
+    help, index, next, previous, contents
 }

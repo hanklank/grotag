@@ -91,7 +91,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
 
     private Map<Relation, String> createRelationToNavigationLabelMap() {
         Map<Relation, String> result = new TreeMap<Relation, String>();
-        result.put(Relation.toc, "Contents");
+        result.put(Relation.contents, "Contents");
         result.put(Relation.index, "Index");
         result.put(Relation.next, "Next");
         result.put(Relation.previous, "Previous");
@@ -340,7 +340,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
 
     private void attemptToAppendNavigationBar(Element parent, Guide sourceGuide, NodeInfo sourceNodeInfo) {
         if (isAddNavigationBar()) {
-            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.toc, true);
+            appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.contents, true);
             appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.index, false);
             appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.next, false);
             appendNavigationLink(parent, sourceGuide, sourceNodeInfo, Relation.previous, false);

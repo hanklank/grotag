@@ -129,10 +129,9 @@
     </javac>
     <mkdir dir="${styles.dir}" />
     <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
-    <jar basedir="${classes.dir}"
-         destfile="${Grotag.jar}"
-         excludes="**/*Test.class"
-         includes="**/*.class, **/*.css, **/*.properties">
+    <jar destfile="${Grotag.jar}">
+      <fileset dir="${classes.dir}" excludes="**/*Test.class" includes="**/*.class, **/*.css, **/*.properties" />
+      <fileset dir="${source.dir}" includes="images/*.png" />
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger" />
         <attribute name="Implementation-Title" value="Grotag" />
@@ -143,7 +142,7 @@
   </target>
 
   <target description="Update version information." name="version">
-    <style in="version.xml" out="${version.java}" style="source/Version.java.xsl" />
+    <xslt in="version.xml" out="${version.java}" style="source/Version.java.xsl" />
   </target>
 
   <target description="Clean up." name="clean">
