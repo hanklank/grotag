@@ -41,6 +41,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 import javax.swing.event.HyperlinkEvent;
@@ -281,7 +282,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JTextPane htmlPane;
     private JScrollPane htmlScrollPane;
     private JPanel statusPane;
-    private JPanel buttonPane;
+    private JToolBar toolBar;
     private JSplitPane splitPane;
     private JScrollPane messagePane;
     private Logger log;
@@ -321,14 +322,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         openChooser.addChoosableFileFilter(new GuideFileFilter());
         openChooser.setAcceptAllFileFilterUsed(false);
         setLayout(new BorderLayout());
-        setUpButtonPane();
+        setUpToolbar();
         setUpHtmlPane();
         setUpEditorActionTable(htmlPane);
         setUpMessagePane();
         setUpSplitPane();
         setUpStatusPane();
         clearStatus();
-        add(buttonPane, BorderLayout.PAGE_START);
+        add(toolBar, BorderLayout.PAGE_START);
         add(splitPane, BorderLayout.CENTER);
         add(statusPane, BorderLayout.PAGE_END);
         setJMenuBar(new GrotagMenuBar());
@@ -592,8 +593,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         return result;
     }
 
-    private final void setUpButtonPane() {
-        buttonPane = new JPanel();
+    private final void setUpToolbar() {
+        toolBar = new JToolBar();
         JButton contentsButton = createRelationButton("Contents", Relation.contents);
         JButton indexButton = createRelationButton("Index", Relation.index);
         JButton helpButton = createRelationButton("Help", Relation.help);
@@ -606,19 +607,16 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         relationButtons.add(nextButton);
         relationButtons.add(previousButton);
 
-        Dimension rigidSize = new Dimension(contentsButton.getPreferredSize().height / 2, 0);
-
         retraceButton = createToolbarButton("back", new BackAction());
 
-        buttonPane.setLayout(new BoxLayout(buttonPane, BoxLayout.LINE_AXIS));
-        buttonPane.add(retraceButton);
-        buttonPane.add(previousButton);
-        buttonPane.add(nextButton);
-        buttonPane.add(Box.createRigidArea(rigidSize));
-        buttonPane.add(contentsButton);
-        buttonPane.add(indexButton);
-        buttonPane.add(helpButton);
-        buttonPane.add(Box.createHorizontalGlue());
+        toolBar.add(retraceButton);
+        toolBar.add(previousButton);
+        toolBar.add(nextButton);
+        toolBar.addSeparator();
+        toolBar.add(contentsButton);
+        toolBar.add(indexButton);
+        toolBar.add(helpButton);
+        toolBar.setFloatable(false);
     }
 
     private final void setUpHtmlPane() {
