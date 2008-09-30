@@ -1,6 +1,8 @@
 package net.sf.grotag.common;
 
 import java.awt.Component;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -12,7 +14,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -713,5 +717,32 @@ public class Tools {
         assert message != null;
         assert details != null;
         showError(null, message, details);
+    }
+
+    /**
+     * Read image resource from "/images"; in case it fails, try the file in
+     * "source/images".
+     */
+    public Image readImageRessource(String imageName) {
+        Image result;
+        URL imageResourceUrl = getClass().getResource("/images/" + imageName);
+        if (imageResourceUrl == null) {
+            try {
+                imageResourceUrl = new File(new File("source", "images"), imageName).toURL();
+            } catch (MalformedURLException error) {
+                throw new IllegalStateException("cannot create URL for button image " + sourced(imageName));
+            }
+        }
+        result = Toolkit.getDefaultToolkit().createImage(imageResourceUrl);
+        if (result == null) {
+            throw new IllegalStateException("cannot read image " + sourced(imageName));
+        }
+        return result;
+    }
+
+    public void setGrotagIcon(JFrame frame) {
+        assert frame != null;
+        Image logoImage = readImageRessource("grotag.png");
+        frame.setIconImage(logoImage);
     }
 }

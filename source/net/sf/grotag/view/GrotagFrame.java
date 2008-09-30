@@ -335,6 +335,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         setJMenuBar(new GrotagMenuBar());
         pack();
         progressBar.setVisible(false);
+        tools.setGrotagIcon(this);
     }
 
     private void setUpMessagePane() {
@@ -568,18 +569,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JButton createToolbarButton(String iconName, Action action) {
         JButton result;
         String imageName = iconName + ".png";
-        URL imageResourceUrl = getClass().getResource("/images/" + imageName);
-        if (imageResourceUrl == null) {
-            try {
-                imageResourceUrl = new File(new File("source", "images"), imageName).toURL();
-            } catch (MalformedURLException error) {
-                throw new IllegalStateException("cannot create URL for button image " + tools.sourced(imageName));
-            }
-        }
-        Image image = Toolkit.getDefaultToolkit().createImage(imageResourceUrl);
-        if (image == null) {
-            throw new IllegalStateException("cannot read image " + tools.sourced(imageName));
-        }
+        Image image = tools.readImageRessource(imageName);
         result = new JButton(action);
         result.setIcon(new ImageIcon(image));
         result.setToolTipText(result.getText());
