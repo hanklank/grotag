@@ -3,16 +3,13 @@ package net.sf.grotag.view;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Image;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -232,16 +229,44 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             try {
                 synchronized (pageLock) {
                     log.info("action: back");
-                    logRetrace();
+                    logHistory();
                     assert pageHistoryIndex > 0;
-                    URI previousHtmlFile = pageHistory.get(pageHistoryIndex - 1);
-                    setPageWithoutRetrace(previousHtmlFile);
                     pageHistoryIndex -= 1;
-                    setRetraceButtonEnabled();
-                    logRetrace();
+                    URI uriToGoTo = pageHistory.get(pageHistoryIndex);
+                    setPageWithoutHistory(uriToGoTo);
+                    setBackAndForwardButtonEnabled();
+                    logHistory();
                 }
             } catch (Throwable error) {
                 showError("cannot go back", error);
+            }
+        }
+    }
+
+    /**
+     * Action to process the "back" command.
+     * 
+     * @author Thomas Aglassinger
+     */
+    public class ForwardAction extends AbstractAction {
+        private ForwardAction() {
+            super("Forward");
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            try {
+                synchronized (pageLock) {
+                    log.info("action: forward");
+                    logHistory();
+                    assert (pageHistoryIndex != NO_INDEX) && (pageHistoryIndex < pageHistory.size() - 1);
+                    pageHistoryIndex += 1;
+                    URI uriToGoTo = pageHistory.get(pageHistoryIndex);
+                    setPageWithoutHistory(uriToGoTo);
+                    setBackAndForwardButtonEnabled();
+                    logHistory();
+                }
+            } catch (Throwable error) {
+                showError("cannot go forward", error);
             }
         }
     }
@@ -303,9 +328,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * Lock to synchronize on for page or file operations.
      */
     private Object pageLock;
-    private JButton retraceButton;
+    private JButton backButton;
 
     private JTable messageTable;
+    private JButton forwardButton;
 
     public GrotagFrame() {
         super(DEFAULT_TITLE);
@@ -487,10 +513,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     tempFolder = newTempFolder;
                     pile = newPile;
                     URI firstPageUri = pile.getFirstHtmlFile(tempFolder).toURI();
-                    setPageWithoutRetrace(firstPageUri);
                     pageHistory.clear();
-                    pageHistory.add(firstPageUri);
-                    pageHistoryIndex = 0;
+                    setPage(firstPageUri);
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
@@ -509,40 +533,41 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         setPage(pageUrl);
     }
 
-    private void setRetraceButtonEnabled() {
-        retraceButton.setEnabled(pageHistoryIndex > 0);
+    private void setBackAndForwardButtonEnabled() {
+        backButton.setEnabled(pageHistoryIndex > 0);
+        forwardButton.setEnabled((pageHistoryIndex != NO_INDEX) && (pageHistoryIndex < pageHistory.size() - 1));
     }
 
     public void setPage(URI pageUri) throws IOException {
         synchronized (pageLock) {
-            setPageWithoutRetrace(pageUri);
-            while (pageHistory.size() > pageHistoryIndex) {
+            setPageWithoutHistory(pageUri);
+            while ((pageHistoryIndex != NO_INDEX) && (pageHistory.size() > (pageHistoryIndex + 1))) {
                 pageHistory.remove(pageHistory.size() - 1);
             }
             pageHistory.add(pageUri);
-            pageHistoryIndex += 1;
-            logRetrace();
-            setRetraceButtonEnabled();
+            pageHistoryIndex = pageHistory.size() - 1;
+            logHistory();
+            setBackAndForwardButtonEnabled();
         }
     }
 
-    private void logRetrace() {
-        int i = 0;
-        log.info("retrace stack at " + pageHistoryIndex);
+    private void logHistory() {
+        int historyIndex = 0;
+        log.info("history pointer at " + pageHistoryIndex);
         for (URI uri : pageHistory) {
             String line;
-            if (i == pageHistoryIndex) {
-                line = "-->";
+            if (historyIndex == pageHistoryIndex) {
+                line = "->";
             } else {
-                line = "   ";
+                line = "  ";
             }
             line += " " + uri;
-            i += 1;
-            log.info("  " + line);
+            log.info(line);
+            historyIndex += 1;
         }
     }
 
-    private void setPageWithoutRetrace(URI pageUri) throws IOException {
+    private void setPageWithoutHistory(URI pageUri) throws IOException {
         assert pageUri != null;
         synchronized (pageLock) {
             log.info("set page to: " + tools.sourced(pageUri.toString()));
@@ -597,9 +622,12 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         relationButtons.add(nextButton);
         relationButtons.add(previousButton);
 
-        retraceButton = createToolbarButton("back", new BackAction());
+        backButton = createToolbarButton("back", new BackAction());
+        forwardButton = createToolbarButton("forward", new ForwardAction());
 
-        toolBar.add(retraceButton);
+        toolBar.add(backButton);
+        toolBar.add(forwardButton);
+        toolBar.addSeparator();
         toolBar.add(previousButton);
         toolBar.add(nextButton);
         toolBar.addSeparator();
