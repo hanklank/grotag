@@ -106,15 +106,16 @@
 
       <itemizedlist>
         <listitem>
-          <para>Grotag.jar - The application Java archive.</para>
+          <para><filename>Grotag.jar</filename> - The application Java
+          archive.</para>
         </listitem>
       </itemizedlist>
 
       <itemizedlist>
         <listitem>
-          <para>license.txt - A text file describing your rights related to
-          Grotag. In short: It is an Open Source application and you do not
-          have to pay money for it.</para>
+          <para><filename>license.txt</filename> - A text file describing your
+          rights related to Grotag. In short: It is an Open Source application
+          and you do not have to pay money for it.</para>
         </listitem>
       </itemizedlist>
 
@@ -177,9 +178,157 @@
     <section>
       <title>Browse a document</title>
 
-      <para>Once the document has been loaded, you can browse it. As
+      <para>Once the document has been opened, you can browse it. As
       Amigaguide is a hyper text format just like HTML, viewers for it are
-      fairly similar similar to web browsers.</para>
+      fairly similar to web browsers. A major difference however is that
+      Amigaguide automatically relates previous and next pages, so it is
+      easily possible to sequentially browse a document with a standardized
+      user interface. Furthermore authors can specify special pages containing
+      a table of contents, an index, or a help page.</para>
+
+      <para>Grotag offers several toolbar buttons and menu items to easily
+      access all these pages, refer to <xref linkend="commands.browse" /> for
+      details.</para>
+
+      <table>
+        <title id="commands.browse">Browsing a document</title>
+
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>Task</entry>
+
+              <entry>Toolbar icon</entry>
+
+              <entry>Menu entry</entry>
+
+              <entry>Related Amigaguide command</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>Browse back and forward through pages previously
+              viewed.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/back.png" format="PNG" />
+                  </imageobject>
+                </mediaobject><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/forward.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Browse through the pages in sequential order. In case
+              these buttons are greyed out, you are already at the first or
+              last page. In case both of these buttons are greyed out, the
+              document has only one page.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/next.png" format="PNG" />
+                  </imageobject>
+                </mediaobject><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/previous.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry><menuchoice>
+                  <guimenu>Go</guimenu>
+
+                  <guimenuitem>Next</guimenuitem>
+                </menuchoice>, <menuchoice>
+                  <guimenu>Go</guimenu>
+
+                  <guimenuitem>Previous</guimenuitem>
+                </menuchoice></entry>
+
+              <entry><code>@next</code>, <code>@previous</code></entry>
+            </row>
+
+            <row>
+              <entry>Go to the contents page for the current page. In case
+              this button is greyed out, the author did not specify a contents
+              page.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/contents.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry><menuchoice>
+                  <guimenu>Go</guimenu>
+
+                  <guimenuitem>Contents</guimenuitem>
+                </menuchoice></entry>
+
+              <entry><code>@contents</code></entry>
+            </row>
+
+            <row>
+              <entry>Go to the page the document initially opened
+              with.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/home.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry></entry>
+
+              <entry></entry>
+            </row>
+
+            <row>
+              <entry>Show the index page of the current document. In case this
+              button is greyed out, the author did not specify an index
+              page.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/index.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry><menuchoice>
+                  <guimenu>Go</guimenu>
+
+                  <guimenuitem>Index</guimenuitem>
+                </menuchoice></entry>
+
+              <entry><code>@index</code></entry>
+            </row>
+
+            <row>
+              <entry>Go to the help page for this particular guide. Unlike the
+              Commodore Amigaguide application, Grotag does not provide a
+              default help explaining the controlls. In case this button is
+              greyed out, the author did not specify a help page.</entry>
+
+              <entry><mediaobject>
+                  <imageobject>
+                    <imagedata fileref="images/help.png" format="PNG" />
+                  </imageobject>
+                </mediaobject></entry>
+
+              <entry></entry>
+
+              <entry><code>@help</code></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
     </section>
   </chapter>
 
@@ -336,6 +485,41 @@
     </section>
   </chapter>
 
+  <chapter id="">
+    <title>Acknowledgment</title>
+
+    <para>The following ressources have been helpful for developing
+    Grotag:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><ulink
+        url="http://homepage.mac.com/sroy/mrjadapter/">MRJAdapter</ulink>
+        allows to integrate Java applications nicely into Mac OS X.</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="???">Crystal</ulink> is the icon set use in the
+        toolbar.</para>
+      </listitem>
+
+      <listitem>
+        <para><ulink url="http://safalra.com/other/amigaguide/">Salfara's
+        website</ulink> documents the Amigaguide format quite
+        dilligently.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <command>agr</command> command line Amigaguide reader
+        includes a couple of interesting test documents.</para>
+      </listitem>
+
+      <listitem>
+        <para>...</para>
+      </listitem>
+    </itemizedlist>
+  </chapter>
+
   <chapter id="changes">
     <title>Changes</title>
 
@@ -343,11 +527,25 @@
     Grotag.</para>
 
     <section id="v0.1.1">
-      <title>Version 0.1.1, xx-Oct-2008</title>
+      <title>Version 0.1.1, 05-Oct-2008</title>
 
       <itemizedlist>
         <listitem>
-          <para>.</para>
+          <para>Fixed <guibutton>Back</guibutton> button, which seemingly
+          navigated to random pages.</para>
+        </listitem>
+
+        <listitem>
+          <para>Changed toolbar buttons to use icons instead of text
+          lables.</para>
+        </listitem>
+
+        <listitem>
+          <para>Added <guibutton>Forward</guibutton> button.</para>
+        </listitem>
+
+        <listitem>
+          <para>Added proper About dialog.</para>
         </listitem>
       </itemizedlist>
     </section>

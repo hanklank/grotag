@@ -208,6 +208,18 @@
   </target>
 
   <target name="user-guide">
+    <copy todir="${site.dir}/images">
+      <fileset dir="${source.dir}/images">
+        <include name="back.png"/>
+        <include name="contents.png"/>
+        <include name="forward.png"/>
+        <include name="help.png"/>
+        <include name="home.png"/>
+        <include name="index.png"/>
+        <include name="next.png"/>
+        <include name="previous.png"/>
+      </fileset>
+    </copy>
     <docBookToHtml html="${site.dir}/user-guide.html" xml="${source.dir}/site/user-guide.xml" />
   </target>
 
