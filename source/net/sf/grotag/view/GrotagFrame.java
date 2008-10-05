@@ -234,7 +234,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     pageHistoryIndex -= 1;
                     URI uriToGoTo = pageHistory.get(pageHistoryIndex);
                     setPageWithoutHistory(uriToGoTo);
-                    setBackAndForwardButtonEnabled();
+                    setBackForwardAndHomeButtonEnabled();
                     logHistory();
                 }
             } catch (Throwable error) {
@@ -262,11 +262,33 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     pageHistoryIndex += 1;
                     URI uriToGoTo = pageHistory.get(pageHistoryIndex);
                     setPageWithoutHistory(uriToGoTo);
-                    setBackAndForwardButtonEnabled();
+                    setBackForwardAndHomeButtonEnabled();
                     logHistory();
                 }
             } catch (Throwable error) {
                 showError("cannot go forward", error);
+            }
+        }
+    }
+
+    /**
+     * Action to process the "home" command.
+     * 
+     * @author Thomas Aglassinger
+     */
+    public class HomeAction extends AbstractAction {
+        private HomeAction() {
+            super("Home");
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            try {
+                synchronized (pageLock) {
+                    log.info("action: home");
+                    setPage(homeUri);
+                }
+            } catch (Throwable error) {
+                showError("cannot go to home page", error);
             }
         }
     }
@@ -323,6 +345,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private Map<Object, Action> editorKitActionMap;
     private JFileChooser openChooser;
     private MessageItemTableModel messageModel;
+    private URI homeUri;
 
     /**
      * Lock to synchronize on for page or file operations.
@@ -332,6 +355,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     private JTable messageTable;
     private JButton forwardButton;
+    private JButton homeButton;
 
     public GrotagFrame() {
         super(DEFAULT_TITLE);
@@ -512,9 +536,9 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     }
                     tempFolder = newTempFolder;
                     pile = newPile;
-                    URI firstPageUri = pile.getFirstHtmlFile(tempFolder).toURI();
+                    homeUri = pile.getFirstHtmlFile(tempFolder).toURI();
                     pageHistory.clear();
-                    setPage(firstPageUri);
+                    setPage(homeUri);
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
@@ -529,13 +553,30 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     public void setPage(File pageFile) throws IOException {
         assert pageFile != null;
-        URI pageUrl = pageFile.toURI();
-        setPage(pageUrl);
+        setPage(pageFile.toURI());
     }
 
-    private void setBackAndForwardButtonEnabled() {
+    /**
+     * The URI of the page currently viewing.
+     */
+    private URI getPage() {
+        URI result;
+        synchronized (pageLock) {
+            assert pageHistory.size() > 0;
+            assert pageHistoryIndex >= 0;
+            result = pageHistory.get(pageHistoryIndex);
+        }
+        return result;
+    }
+
+    private void setBackForwardAndHomeButtonEnabled() {
         backButton.setEnabled(pageHistoryIndex > 0);
         forwardButton.setEnabled((pageHistoryIndex != NO_INDEX) && (pageHistoryIndex < pageHistory.size() - 1));
+        boolean enableHomeAction = (pageHistory.size() > 0);
+        if (enableHomeAction) {
+            enableHomeAction = !homeUri.equals(getPage());
+        }
+        homeButton.setEnabled(enableHomeAction);
     }
 
     public void setPage(URI pageUri) throws IOException {
@@ -547,7 +588,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             pageHistory.add(pageUri);
             pageHistoryIndex = pageHistory.size() - 1;
             logHistory();
-            setBackAndForwardButtonEnabled();
+            setBackForwardAndHomeButtonEnabled();
         }
     }
 
@@ -615,7 +656,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         JButton helpButton = createRelationButton("Help", Relation.help);
         JButton nextButton = createRelationButton("Next", Relation.next);
         JButton previousButton = createRelationButton("Previous", Relation.previous);
-
         relationButtons.add(contentsButton);
         relationButtons.add(indexButton);
         relationButtons.add(helpButton);
@@ -624,6 +664,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
         backButton = createToolbarButton("back", new BackAction());
         forwardButton = createToolbarButton("forward", new ForwardAction());
+        homeButton = createToolbarButton("home", new HomeAction());
 
         toolBar.add(backButton);
         toolBar.add(forwardButton);
@@ -632,6 +673,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         toolBar.add(nextButton);
         toolBar.addSeparator();
         toolBar.add(contentsButton);
+        toolBar.add(homeButton);
         toolBar.add(indexButton);
         toolBar.add(helpButton);
         toolBar.setFloatable(false);
