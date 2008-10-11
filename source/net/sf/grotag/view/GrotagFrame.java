@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Logger;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
@@ -50,6 +52,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.roydesign.app.AboutJMenuItem;
 import net.roydesign.app.Application;
 import net.roydesign.app.QuitJMenuItem;
+import net.sf.grotag.Grotag;
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.Tools;
@@ -189,9 +192,16 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
         public void actionPerformed(ActionEvent event) {
             try {
+                String lastGuideFileOpenedPath = settings.get(SETTING_LAST_GUIDE_FILE_OPENED, null);
+                if (lastGuideFileOpenedPath != null) {
+                    openChooser.setSelectedFile(new File(lastGuideFileOpenedPath));
+                }
+
                 int userAction = openChooser.showOpenDialog(getGrotagFrame());
                 if (userAction == JFileChooser.APPROVE_OPTION) {
-                    read(openChooser.getSelectedFile());
+                    File guideFileToOpen = openChooser.getSelectedFile();
+                    read(guideFileToOpen);
+                    settings.put(SETTING_LAST_GUIDE_FILE_OPENED, guideFileToOpen.getAbsolutePath());
                 }
             } catch (Exception error) {
                 showError("cannot open file", error);
@@ -338,6 +348,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     private static final String DEFAULT_TITLE = "Grotag";
     private static final int NO_INDEX = -1;
+    private static final String SETTING_LAST_GUIDE_FILE_OPENED = "lastGuideFileOpened";
 
     private JLabel statusLabel;
     private JTextPane htmlPane;
@@ -370,12 +381,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JTable messageTable;
     private JButton forwardButton;
     private JButton homeButton;
+    private Preferences settings;
 
     public GrotagFrame() {
         super(DEFAULT_TITLE);
 
         log = Logger.getLogger(GrotagFrame.class.getName());
         tools = Tools.getInstance();
+        settings = Preferences.userNodeForPackage(Grotag.class);
 
         pageHistoryIndex = NO_INDEX;
         pageHistory = new ArrayList<URI>();
@@ -503,7 +516,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             progressBar.setValue(0);
             progressBar.setIndeterminate(true);
             progressBar.setVisible(true);
-            openChooser.setCurrentDirectory(guideFile.getParentFile());
             try {
                 setStatus("Reading " + guideFile);
                 newPile = GuidePile.createGuidePile(guideFile, newAmigaPaths);
@@ -766,6 +778,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 htmlPane.removeHyperlinkListener(this);
             }
             pile = null;
+            try {
+                settings.flush();
+            } catch (BackingStoreException error) {
+                tools.showError(this, "cannot store settings", error);
+            }
             if (tempFolder != null) {
                 tools.attemptToDeleteAll(tempFolder);
                 tempFolder = null;
