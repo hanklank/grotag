@@ -120,14 +120,11 @@
   <target depends="version" description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/MRJAdapter.jar" dest="${classes.dir}" />
+    <unjar src="${external.dir}/serializer.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
-    <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5">
-      <classpath>
-        <pathelement location="${external.dir}/MRJAdapter.jar" />
-      </classpath>
-    </javac>
+    <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
     <mkdir dir="${styles.dir}" />
     <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
     <jar destfile="${Grotag.jar}">
