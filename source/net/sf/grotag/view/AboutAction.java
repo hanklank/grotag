@@ -4,7 +4,6 @@ import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 
-import javax.swing.AbstractAction;
 import javax.swing.ImageIcon;
 
 import net.roydesign.app.Application;
@@ -17,7 +16,7 @@ import net.sf.grotag.common.Version;
  * 
  * @author Thomas Aglassinger
  */
-public class AboutAction extends AbstractAction {
+public class AboutAction extends AbstractGuiAction {
     private Object aboutFrameLock;
     private StandardMacAboutFrame aboutFrame;
     private Logger log;
@@ -47,5 +46,10 @@ public class AboutAction extends AbstractAction {
         } catch (Exception error) {
             tools.showError("cannot show about dialog", error);
         }
+    }
+
+    @Override
+    public boolean isEnabledFor(GuiState state) {
+        return true;
     }
 }

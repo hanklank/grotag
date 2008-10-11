@@ -22,7 +22,6 @@ import java.util.prefs.Preferences;
 
 import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -98,8 +97,33 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             }
         }
 
-        public void setOpened(boolean opened) {
-            exportItem.setEnabled(opened);
+        public void setGuiState(GuiState state) {
+            assert state != null;
+            for (int menuIndex = 0; menuIndex < getMenuCount(); menuIndex += 1) {
+                JMenu menu = getMenu(menuIndex);
+                boolean anyEnabled = false;
+                for (int itemIndex = 0; itemIndex < menu.getItemCount(); itemIndex += 1) {
+                    JMenuItem item = menu.getItem(itemIndex);
+                    Action action = item.getAction();
+                    if (action != null) {
+                        boolean actionIsEnabled;
+                        if (action instanceof AbstractGuiAction) {
+                            AbstractGuiAction guiAction = (AbstractGuiAction) action;
+                            actionIsEnabled = guiAction.isEnabledFor(state);
+                        } else {
+                            // Enable non-GuiAction such as Edit > Copy during
+                            // browsing only.
+                            actionIsEnabled = (state == GuiState.BROWSING);
+                        }
+                        if (actionIsEnabled) {
+                            anyEnabled = true;
+                        }
+                        item.setEnabled(actionIsEnabled);
+                    }
+                    itemIndex += 1;
+                }
+                menu.setEnabled(anyEnabled);
+            }
         }
 
         private void setAccelerator(JMenuItem item, int code) {
@@ -182,7 +206,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    private class ExitAction extends AbstractAction {
+    private class ExitAction extends AbstractGuiAction {
         public ExitAction() {
             super("Exit");
         }
@@ -191,6 +215,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             dispose();
             System.exit(0);
         }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return true;
+        }
     }
 
     /**
@@ -198,13 +227,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    private class ExportAction extends AbstractAction {
+    private class ExportAction extends AbstractGuiAction {
         public ExportAction() {
             super("Export...");
         }
 
         public void actionPerformed(ActionEvent event) {
             try {
+                setGuiState(GuiState.EXPORTING);
                 String lastExportFolderPath = settings.get(SETTING_LAST_EXPORT_FOLDER, null);
                 if (lastExportFolderPath != null) {
                     exportChooser.setSelectedFile(new File(lastExportFolderPath));
@@ -229,7 +259,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 }
             } catch (Exception error) {
                 showError("cannot export document", error);
+            } finally {
+                setGuiState(GuiState.BROWSING);
             }
+        }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return state == GuiState.BROWSING;
         }
     }
 
@@ -238,7 +275,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    private class OpenAction extends AbstractAction {
+    private class OpenAction extends AbstractGuiAction {
         public OpenAction() {
             super("Open...");
         }
@@ -258,6 +295,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             } catch (Exception error) {
                 showError("cannot open file", error);
             }
+        }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return (state == GuiState.BROWSING) || (state == GuiState.EMPTY);
         }
     }
 
@@ -296,7 +338,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    public class BackAction extends AbstractAction {
+    public class BackAction extends AbstractGuiAction {
         private BackAction() {
             super("Back");
         }
@@ -317,6 +359,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 showError("cannot go back", error);
             }
         }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return state == GuiState.BROWSING;
+        }
     }
 
     /**
@@ -324,7 +371,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    public class ForwardAction extends AbstractAction {
+    public class ForwardAction extends AbstractGuiAction {
         private ForwardAction() {
             super("Forward");
         }
@@ -345,6 +392,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 showError("cannot go forward", error);
             }
         }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return state == GuiState.BROWSING;
+        }
     }
 
     /**
@@ -352,7 +404,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    public class HomeAction extends AbstractAction {
+    public class HomeAction extends AbstractGuiAction {
         private HomeAction() {
             super("Home");
         }
@@ -367,6 +419,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 showError("cannot go to home page", error);
             }
         }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return state == GuiState.BROWSING;
+        }
     }
 
     /**
@@ -374,7 +431,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
-    public class RelationAction extends AbstractAction {
+    public class RelationAction extends AbstractGuiAction {
         private Relation relation;
 
         public RelationAction(String name, Relation newRelation) {
@@ -395,6 +452,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
         public Relation getRelation() {
             return relation;
+        }
+
+        @Override
+        public boolean isEnabledFor(GuiState state) {
+            return state == GuiState.BROWSING;
         }
     }
 
@@ -466,6 +528,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         pack();
         progressBar.setVisible(false);
         tools.setGrotagIcon(this);
+        setGuiState(GuiState.EMPTY);
     }
 
     private void setUpMessagePane() {
@@ -504,6 +567,11 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
     public void setStatus(String text) {
         statusLabel.setText(text);
+    }
+
+    private void setGuiState(GuiState state) {
+        assert state != null;
+        ((GrotagMenuBar) getJMenuBar()).setGuiState(state);
     }
 
     private File createTempFolder() throws IOException {
@@ -569,6 +637,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             progressBar.setValue(0);
             progressBar.setIndeterminate(true);
             progressBar.setVisible(true);
+            setGuiState(GuiState.OPENING);
             try {
                 setStatus("Reading " + guideFile);
                 newPile = GuidePile.createGuidePile(guideFile, newAmigaPaths);
@@ -606,10 +675,12 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     }
                 }
                 settings.put(SETTING_LAST_GUIDE_FILE_OPENED, guideFile.getAbsolutePath());
-                ((GrotagMenuBar) getJMenuBar()).setOpened(true);
+                setGuiState(GuiState.BROWSING);
             } catch (Throwable error) {
                 showError("cannot read " + tools.sourced(guideFile), error);
             } finally {
+                clearStatus();
+                progressBar.setVisible(false);
                 if (newPile != null) {
                     // Start showing new guide.
                     if (tempFolder != null) {
@@ -623,11 +694,16 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
+                    if (pile == null) {
+                        setGuiState(GuiState.EMPTY);
+                    } else {
+                        setGuiState(GuiState.BROWSING);
+                    }
                 }
-                clearStatus();
+                // FIXME: Check if this call causes an exception in the Swing
+                // thread in case there are no messages.
                 messageModel.update();
                 tools.initColumnWidths(messageTable);
-                progressBar.setVisible(false);
             }
         }
     }
