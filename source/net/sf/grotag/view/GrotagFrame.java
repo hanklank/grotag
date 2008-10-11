@@ -55,6 +55,7 @@ import net.roydesign.app.QuitJMenuItem;
 import net.sf.grotag.Grotag;
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
+import net.sf.grotag.common.SyncLock;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DomWriter;
 import net.sf.grotag.guide.Guide;
@@ -371,13 +372,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JFileChooser openChooser;
     private MessageItemTableModel messageModel;
     private URI homeUri;
-
-    /**
-     * Lock to synchronize on for page or file operations.
-     */
-    private Object pageLock;
+    private SyncLock pageLock;
     private JButton backButton;
-
     private JTable messageTable;
     private JButton forwardButton;
     private JButton homeButton;
@@ -394,7 +390,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         pageHistory = new ArrayList<URI>();
         relationMap = new TreeMap<Relation, URI>();
         relationButtons = new LinkedList<JButton>();
-        pageLock = new Object();
+        pageLock = new SyncLock("page or file operations");
         openChooser = new JFileChooser();
         openChooser.addChoosableFileFilter(new GuideFileFilter());
         openChooser.setAcceptAllFileFilterUsed(false);
