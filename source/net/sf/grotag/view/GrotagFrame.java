@@ -58,11 +58,13 @@ import net.sf.grotag.common.SwingWorker;
 import net.sf.grotag.common.SyncLock;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.guide.DomWriter;
+import net.sf.grotag.guide.ExportTools;
 import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
 import net.sf.grotag.guide.HtmlDomFactory;
 import net.sf.grotag.guide.NodeInfo;
 import net.sf.grotag.guide.Relation;
+import net.sf.grotag.guide.DomWriter.Dtd;
 
 import org.xml.sax.SAXException;
 
@@ -79,6 +81,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      */
     private class GrotagMenuBar extends JMenuBar {
         private int commandMask;
+        private JMenuItem exportItem;
 
         public GrotagMenuBar() {
             super();
@@ -95,6 +98,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             }
         }
 
+        public void setOpened(boolean opened) {
+            exportItem.setEnabled(opened);
+        }
+
         private void setAccelerator(JMenuItem item, int code) {
             item.setAccelerator(KeyStroke.getKeyStroke(code, commandMask));
         }
@@ -102,9 +109,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         private final JMenu createFileMenu() {
             JMenu result = new JMenu("File");
             JMenuItem openItem = new JMenuItem(new OpenAction());
+            exportItem = new JMenuItem(new ExportAction());
             openItem.setMnemonic(KeyEvent.VK_O);
             setAccelerator(openItem, KeyEvent.VK_O);
+            exportItem.setEnabled(false);
+            exportItem.setMnemonic(KeyEvent.VK_E);
+            setAccelerator(exportItem, KeyEvent.VK_E);
             result.add(openItem);
+            result.add(exportItem);
             if (!QuitJMenuItem.isAutomaticallyPresent()) {
                 JMenuItem exitItem = new JMenuItem(new ExitAction());
                 exitItem.setMnemonic(KeyEvent.VK_X);
@@ -186,6 +198,46 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * 
      * @author Thomas Aglassinger
      */
+    private class ExportAction extends AbstractAction {
+        public ExportAction() {
+            super("Export...");
+        }
+
+        public void actionPerformed(ActionEvent event) {
+            try {
+                String lastExportFolderPath = settings.get(SETTING_LAST_EXPORT_FOLDER, null);
+                if (lastExportFolderPath != null) {
+                    exportChooser.setSelectedFile(new File(lastExportFolderPath));
+                }
+
+                int userAction = exportChooser.showDialog(getGrotagFrame(), "Export");
+                if (userAction == JFileChooser.APPROVE_OPTION) {
+                    ExportTools exportTools = ExportTools.getInstance();
+                    File folderToExportTo = exportChooser.getSelectedFile();
+                    settings.put(SETTING_LAST_EXPORT_FOLDER, folderToExportTo.getAbsolutePath());
+                    File inputFile = new File(settings.get(SETTING_LAST_GUIDE_FILE_OPENED, null));
+                    Dtd formatToExport = ((ExportAccessory) exportChooser.getAccessory()).getFormat();
+
+                    if (formatToExport == Dtd.DOCBOOK) {
+                        File outputFile = exportTools.targetFileFor(inputFile, folderToExportTo, "xml");
+                        exportTools.exportAsDocBookXml(pile, outputFile);
+                    } else if ((formatToExport == Dtd.HTML) || (formatToExport == Dtd.XHTML)) {
+                        exportTools.exportAsHtml(pile, folderToExportTo, formatToExport);
+                    } else {
+                        assert false : "format=" + formatToExport;
+                    }
+                }
+            } catch (Exception error) {
+                showError("cannot export document", error);
+            }
+        }
+    }
+
+    /**
+     * Action to open a new guide using a dialog.
+     * 
+     * @author Thomas Aglassinger
+     */
     private class OpenAction extends AbstractAction {
         public OpenAction() {
             super("Open...");
@@ -202,7 +254,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 if (userAction == JFileChooser.APPROVE_OPTION) {
                     File guideFileToOpen = openChooser.getSelectedFile();
                     read(guideFileToOpen);
-                    settings.put(SETTING_LAST_GUIDE_FILE_OPENED, guideFileToOpen.getAbsolutePath());
                 }
             } catch (Exception error) {
                 showError("cannot open file", error);
@@ -350,6 +401,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private static final String DEFAULT_TITLE = "Grotag";
     private static final int NO_INDEX = -1;
     private static final String SETTING_LAST_GUIDE_FILE_OPENED = "lastGuideFileOpened";
+    private static final String SETTING_LAST_EXPORT_FOLDER = "lastExportFolder";
 
     private JLabel statusLabel;
     private JTextPane htmlPane;
@@ -370,6 +422,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private Map<URI, NodeInfo> urlToNodeMap;
     private Map<Object, Action> editorKitActionMap;
     private JFileChooser openChooser;
+    private JFileChooser exportChooser;
     private MessageItemTableModel messageModel;
     private URI homeUri;
     private SyncLock pageLock;
@@ -394,6 +447,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         openChooser = new JFileChooser();
         openChooser.addChoosableFileFilter(new GuideFileFilter());
         openChooser.setAcceptAllFileFilterUsed(false);
+        exportChooser = new JFileChooser();
+        exportChooser.setDialogTitle("Export");
+        exportChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        exportChooser.setAccessory(new ExportAccessory());
         setLayout(new BorderLayout());
         setUpToolbar();
         setUpHtmlPane();
@@ -465,8 +522,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     /**
      * Read the GuidePile to browse starting with <code>guideFile</code>. In
      * order to resolve Amiga paths, look for <code>grotag.xml</code> in the
-     * current folder, otherwise in the in the folder <code>guideFile</code>
-     * is located in.
+     * current folder, otherwise in the in the folder <code>guideFile</code> is
+     * located in.
      */
     public void read(File guideFile) throws SAXException, ParserConfigurationException, IOException {
         assert guideFile != null;
@@ -548,6 +605,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                         progressBar.setValue(nodesWritten);
                     }
                 }
+                settings.put(SETTING_LAST_GUIDE_FILE_OPENED, guideFile.getAbsolutePath());
+                ((GrotagMenuBar) getJMenuBar()).setOpened(true);
             } catch (Throwable error) {
                 showError("cannot read " + tools.sourced(guideFile), error);
             } finally {

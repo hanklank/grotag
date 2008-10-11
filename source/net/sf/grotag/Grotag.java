@@ -12,16 +12,12 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 import net.sf.grotag.common.AmigaPathList;
-import net.sf.grotag.common.Tools;
-import net.sf.grotag.guide.DocBookDomFactory;
 import net.sf.grotag.guide.DomWriter;
+import net.sf.grotag.guide.ExportTools;
 import net.sf.grotag.guide.Guide;
 import net.sf.grotag.guide.GuidePile;
-import net.sf.grotag.guide.HtmlDomFactory;
-import net.sf.grotag.guide.NodeInfo;
 import net.sf.grotag.view.GrotagFrame;
 
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.martiansoftware.jsap.JSAPException;
@@ -117,6 +113,7 @@ public class Grotag {
     }
 
     private void docBook(File[] files) throws IOException, ParserConfigurationException, TransformerException {
+        ExportTools exportTools = ExportTools.getInstance();
         int fileCount = files.length;
         File inputFile;
         File outputFile;
@@ -125,9 +122,7 @@ public class Grotag {
         } else if (fileCount == 1) {
             inputFile = files[0];
             File outputFileFolder = inputFile.getParentFile();
-            String inputFileName = inputFile.getName();
-            String outputFileName = Tools.getInstance().getWithoutLastSuffix(inputFileName) + ".xml";
-            outputFile = new File(outputFileFolder, outputFileName);
+            outputFile = exportTools.targetFileFor(inputFile, outputFileFolder, "xml");
         } else if (fileCount == 2) {
             inputFile = files[0];
             outputFile = files[1];
@@ -136,11 +131,7 @@ public class Grotag {
                     + " only 2 files must be specified instead of " + fileCount);
         }
         GuidePile pile = GuidePile.createGuidePile(inputFile, amigaPaths);
-        DocBookDomFactory domFactory = new DocBookDomFactory(pile);
-        Document dom = domFactory.createBook();
-        DomWriter domWriter = new DomWriter(DomWriter.Dtd.DOCBOOK);
-
-        domWriter.write(dom, outputFile);
+        exportTools.exportAsDocBookXml(pile, outputFile);
     }
 
     private void html(File[] files, boolean isXhtml) throws IOException, ParserConfigurationException,
@@ -175,18 +166,8 @@ public class Grotag {
                     + fileCount);
         }
 
-        // Create the (X)HTML documents.
         GuidePile pile = GuidePile.createGuidePile(inputFile, amigaPaths);
-        for (Guide guide : pile.getGuides()) {
-            HtmlDomFactory factory = new HtmlDomFactory(pile, outputFolder);
-            factory.copyStyleFile();
-            for (NodeInfo nodeInfo : guide.getNodeInfos()) {
-                Document htmlDocument = factory.createNodeDocument(guide, nodeInfo);
-                File targetFile = factory.getTargetFileFor(guide, nodeInfo);
-                DomWriter htmlWriter = new DomWriter(dtd);
-                htmlWriter.write(htmlDocument, targetFile);
-            }
-        }
+        ExportTools.getInstance().exportAsHtml(pile, outputFolder, dtd);
     }
 
     private void pretty(File[] files) throws IOException {
