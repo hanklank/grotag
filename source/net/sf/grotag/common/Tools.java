@@ -701,13 +701,21 @@ public class Tools {
     /**
      * Show error <code>message</code> in a dialog, and also log it.
      */
-    public void showError(JFrame frame, String message, Throwable details) {
+    public void showError(JFrame frame, String message, Throwable error) {
         assert message != null;
-        assert details != null;
-        log.log(Level.SEVERE, message, details);
+        assert error != null;
+        log.log(Level.SEVERE, message, error);
         // FIXME: Figure out how to actually print stack trace using log.log.
-        details.printStackTrace();
-        JOptionPane.showMessageDialog(frame, message, "Grotag error", JOptionPane.ERROR_MESSAGE);
+        error.printStackTrace();
+
+        String fullMessage = message;
+        Throwable reason = error;
+        while (reason != null) {
+            fullMessage += ":\n" + reason.getMessage();
+            reason = reason.getCause();
+        }
+
+        JOptionPane.showMessageDialog(frame, fullMessage, "Grotag error", JOptionPane.ERROR_MESSAGE);
     }
 
     /**
