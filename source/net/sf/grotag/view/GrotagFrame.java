@@ -68,11 +68,70 @@ import net.sf.grotag.guide.DomWriter.Dtd;
 import org.xml.sax.SAXException;
 
 /**
- * JFrame to browse an Amigaguide documents converted to HTML.
+ * JFrame to browse an Amigaguide document converted to HTML.
  * 
  * @author Thomas Aglassinger
  */
 public class GrotagFrame extends JFrame implements HyperlinkListener {
+    /**
+     * JToolBar for Grotag allowing quick access to the most important
+     * functions, in particular navigation within the document.
+     * 
+     * @author Thomas Aglassinger
+     */
+    private class GrotagToolBar extends JToolBar {
+        public GrotagToolBar() {
+            super();
+            JButton contentsButton = createRelationButton("Contents", Relation.contents);
+            JButton indexButton = createRelationButton("Index", Relation.index);
+            JButton helpButton = createRelationButton("Help", Relation.help);
+            JButton nextButton = createRelationButton("Next", Relation.next);
+            JButton previousButton = createRelationButton("Previous", Relation.previous);
+            relationButtons.add(contentsButton);
+            relationButtons.add(indexButton);
+            relationButtons.add(helpButton);
+            relationButtons.add(nextButton);
+            relationButtons.add(previousButton);
+
+            backButton = createToolbarButton("back", new BackAction());
+            forwardButton = createToolbarButton("forward", new ForwardAction());
+            homeButton = createToolbarButton("home", new HomeAction());
+
+            add(backButton);
+            add(forwardButton);
+            addSeparator();
+            add(previousButton);
+            add(nextButton);
+            addSeparator();
+            add(contentsButton);
+            add(homeButton);
+            add(indexButton);
+            add(helpButton);
+            setFloatable(false);
+        }
+
+        private JButton createToolbarButton(String iconName, Action action) {
+            JButton result;
+            String imageName = iconName + ".png";
+            Image image = tools.readImageRessource(imageName);
+            result = new JButton(action);
+            result.setIcon(new ImageIcon(image));
+            result.setToolTipText(result.getText());
+            result.setText(null);
+            result.setEnabled(false);
+            return result;
+        }
+
+        private JButton createRelationButton(String label, Relation relation) {
+            JButton result = createToolbarButton(relation.toString().toLowerCase(), new RelationAction(label, relation));
+            return result;
+        }
+
+        public void setGuiState(GuiState state) {
+            assert state != null;
+        }
+    }
+
     /**
      * Menu bar to interact with the Grotag viewer.
      * 
@@ -469,7 +528,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
     private JTextPane htmlPane;
     private JScrollPane htmlScrollPane;
     private JPanel statusPane;
-    private JToolBar toolBar;
+    private GrotagToolBar toolBar;
     private JSplitPane splitPane;
     private JScrollPane messagePane;
     private Logger log;
@@ -514,7 +573,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         exportChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         exportChooser.setAccessory(new ExportAccessory());
         setLayout(new BorderLayout());
-        setUpToolbar();
+        toolBar = new GrotagToolBar();
         setUpHtmlPane();
         setUpEditorActionTable(htmlPane);
         setUpMessagePane();
@@ -787,53 +846,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 button.setEnabled(relationEnabled);
             }
         }
-    }
-
-    private JButton createToolbarButton(String iconName, Action action) {
-        JButton result;
-        String imageName = iconName + ".png";
-        Image image = tools.readImageRessource(imageName);
-        result = new JButton(action);
-        result.setIcon(new ImageIcon(image));
-        result.setToolTipText(result.getText());
-        result.setText(null);
-        result.setEnabled(false);
-        return result;
-    }
-
-    private JButton createRelationButton(String label, Relation relation) {
-        JButton result = createToolbarButton(relation.toString().toLowerCase(), new RelationAction(label, relation));
-        return result;
-    }
-
-    private final void setUpToolbar() {
-        toolBar = new JToolBar();
-        JButton contentsButton = createRelationButton("Contents", Relation.contents);
-        JButton indexButton = createRelationButton("Index", Relation.index);
-        JButton helpButton = createRelationButton("Help", Relation.help);
-        JButton nextButton = createRelationButton("Next", Relation.next);
-        JButton previousButton = createRelationButton("Previous", Relation.previous);
-        relationButtons.add(contentsButton);
-        relationButtons.add(indexButton);
-        relationButtons.add(helpButton);
-        relationButtons.add(nextButton);
-        relationButtons.add(previousButton);
-
-        backButton = createToolbarButton("back", new BackAction());
-        forwardButton = createToolbarButton("forward", new ForwardAction());
-        homeButton = createToolbarButton("home", new HomeAction());
-
-        toolBar.add(backButton);
-        toolBar.add(forwardButton);
-        toolBar.addSeparator();
-        toolBar.add(previousButton);
-        toolBar.add(nextButton);
-        toolBar.addSeparator();
-        toolBar.add(contentsButton);
-        toolBar.add(homeButton);
-        toolBar.add(indexButton);
-        toolBar.add(helpButton);
-        toolBar.setFloatable(false);
     }
 
     private final void setUpHtmlPane() {
