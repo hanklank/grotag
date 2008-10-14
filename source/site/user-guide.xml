@@ -485,7 +485,7 @@
     </section>
   </chapter>
 
-  <chapter id="">
+  <chapter id="acknowledgement">
     <title>Acknowledgment</title>
 
     <para>The following ressources have been helpful for developing
@@ -499,7 +499,7 @@
       </listitem>
 
       <listitem>
-        <para><ulink url="???">Crystal</ulink> is the icon set use in the
+        <para><ulink url="http://www.everaldo.com/crystal/">Crystal</ulink> is the icon set use in the
         toolbar.</para>
       </listitem>
 
@@ -525,6 +525,26 @@
 
     <para>This chapter describes improvements compared to earlier versions of
     Grotag.</para>
+
+    <section>
+      <title>Version 0.1.2, xx-Oct-2008</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Added menu item <menuchoice>
+          <guimenu>File</guimenu>
+
+          <guimenuitem>Export</guimenuitem>
+        </menuchoice> to export the document currently
+          viewing to other formats.</para>
+        </listitem>
+
+        <listitem>
+          <para>Added GUI settings to be preserved using the Java Preferences
+          API.</para>
+        </listitem>
+        </itemizedlist>
+    </section>
 
     <section id="v0.1.1">
       <title>Version 0.1.1, 05-Oct-2008</title>
