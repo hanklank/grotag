@@ -1,6 +1,7 @@
 package net.sf.grotag.view;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
@@ -110,6 +111,24 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             setFloatable(false);
         }
 
+        /**
+         * List of actions as assigned to the buttons in this tool bar.
+         */
+        public List<Action> getActionList() {
+            List<Action> result = new LinkedList<Action>();
+
+            for (Component component : getComponents()) {
+                if (component instanceof JButton) {
+                    JButton button = (JButton) component;
+                    Action action = button.getAction();
+                    if (action != null) {
+                        result.add(action);
+                    }
+                }
+            }
+            return result;
+        }
+
         private JButton createToolbarButton(String iconName, Action action) {
             JButton result;
             String imageName = iconName + ".png";
@@ -118,7 +137,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             result.setIcon(new ImageIcon(image));
             result.setToolTipText(result.getText());
             result.setText(null);
-            result.setEnabled(false);
             return result;
         }
 
@@ -154,6 +172,26 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             if (!AboutJMenuItem.isAutomaticallyPresent()) {
                 add(createHelpMenu());
             }
+        }
+
+        /**
+         * List of actions as assigned to the items in the menu bar.
+         */
+        public List<Action> getActionList() {
+            List<Action> result = new LinkedList<Action>();
+
+            for (int menuIndex = 0; menuIndex < getMenuCount(); menuIndex += 1) {
+                JMenu menu = getMenu(menuIndex);
+                for (int itemIndex = 0; itemIndex < menu.getItemCount(); itemIndex += 1) {
+                    JMenuItem item = menu.getItem(itemIndex);
+                    Action action = item.getAction();
+                    if (action != null) {
+                        result.add(action);
+                    }
+                    itemIndex += 1;
+                }
+            }
+            return result;
         }
 
         public void setGuiState(GuiState state) {
@@ -628,9 +666,33 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         statusLabel.setText(text);
     }
 
+    public void setGuiStateFor(List<Action> actions, GuiState state) {
+        assert actions != null;
+        assert state != null;
+        for (Action action : actions) {
+            if (action != null) {
+                boolean actionIsEnabled;
+                if (action instanceof AbstractGuiAction) {
+                    AbstractGuiAction guiAction = (AbstractGuiAction) action;
+                    actionIsEnabled = guiAction.isEnabledFor(state);
+                } else {
+                    // Enable non-GuiAction such as Edit > Copy during
+                    // browsing only.
+                    actionIsEnabled = (state == GuiState.BROWSING);
+                }
+                action.setEnabled(actionIsEnabled);
+            }
+        }
+    }
+
     private void setGuiState(GuiState state) {
         assert state != null;
-        ((GrotagMenuBar) getJMenuBar()).setGuiState(state);
+        // TODO: Remove: ((GrotagMenuBar) getJMenuBar()).setGuiState(state);
+        List<Action> actions;
+        actions = toolBar.getActionList();
+        setGuiStateFor(actions, state);
+        actions = ((GrotagMenuBar) getJMenuBar()).getActionList();
+        setGuiStateFor(actions, state);
     }
 
     private File createTempFolder() throws IOException {
