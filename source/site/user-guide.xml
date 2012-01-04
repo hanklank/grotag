@@ -18,7 +18,7 @@
     </keywordset>
 
     <copyright>
-      <year>2008</year>
+      <year>2008-2012</year>
 
       <holder>Thomas Aglassinger</holder>
     </copyright>
@@ -330,6 +330,24 @@
         </tgroup>
       </table>
     </section>
+
+    <section>
+      <title>Export a document to a different format</title>
+
+      <para>In order to read a document without an Amigaguide reader, you can
+      export it to HTML or XHTML by using the menu entry <menuchoice>
+          <guimenu>File</guimenu>
+
+          <guimenuitem>Export</guimenuitem>
+        </menuchoice>. After you choose a base folder for the converted
+      documents, Grotag creates a folder with the same name as the Amigaguide
+      document without the suffix ".guide".</para>
+
+      <para>Additionally you can export to DocBook, which is useful if you
+      want to integrate the information stored in the Amigaguide in an
+      existing DocBook documentation. Be aware though that the DocBook variant
+      has all the formatting information removed.</para>
+    </section>
   </chapter>
 
   <chapter id="command-line-usage">
@@ -499,8 +517,8 @@
       </listitem>
 
       <listitem>
-        <para><ulink url="http://www.everaldo.com/crystal/">Crystal</ulink> is the icon set use in the
-        toolbar.</para>
+        <para><ulink url="http://www.everaldo.com/crystal/">Crystal</ulink> is
+        the icon set use in the toolbar.</para>
       </listitem>
 
       <listitem>
@@ -513,10 +531,6 @@
         <para>The <command>agr</command> command line Amigaguide reader
         includes a couple of interesting test documents.</para>
       </listitem>
-
-      <listitem>
-        <para>...</para>
-      </listitem>
     </itemizedlist>
   </chapter>
 
@@ -527,23 +541,28 @@
     Grotag.</para>
 
     <section>
-      <title>Version 0.1.2, xx-Oct-2008</title>
+      <title>Version 0.2.0, 04-Jan-2012</title>
 
       <itemizedlist>
         <listitem>
-          <para>Added menu item <menuchoice>
-          <guimenu>File</guimenu>
+          <para>Fixed launching under Mac OS X 10.6, which could not execute
+          the included PPC Java launcher.</para>
+        </listitem>
 
-          <guimenuitem>Export</guimenuitem>
-        </menuchoice> to export the document currently
-          viewing to other formats.</para>
+        <listitem>
+          <para>Added menu item <menuchoice>
+              <guimenu>File</guimenu>
+
+              <guimenuitem>Export</guimenuitem>
+            </menuchoice> to export the document currently viewing to other
+          formats.</para>
         </listitem>
 
         <listitem>
           <para>Added GUI settings to be preserved using the Java Preferences
           API.</para>
         </listitem>
-        </itemizedlist>
+      </itemizedlist>
     </section>
 
     <section id="v0.1.1">

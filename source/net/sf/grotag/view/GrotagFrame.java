@@ -144,10 +144,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             JButton result = createToolbarButton(relation.toString().toLowerCase(), new RelationAction(label, relation));
             return result;
         }
-
-        public void setGuiState(GuiState state) {
-            assert state != null;
-        }
     }
 
     /**
@@ -188,7 +184,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     if (action != null) {
                         result.add(action);
                     }
-                    itemIndex += 1;
                 }
             }
             return result;
@@ -217,7 +212,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                         }
                         item.setEnabled(actionIsEnabled);
                     }
-                    itemIndex += 1;
                 }
                 menu.setEnabled(anyEnabled);
             }
@@ -338,6 +332,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 }
 
                 int userAction = exportChooser.showDialog(getGrotagFrame(), "Export");
+
                 if (userAction == JFileChooser.APPROVE_OPTION) {
                     ExportTools exportTools = ExportTools.getInstance();
                     File folderToExportTo = exportChooser.getSelectedFile();
@@ -606,7 +601,14 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         openChooser = new JFileChooser();
         openChooser.addChoosableFileFilter(new GuideFileFilter());
         openChooser.setAcceptAllFileFilterUsed(false);
-        exportChooser = new JFileChooser();
+        exportChooser = new JFileChooser() {
+            @Override
+            public void approveSelection() {
+                if (!getSelectedFile().isFile()) {
+                    super.approveSelection();
+                }
+            }
+        };
         exportChooser.setDialogTitle("Export");
         exportChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         exportChooser.setAccessory(new ExportAccessory());
@@ -693,6 +695,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         setGuiStateFor(actions, state);
         actions = ((GrotagMenuBar) getJMenuBar()).getActionList();
         setGuiStateFor(actions, state);
+        ((GrotagMenuBar) getJMenuBar()).setGuiState(state);
     }
 
     private File createTempFolder() throws IOException {
@@ -796,7 +799,6 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                     }
                 }
                 settings.put(SETTING_LAST_GUIDE_FILE_OPENED, guideFile.getAbsolutePath());
-                setGuiState(GuiState.BROWSING);
             } catch (Throwable error) {
                 showError("cannot read " + tools.sourced(guideFile), error);
             } finally {
@@ -815,16 +817,17 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 } else {
                     // Error while preparing new guide; keep the old one.
                     tools.attemptToDeleteAll(newTempFolder);
-                    if (pile == null) {
-                        setGuiState(GuiState.EMPTY);
-                    } else {
-                        setGuiState(GuiState.BROWSING);
-                    }
                 }
                 // FIXME: Check if this call causes an exception in the Swing
                 // thread in case there are no messages.
                 messageModel.update();
                 tools.initColumnWidths(messageTable);
+
+                if (pile == null) {
+                    setGuiState(GuiState.EMPTY);
+                } else {
+                    setGuiState(GuiState.BROWSING);
+                }
             }
         }
     }

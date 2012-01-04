@@ -13,7 +13,9 @@
   <property name="classes.dir" location="${basedir}/classes" />
   <property name="styles.dir" location="${classes.dir}/net/sf/grotag/styles" />
   <property name="external.dir" location="${basedir}/external" />
-  <property name="appjava.dir" location="${basedir}/Grotag.app/Contents/Resources/Java" />
+  <property name="app.dir" location="${basedir}/Grotag.app" />
+  <property name="appjava.dir" location="${app.dir}/Contents/Resources/Java" />
+  <property name="appmacos.dir" location="${app.dir}/Contents/MacOS" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
   <property name="Grotag.zip" location="${basedir}/Grotag-${version-tag}.zip" />
   <property name="Grotag.dmg" location="${basedir}/Grotag-${version-tag}.dmg" />
@@ -82,6 +84,17 @@
         <include name="*quaqua*" />
       </fileset>
     </copy>
+    <!--
+     Add symbolic link to JavaApplicationStub in order to use the local stub.
+     This should result in a working stub on PowerPC and Mac OS X Lion alike.
+     -->
+    <echo message="create ${appmacos.dir}/JavaApplicationStub"/>
+    <delete file="${appmacos.dir}/JavaApplicationStub"/>
+    <exec executable="ln" failonerror="true">
+      <arg value="-s"/>
+      <arg value="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
+      <arg value="${appmacos.dir}/JavaApplicationStub"/>
+    </exec>
   </target>
 
   <target depends="jar" description="Build distribution archive Grotag.zip." name="zip">
@@ -124,7 +137,7 @@
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
-    <javac debug="true" destdir="${classes.dir}" source="1.5" srcdir="${source.dir}" target="1.5" />
+    <javac debug="true" destdir="${classes.dir}" includeantruntime="false" source="1.5" srcdir="${source.dir}" target="1.5" />
     <mkdir dir="${styles.dir}" />
     <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
     <jar destfile="${Grotag.jar}">
@@ -223,9 +236,7 @@
   <target description="Setup project for the first time." name="setup">
     <unzip dest="${basedir}" src="${external.dir}/docbook-xsl.zip" />
     <delete dir="docbook-xsl" />
-    <move todir="docbook-xsl">
-      <fileset dir="docbook-xsl-${docbook-xsl-version}" />
-    </move>
+    <move file="docbook-xsl-${docbook-xsl-version}" tofile="docbook-xsl" />
   </target>
 
   <target name="site.zip" depends="examples, user-guide">
