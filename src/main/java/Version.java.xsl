@@ -25,7 +25,7 @@ package net.sf.grotag.common;
  */
 public interface Version
 {
-    String COPYRIGHT = "Copyright 2008 Thomas Aglassinger";
+    String COPYRIGHT = "Copyright 2008, 2016 Thomas Aglassinger";
 
     /**
      *  Release date using format YYYY-MM-DD.

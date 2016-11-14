@@ -541,6 +541,24 @@
     Grotag.</para>
 
     <section>
+      <title>Version 0.3.0, xx-Nov-2016</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Removed special support for Mac OS X. Grotag still runs under
+          Mac OS X but there are not features like dragging and dropping
+          documents on the icon. The reason for this is that in recent years
+          Apple gradually removed support for Java. Consequently packages like
+          MRJAdapter have not been updated anymore.</para>
+        </listitem>
+
+        <listitem>
+          <para>...</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
       <title>Version 0.2.0, 04-Jan-2012</title>
 
       <itemizedlist>

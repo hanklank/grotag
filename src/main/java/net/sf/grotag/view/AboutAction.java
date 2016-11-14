@@ -5,9 +5,8 @@ import java.awt.event.ActionEvent;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
-import net.roydesign.app.Application;
-import net.roydesign.ui.StandardMacAboutFrame;
 import net.sf.grotag.common.Tools;
 import net.sf.grotag.common.Version;
 
@@ -17,32 +16,23 @@ import net.sf.grotag.common.Version;
  * @author Thomas Aglassinger
  */
 public class AboutAction extends AbstractGuiAction {
-    private Object aboutFrameLock;
-    private StandardMacAboutFrame aboutFrame;
+    private static final String ABOUT_MESSAGE = "Grotag " + Version.VERSION_TAG
+            + "\n" + Version.COPYRIGHT;
+    private String aboutMessage;
     private Logger log;
     private Tools tools;
 
     public AboutAction() {
-        super(Application.getInstance().getAboutJMenuItem().getText());
+        super("About");
         tools = Tools.getInstance();
         log = Logger.getLogger(AboutAction.class.getName());
-        aboutFrameLock = new Object();
     }
 
     public void actionPerformed(ActionEvent actionEvent) {
         try {
             log.info("handle \"about\" event");
-            synchronized (aboutFrameLock) {
-                if (aboutFrame == null) {
-                    Image logoImage = tools.readImageRessource("grotag.png");
-                    aboutFrame = new StandardMacAboutFrame("Grotag", Version.VERSION_TAG);
-                    aboutFrame.setCopyright(Version.COPYRIGHT);
-                    aboutFrame.setApplicationIcon(new ImageIcon(logoImage));
-                    aboutFrame.pack();
-                    tools.setGrotagIcon(aboutFrame);
-                }
-            }
-            aboutFrame.setVisible(true);
+            JOptionPane.showMessageDialog(
+                    null, ABOUT_MESSAGE, "Grotag", JOptionPane.INFORMATION_MESSAGE);
         } catch (Exception error) {
             tools.showError("cannot show about dialog", error);
         }

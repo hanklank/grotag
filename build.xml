@@ -13,12 +13,8 @@
   <property name="classes.dir" location="${basedir}/classes" />
   <property name="styles.dir" location="${classes.dir}/net/sf/grotag/styles" />
   <property name="external.dir" location="${basedir}/external" />
-  <property name="app.dir" location="${basedir}/Grotag.app" />
-  <property name="appjava.dir" location="${app.dir}/Contents/Resources/Java" />
-  <property name="appmacos.dir" location="${app.dir}/Contents/MacOS" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
   <property name="Grotag.zip" location="${basedir}/Grotag-${version-tag}.zip" />
-  <property name="Grotag.dmg" location="${basedir}/Grotag-${version-tag}.dmg" />
   <property name="docbook-xsl-version" value="1.74.0" />
   <property name="version.java" location="${source.dir}/net/sf/grotag/common/Version.java" />
 
@@ -72,67 +68,16 @@
     </sequential>
   </macrodef>
 
-  <target depends="jar, app" description="Build applications." name="build">
+  <target depends="jar" description="Build applications." name="build">
     <!-- Do nothing. -->
-  </target>
-
-  <target depends="jar" description="Build Mac OS X application Grotag.app." name="app">
-    <copy file="${Grotag.jar}" todir="${appjava.dir}" />
-    <copy todir="${appjava.dir}">
-      <fileset dir="${external.dir}">
-        <include name="MRJAdapter.jar" />
-        <include name="*quaqua*" />
-      </fileset>
-    </copy>
-    <!--
-     Add symbolic link to JavaApplicationStub in order to use the local stub.
-     This should result in a working stub on PowerPC and Mac OS X Lion alike.
-     -->
-    <echo message="create ${appmacos.dir}/JavaApplicationStub"/>
-    <delete file="${appmacos.dir}/JavaApplicationStub"/>
-    <exec executable="ln" failonerror="true">
-      <arg value="-s"/>
-      <arg value="/System/Library/Frameworks/JavaVM.framework/Resources/MacOS/JavaApplicationStub"/>
-      <arg value="${appmacos.dir}/JavaApplicationStub"/>
-    </exec>
   </target>
 
   <target depends="jar" description="Build distribution archive Grotag.zip." name="zip">
     <zip basedir="${basedir}" destfile="${Grotag.zip}" includes="Grotag.jar, *.txt" />
   </target>
 
-  <target depends="app" description="Create Mac OS X distribution archive Grotag.dmg." name="dmg">
-    <!-- Copy Grotag.app to temp dir. -->
-    <tempfile property="dmg-temp.dir" />
-    <copy todir="${dmg-temp.dir}">
-      <fileset dir="${basedir}">
-        <include name="Grotag.app/**" />
-      </fileset>
-    </copy>
-    <copy file="license.txt" tofile="${dmg-temp.dir}/License.txt" />
-    <chmod perm="ugo+x">
-      <fileset dir="${dmg-temp.dir}/Grotag.app/Contents">
-        <include name="MacOS/JavaApplicationStub" />
-      </fileset>
-    </chmod>
-    <!-- Create Grotag.dmg. -->
-    <delete file="${Grotag.dmg}" quiet="true" />
-    <exec dir="${dmg-temp.dir}" executable="hdiutil">
-      <arg value="create" />
-      <arg value="${Grotag.dmg}" />
-      <arg value="-srcfolder" />
-      <arg value="." />
-      <arg value="-format" />
-      <arg value="UDZO" />
-      <arg value="-volname" />
-      <arg value="Grotag" />
-    </exec>
-    <delete dir="${dmg-temp.dir}" />
-  </target>
-
   <target depends="version" description="Build Grotag.jar." name="jar">
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
-    <unjar src="${external.dir}/MRJAdapter.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/serializer.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-imageio-core.jar" dest="${classes.dir}" />
@@ -161,9 +106,6 @@
     <delete file="${Grotag.zip}" />
     <delete includeemptydirs="true">
       <fileset dir="${classes.dir}" includes="**/*" />
-    </delete>
-    <delete includeemptydirs="true">
-      <fileset dir="${appjava.dir}" includes="*.jar, *.jnilib" />
     </delete>
     <delete dir="${tests.dir}/actual" />
     <delete dir="${site.dir}/examples" />

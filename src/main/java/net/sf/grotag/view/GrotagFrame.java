@@ -49,9 +49,6 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.roydesign.app.AboutJMenuItem;
-import net.roydesign.app.Application;
-import net.roydesign.app.QuitJMenuItem;
 import net.sf.grotag.Grotag;
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.SwingWorker;
@@ -165,9 +162,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             add(createFileMenu());
             add(createEditMenu());
             add(createGoMenu());
-            if (!AboutJMenuItem.isAutomaticallyPresent()) {
-                add(createHelpMenu());
-            }
+            add(createHelpMenu());
         }
 
         /**
@@ -232,12 +227,10 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
             setAccelerator(exportItem, KeyEvent.VK_E);
             result.add(openItem);
             result.add(exportItem);
-            if (!QuitJMenuItem.isAutomaticallyPresent()) {
-                JMenuItem exitItem = new JMenuItem(new ExitAction());
-                exitItem.setMnemonic(KeyEvent.VK_X);
-                setAccelerator(exitItem, KeyEvent.VK_X);
-                result.add(exitItem);
-            }
+            JMenuItem exitItem = new JMenuItem(new ExitAction());
+            exitItem.setMnemonic(KeyEvent.VK_X);
+            setAccelerator(exitItem, KeyEvent.VK_X);
+            result.add(exitItem);
             result.setMnemonic(KeyEvent.VK_F);
             return result;
         }
@@ -285,7 +278,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
 
         private final JMenu createHelpMenu() {
             JMenu result = new JMenu("Help");
-            AboutJMenuItem aboutItem = Application.getInstance().getAboutJMenuItem();
+            JMenuItem aboutItem = new JMenuItem("About");
             aboutItem.setAction(new AboutAction());
             result.add(aboutItem);
             return result;
