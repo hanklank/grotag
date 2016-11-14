@@ -18,7 +18,7 @@
     </keywordset>
 
     <copyright>
-      <year>2008-2012</year>
+      <year>2008-2016</year>
 
       <holder>Thomas Aglassinger</holder>
     </copyright>
@@ -51,14 +51,14 @@
     <para>Amigaguide is a file format and application for AmigaOS<footnote>
         <para>The original Amigaguide is still available from any Aminet
         mirror, for example <ulink
-        url="http://aminet.net/text/hyper/aguide34.lha"></ulink>.</para>
+        url="http://aminet.net/text/hyper/aguide34.lha"/>.</para>
       </footnote>. It enables to author and view hypertext documentation to
     some extend comparable to HTML or WinHelp. Most of the online
     documentation written for Amiga applications or about developing Amiga
     applications uses Amigaguide. Outside of AmigaOS however Amigaguide is
     unused and consequently hardly any viewers exist.</para>
 
-    <para>Altough most Amigaguide documents are not particular useful without
+    <para>Although most Amigaguide documents are not particular useful without
     access to an Amiga (real or emulated), occasionally a need arises to read
     such documentation on other platforms. Grotag is designed to address this
     need. It allows to convert Amigaguide documents to the platform
@@ -125,10 +125,10 @@
       <filename>/usr/local/bin</filename> or
       <filename>~/bin</filename>.</para>
 
-      <para>To launch Grotag from most Desktop environtments, simply double
+      <para>To launch Grotag from most Desktop environments, simply double
       click <filename>Grotag.jar</filename>. In case this does not work you
       have to use the command line as described in <xref
-      linkend="command-line-usage" />.</para>
+      linkend="command-line-usage"/>.</para>
     </section>
   </chapter>
 
@@ -137,9 +137,9 @@
 
     <para>This chapter describes how to perform common tasks with Grotag using
     the graphical user interface. This provides a comfortable way to access
-    most functions using the mouse and keyboard. For repetetive tasks and
-    automatization a probaly better choice is described in <xref
-    linkend="command-line-usage" />.</para>
+    most functions using the mouse and keyboard. For repetitive tasks and
+    automatization a probably better choice is described in <xref
+    linkend="command-line-usage"/>.</para>
 
     <section>
       <title>Launch Grotag</title>
@@ -187,7 +187,7 @@
       a table of contents, an index, or a help page.</para>
 
       <para>Grotag offers several toolbar buttons and menu items to easily
-      access all these pages, refer to <xref linkend="commands.browse" /> for
+      access all these pages, refer to <xref linkend="commands.browse"/> for
       details.</para>
 
       <table>
@@ -213,17 +213,17 @@
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/back.png" format="PNG" />
+                    <imagedata fileref="images/back.png" format="PNG"/>
                   </imageobject>
                 </mediaobject><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/forward.png" format="PNG" />
+                    <imagedata fileref="images/forward.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
-              <entry></entry>
+              <entry/>
 
-              <entry></entry>
+              <entry/>
             </row>
 
             <row>
@@ -234,11 +234,11 @@
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/next.png" format="PNG" />
+                    <imagedata fileref="images/next.png" format="PNG"/>
                   </imageobject>
                 </mediaobject><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/previous.png" format="PNG" />
+                    <imagedata fileref="images/previous.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
@@ -262,7 +262,7 @@
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/contents.png" format="PNG" />
+                    <imagedata fileref="images/contents.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
@@ -281,13 +281,13 @@
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/home.png" format="PNG" />
+                    <imagedata fileref="images/home.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
-              <entry></entry>
+              <entry/>
 
-              <entry></entry>
+              <entry/>
             </row>
 
             <row>
@@ -297,7 +297,7 @@
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/index.png" format="PNG" />
+                    <imagedata fileref="images/index.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
@@ -313,16 +313,16 @@
             <row>
               <entry>Go to the help page for this particular guide. Unlike the
               Commodore Amigaguide application, Grotag does not provide a
-              default help explaining the controlls. In case this button is
+              default help explaining the controls. In case this button is
               greyed out, the author did not specify a help page.</entry>
 
               <entry><mediaobject>
                   <imageobject>
-                    <imagedata fileref="images/help.png" format="PNG" />
+                    <imagedata fileref="images/help.png" format="PNG"/>
                   </imageobject>
                 </mediaobject></entry>
 
-              <entry></entry>
+              <entry/>
 
               <entry><code>@help</code></entry>
             </row>
@@ -366,7 +366,7 @@
       folder you extracted <filename>Grotag.zip</filename> to and where
       <filename>Grotag.jar</filename> is located.</para>
 
-      <para>As a result, you should see a short decription of the options you
+      <para>As a result, you should see a short description of the options you
       can pass to Grotag. Don't worry about them now, all of them will be
       explained later in this chapter.</para>
 
@@ -506,7 +506,7 @@
   <chapter id="acknowledgement">
     <title>Acknowledgment</title>
 
-    <para>The following ressources have been helpful for developing
+    <para>The following resources have been helpful for developing
     Grotag:</para>
 
     <itemizedlist>
@@ -524,7 +524,7 @@
       <listitem>
         <para><ulink url="http://safalra.com/other/amigaguide/">Salfara's
         website</ulink> documents the Amigaguide format quite
-        dilligently.</para>
+        diligently.</para>
       </listitem>
 
       <listitem>
@@ -576,7 +576,7 @@
 
         <listitem>
           <para>Changed toolbar buttons to use icons instead of text
-          lables.</para>
+          labels.</para>
         </listitem>
 
         <listitem>
