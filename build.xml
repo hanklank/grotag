@@ -4,9 +4,9 @@
   <xmlproperty file="version.xml" />
   <property name="version-tag" value="${grotag-version.version}.${grotag-version.release}.${grotag-version.revision}" />
 
-  <property name="source.dir" location="${basedir}/source" />
+  <property name="source.dir" location="${basedir}/src/main/java" />
   <property name="site.dir" location="${basedir}/site" />
-  <property name="tests.dir" location="${basedir}/tests" />
+  <property name="tests.dir" location="${basedir}/src/test/java" />
   <property name="guides.dir" location="${tests.dir}/guides" />
   <property name="actual.dir" location="${tests.dir}/actual" />
   <property name="input.dir" location="${tests.dir}/input" />
@@ -153,7 +153,7 @@
   </target>
 
   <target description="Update version information." name="version">
-    <xslt in="version.xml" out="${version.java}" style="source/Version.java.xsl" />
+    <xslt in="version.xml" out="${version.java}" style="${source.dir}/Version.java.xsl" />
   </target>
 
   <target description="Clean up." name="clean">
