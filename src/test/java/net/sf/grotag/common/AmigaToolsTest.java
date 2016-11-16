@@ -33,4 +33,12 @@ public class AmigaToolsTest {
         testGetFilePathString("tests/input/basics.guide", basicsFile);
     }
 
+    @Test
+    public void testCanEscapeForAmigaGuide() {
+        assertEquals("", amigaTools.escapedForAmigaguide(""));
+        assertEquals("abc", amigaTools.escapedForAmigaguide("abc"));
+        assertEquals("\\\\", amigaTools.escapedForAmigaguide("\\"));
+        assertEquals("\\@", amigaTools.escapedForAmigaguide("@"));
+        assertEquals("someone\\@example.com", amigaTools.escapedForAmigaguide("someone@example.com"));
+    }
 }
