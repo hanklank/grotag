@@ -213,6 +213,7 @@ public class GuidePile {
         }
 
         // Ensure there are no unchecked links anymore.
+        // TODO #3: Check if streams are useful here.
         for (Link link : linkMap.values()) {
             assert link.getState() != Link.State.UNCHECKED : "unchecked link: "
                     + link.getLinkCommand().toPrettyAmigaguide();

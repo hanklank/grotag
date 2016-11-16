@@ -13,9 +13,11 @@ import net.sf.grotag.common.AmigaPathList.AmigaPathFilePair;
  */
 public class AmigaTools {
     /**
-     * The character encoding used by text files under AmigaOS.
+     * The character encoding used by text files under AmigaOS. It actually is
+     * ISO-8859-1 but cp1252 is compatible to it and also supports the Euro
+     * character.
      */
-    public static final String ENCODING = "ISO-8859-1";
+    public static final String ENCODING = "cp1252";
 
     /**
      * Magic text to detect Amigaguide documents.
@@ -162,6 +164,7 @@ public class AmigaTools {
     }
 
     public String escapedForAmigaguide(String some) {
+        // TODO #3: Use streams.
         assert some != null;
         String result = "";
         for (int charIndex = 0; charIndex < some.length(); charIndex += 1) {

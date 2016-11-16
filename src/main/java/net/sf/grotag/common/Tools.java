@@ -159,6 +159,7 @@ public class Tools {
         if (folder.isDirectory()) {
             File[] files = folder.listFiles();
 
+            // TODO #3: Check if steams make sense here.
             for (int i = 0; i < files.length; i += 1) {
                 attemptToDeleteAll(files[i]);
             }
@@ -207,6 +208,7 @@ public class Tools {
         assert some != null;
         String result = "";
 
+        // TODO #3: Use streams.
         for (char ch : some.toCharArray()) {
             if (!Character.isWhitespace(ch)) {
                 result += ch;
@@ -231,6 +233,7 @@ public class Tools {
      * <code>targetFile</target>.
      */
     public String getRelativeUrl(File linkingFile, File targetFile) {
+        // TODO: Check if there is a standard library function for this by now.
         assert linkingFile != null;
         assert targetFile != null;
 
@@ -287,6 +290,7 @@ public class Tools {
      * (without quotes).
      */
     public/* @ pure @ */String sourced(/* @ nullable @ */String some) {
+        // Check if there is a standard library function for that or streams are applicable.
         String result;
 
         if (some == null) {
@@ -538,6 +542,7 @@ public class Tools {
     }
 
     public String[] getRelativePaths(File baseDir, File[] filesInBaseDir) {
+        // TODO #3: Use streams.
         String[] result = new String[filesInBaseDir.length];
 
         for (int i = 0; i < filesInBaseDir.length; i += 1) {
@@ -625,6 +630,7 @@ public class Tools {
             } else {
                 result = new String[] { possibleSeparatedText };
             }
+            // TODO #3: Use streams.
             for (int i = 0; i < result.length; i += 1) {
                 result[i] = result[i].trim();
                 // TODO: Remove empty items.
@@ -654,6 +660,7 @@ public class Tools {
      * column.sizeWidthToFit().
      */
     public void initColumnWidths(JTable table) {
+        // TODO #3: Check if streams are useful here.
         assert table != null;
         TableModel tableModel = table.getModel();
         TableColumn columnModel = null;

@@ -184,6 +184,7 @@ public class Guide {
         links = new ArrayList<Link>();
 
         // Collect links from relations.
+        // TODO #3: Check if streams are useful here.
         collectLinksFromRelationMap(globalRelationLinkMap);
         for (NodeInfo nodeInfo : getNodeInfos()) {
             collectLinksFromRelationMap(nodeInfo.getRelationLinkMap());
@@ -240,6 +241,7 @@ public class Guide {
 
     private void collectLinksFromRelationMap(Map<Relation, Link> relationMap) {
         assert links != null;
+        // TODO #3: Check if streams are useful here.
         for (Link link : relationMap.values()) {
             links.add(link);
         }
@@ -847,6 +849,7 @@ public class Guide {
      */
     public List<NodeInfo> getNodeInfos() {
         List<NodeInfo> result = new ArrayList<NodeInfo>(nodeList.size());
+        // TODO #3: Check if streams are useful here.
         for (CommandItem nodeCommand : nodeList) {
             String nodeName = getNodeName(nodeCommand);
             assert nodeName != null;
@@ -871,6 +874,7 @@ public class Guide {
 
     public void writePretty(Writer writer) throws IOException {
         checkNoMacrosHaveBeenDefined();
+        // TODO #3: Check if streams are useful here.
         for (AbstractItem item : getItems()) {
             writer.write(item.toPrettyAmigaguide());
         }

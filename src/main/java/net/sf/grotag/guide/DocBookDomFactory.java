@@ -186,6 +186,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
                 bookElement.appendChild(metaInfoNode);
             }
         }
+        // TODO #3: Use streams.
         for (Guide guide : getPile().getGuides()) {
             bookElement.appendChild(createGuideNode(guide));
         }
@@ -222,6 +223,7 @@ public class DocBookDomFactory extends AbstractDomFactory {
                     if (author.length() > 0) {
                         Element authorElement = getDom().createElement("author");
                         String[] nameParts = author.split(" ");
+                        // TODO #3: Check if streams are useful here.
                         for (int partIndex = 0; partIndex < nameParts.length; partIndex += 1) {
                             String namePart = nameParts[partIndex];
                             String namePartElementName;

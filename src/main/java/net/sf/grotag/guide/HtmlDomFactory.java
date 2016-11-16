@@ -102,6 +102,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
     private Map<String, File> createTargetFileMap() {
         Map<String, File> result = new HashMap<String, File>();
 
+        // TODO #3: Check if streams are useful here.
         for (Guide guide : pile.getGuides()) {
             Map<String, String> nodeToFileNameMap = new HashMap<String, String>();
             Set<String> fileNameSet = new HashSet<String>();
@@ -109,6 +110,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
             String relativeGuideFolder = tools.getRelativePath(pileBaseFolder, guideFile);
             File htmlTargetFolder = new File(pileTargetFolder, tools.getWithoutLastSuffix(relativeGuideFolder));
 
+            // TODO #3: Check if streams are useful here.
             for (NodeInfo nextNodeInfo : guide.getNodeInfos()) {
                 String nodeName = nextNodeInfo.getName();
                 assert nodeName.equals(nodeName.toLowerCase());
