@@ -553,7 +553,8 @@
         </listitem>
 
         <listitem>
-          <para>...</para>
+          <para>Added support for Euro character by changing encoding from
+          ISO-8859-1 to cp1252.</para>
         </listitem>
       </itemizedlist>
     </section>
