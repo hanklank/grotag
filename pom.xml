@@ -10,6 +10,8 @@
   <properties>
     <izpack.version>5.0.9</izpack.version>
     <izpack.staging>${project.build.directory}/staging</izpack.staging>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
   <dependencies>
     <dependency>
@@ -24,13 +26,10 @@
       <version>4.11</version>
       <scope>test</scope>
     </dependency>
-    <!-- FIXME: download twelvemonkeys.
     <dependency>
-      <groupId>com.twelvemonkeys</groupId>
-      <artifactId>twelvemonkeys</artifactId>
+      <groupId>com.twelvemonkeys.imageio</groupId>
+      <artifactId>imageio-iff</artifactId>
       <version>3.3</version>
-      <scope>compile</scope>
     </dependency>
-    -->
   </dependencies>
 </project>
