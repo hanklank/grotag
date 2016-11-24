@@ -1,10 +1,7 @@
 package net.sf.grotag.common;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.nio.file.*;
 
 /**
  * Various tools to simplify testing.
@@ -15,7 +12,18 @@ public class TestTools {
     private static TestTools instance;
 
     public enum Folder {
-        ACTUAL, EXPECTED, GUIDES, INPUT
+        ACTUAL("actual"), EXPECTED("expected"), GUIDES("guides"), INPUT("input");
+
+        private String value;
+
+        private Folder(String value) {
+            this.value = value;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
     }
 
     public static final synchronized TestTools getInstance() {
@@ -46,17 +54,15 @@ public class TestTools {
         return getTestFile(Folder.GUIDES, fileName);
     }
 
-    public File getTestFile(Folder baseFolder, String fileName) {
-        File folder = new File("tests", baseFolder.toString().toLowerCase());
-        File result = new File(folder, fileName);
-
-        // Make sure target folder for "actual" files exists, as it is not part
-        // of the repository.
-        if ((baseFolder == Folder.ACTUAL) && !folder.exists()) {
-            if (!folder.mkdirs() && !folder.exists()) {
-                throw new IllegalStateException("cannot create folder: " + folder.getAbsolutePath());
-            }
-
+    public File getTestFile(Folder baseFolder, String fileName)  {
+        String resourcePath = "/" + baseFolder.getValue() + "/" + fileName;
+        InputStream sourceStream = getClass().getResourceAsStream(resourcePath);
+        File result;
+        try {
+            result = File.createTempFile("grotag_test_" + baseFolder, fileName);
+            Files.copy(sourceStream, result.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException error) {
+            throw new IllegalStateException("cannot create temp file for resource " + resourcePath, error);
         }
         return result;
     }

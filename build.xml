@@ -4,13 +4,15 @@
   <xmlproperty file="version.xml" />
   <property name="version-tag" value="${grotag-version.version}.${grotag-version.release}.${grotag-version.revision}" />
 
+  <property name="target.dir" location="${basedir}/target" />
   <property name="source.dir" location="${basedir}/src/main/java" />
+  <property name="resources.dir" location="${basedir}/src/main/resources" />
   <property name="site.dir" location="${basedir}/site" />
   <property name="tests.dir" location="${basedir}/src/test/java" />
   <property name="guides.dir" location="${tests.dir}/guides" />
   <property name="actual.dir" location="${tests.dir}/actual" />
   <property name="input.dir" location="${tests.dir}/input" />
-  <property name="classes.dir" location="${basedir}/classes" />
+  <property name="classes.dir" location="${target.dir}/classes" />
   <property name="styles.dir" location="${classes.dir}/net/sf/grotag/styles" />
   <property name="external.dir" location="${basedir}/external" />
   <property name="Grotag.jar" location="${basedir}/Grotag.jar" />
@@ -77,6 +79,7 @@
   </target>
 
   <target depends="version" description="Build Grotag.jar." name="jar">
+    <mkdir dir="${classes.dir}" />
     <unjar src="${external.dir}/JSAP.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/serializer.jar" dest="${classes.dir}" />
     <unjar src="${external.dir}/twelvemonkeys-core.jar" dest="${classes.dir}" />
@@ -84,10 +87,10 @@
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" includeantruntime="false" source="1.5" srcdir="${source.dir}" target="1.5" />
     <mkdir dir="${styles.dir}" />
-    <copy file="${source.dir}/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
+    <copy file="/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
     <jar destfile="${Grotag.jar}">
       <fileset dir="${classes.dir}" excludes="**/*Test.class" includes="**/*.class, **/*.css, **/*.properties" />
-      <fileset dir="${source.dir}" includes="images/*.png" />
+      <fileset dir="${resources.dir}" includes="images/*.png" />
       <manifest>
         <attribute name="Implementation-Vendor" value="Thomas Aglassinger" />
         <attribute name="Implementation-Title" value="Grotag" />
@@ -161,7 +164,7 @@
 
   <target name="user-guide">
     <copy todir="${site.dir}/images">
-      <fileset dir="${source.dir}/images">
+      <fileset dir="/src/main/resources/images">
         <include name="back.png"/>
         <include name="contents.png"/>
         <include name="forward.png"/>

@@ -740,17 +740,14 @@ public class Tools {
      */
     public Image readImageRessource(String imageName) {
         Image result;
-        URL imageResourceUrl = getClass().getResource("/images/" + imageName);
-        if (imageResourceUrl == null) {
-            try {
-                imageResourceUrl = new File(new File("source", "images"), imageName).toURL();
-            } catch (MalformedURLException error) {
-                throw new IllegalStateException("cannot create URL for button image " + sourced(imageName));
-            }
+        String imageResourcePath = "/images/" + imageName;
+        URL imageUrl = getClass().getResource(imageResourcePath);
+        if (imageUrl == null) {
+            throw new IllegalStateException("cannot create URL for button image " + sourced(imageResourcePath));
         }
-        result = Toolkit.getDefaultToolkit().createImage(imageResourceUrl);
+        result = Toolkit.getDefaultToolkit().createImage(imageUrl);
         if (result == null) {
-            throw new IllegalStateException("cannot read image " + sourced(imageName));
+            throw new IllegalStateException("cannot read image " + sourced(imageResourcePath));
         }
         return result;
     }

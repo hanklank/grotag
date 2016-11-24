@@ -10,6 +10,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,13 +34,13 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.Text;
 
-import com.twelvemonkeys.imageio.oldplugins.iff.IFFImageReaderSpi;
+import com.twelvemonkeys.imageio.plugins.iff.IFFImageReaderSpi;
 
 public class HtmlDomFactory extends AbstractDomFactory {
     /**
      * Resource to copy the CSS from.
      */
-    public static final String CSS_RESOURCE = "/net/sf/grotag/styles/amigaguide.css";
+    public static final String CSS_RESOURCE = "/amigaguide.css";
 
     /**
      * Link relation to express style sheet.
@@ -448,22 +450,9 @@ public class HtmlDomFactory extends AbstractDomFactory {
         // FIXME: Obtain style file from JAR or settings folder.
         InputStream cssIn = HtmlDomFactory.class.getResourceAsStream(CSS_RESOURCE);
         if (cssIn == null) {
-            File cssFile = new File("source", "amigaguide.css");
-            log.fine("using style from local file: " + tools.sourced(cssFile));
-            cssIn = new FileInputStream(cssFile);
-        } else {
-            log.fine("using style from resource: " + CSS_RESOURCE);
+            throw new IllegalStateException("cannot find CSS style resource: " + CSS_RESOURCE);
         }
-        try {
-            OutputStream cssOut = new FileOutputStream(getStyleFile());
-            try {
-                tools.copy(cssIn, cssOut);
-            } finally {
-                cssOut.close();
-            }
-        } finally {
-            cssIn.close();
-        }
+        Files.copy(cssIn, Paths.get(getStyleFile().toURI()));
     }
 
     /**
