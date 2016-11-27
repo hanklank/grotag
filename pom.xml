@@ -8,8 +8,6 @@
   <name>grotag</name>
   <url>http://maven.apache.org</url>
   <properties>
-    <izpack.version>5.0.9</izpack.version>
-    <izpack.staging>${project.build.directory}/staging</izpack.staging>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
