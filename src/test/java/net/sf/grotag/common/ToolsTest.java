@@ -71,11 +71,8 @@ public class ToolsTest {
 
     @Test
     public void testGetRelativeUrlTo() {
-        File linkingFile;
-        File targetFile;
-        
-        linkingFile = testTools.getTestInputFile("linking.html");
-        targetFile = testTools.getTestActualFile("target.html");
-        assertEquals("../actual/target.html", tools.getRelativeUrl(linkingFile, targetFile));
+        File linkingFile = testTools.getTestInputFile("linked.txt");
+        File targetFile = testTools.getTestActualFile("target.html");
+        assertEquals("../../../target/test/actual/target.html", tools.getRelativeUrl(linkingFile, targetFile));
     }
 }

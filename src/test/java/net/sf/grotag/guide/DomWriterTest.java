@@ -24,8 +24,8 @@ public class DomWriterTest {
         testTools = TestTools.getInstance();
     }
 
-    private void testWriteGuide(String baseName, AmigaPathList amigaPaths) throws IOException, ParserConfigurationException, TransformerException {
-        File inFile = testTools.getTestInputFile(baseName + ".guide");
+    private void testWriteGuide(TestTools.Folder folder, String baseName, AmigaPathList amigaPaths) throws IOException, ParserConfigurationException, TransformerException {
+        File inFile = testTools.getTestFile(folder, baseName + ".guide");
         File outFile = testTools.getTestActualFile(baseName + ".xml");
         GuidePile pile;
 
@@ -43,23 +43,23 @@ public class DomWriterTest {
 
     @Test
     public void testWriteBasicsGuide() throws IOException, ParserConfigurationException, TransformerException {
-        testWriteGuide("basics", new AmigaPathList());
+        testWriteGuide(TestTools.Folder.INPUT, "basics", new AmigaPathList());
     }
 
     @Test
     public void testWriteRootGuide() throws IOException, ParserConfigurationException, TransformerException, SAXException {
         AmigaPathList amigaPaths = new AmigaPathList();
         amigaPaths.read(testTools.getTestInputFile("grotag_root.xml"));
-        testWriteGuide("root", amigaPaths);
+        testWriteGuide(TestTools.Folder.INPUT, "root", amigaPaths);
     }
 
     @Test
     public void testWriteAgrGuide() throws IOException, ParserConfigurationException, TransformerException {
-        testWriteGuide("agr", new AmigaPathList());
+        testWriteGuide(TestTools.Folder.GUIDES, "agr", new AmigaPathList());
     }
 
     @Test
     public void testWriteAgrTestGuide() throws IOException, ParserConfigurationException, TransformerException {
-        testWriteGuide("agr_test", new AmigaPathList());
+        testWriteGuide(TestTools.Folder.GUIDES, "agr_test", new AmigaPathList());
     }
 }

@@ -71,6 +71,9 @@ public class TestTools {
         if (hasResouceToCopy) {
             String resourcePath = "/" + baseFolder.getValue() + "/" + fileName;
             InputStream sourceStream = getClass().getResourceAsStream(resourcePath);
+            if (sourceStream == null) {
+                throw new IllegalStateException("cannot finde test resource '" + resourcePath + "'");
+            }
             try {
                 Files.copy(sourceStream, resultPath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException error) {
