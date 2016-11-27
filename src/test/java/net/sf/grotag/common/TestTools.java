@@ -55,16 +55,30 @@ public class TestTools {
     }
 
     public File getTestFile(Folder baseFolder, String fileName)  {
-        String resourcePath = "/" + baseFolder.getValue() + "/" + fileName;
-        InputStream sourceStream = getClass().getResourceAsStream(resourcePath);
-        File result;
-        try {
-            result = File.createTempFile("grotag_test_" + baseFolder, fileName);
-            Files.copy(sourceStream, result.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException error) {
-            throw new IllegalStateException("cannot create temp file for resource " + resourcePath, error);
+        Path resultPath;
+        boolean hasResouceToCopy = baseFolder != Folder.ACTUAL;
+        String currentFolder = System.getProperty("user.home");
+        if (hasResouceToCopy) {
+            resultPath = Paths.get(currentFolder, "test", ".temp", baseFolder.getValue(), fileName);
+        } else {
+            resultPath = Paths.get(currentFolder, "target", "test", baseFolder.getValue(), fileName);
         }
-        return result;
+        try {
+            Files.createDirectories(resultPath.getParent());
+        } catch (IOException error) {
+            throw new IllegalStateException("cannot create target folder for file '" + resultPath.toAbsolutePath().toString() + "'", error);
+        }
+        if (hasResouceToCopy) {
+            String resourcePath = "/" + baseFolder.getValue() + "/" + fileName;
+            InputStream sourceStream = getClass().getResourceAsStream(resourcePath);
+            try {
+                Files.copy(sourceStream, resultPath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException error) {
+                throw new IllegalStateException("cannot create temp file '"
+                        + resultPath.toAbsolutePath().toString() + "' for resource '" + resourcePath + "'", error);
+            }
+        }
+        return resultPath.toFile();
     }
 
     public File getTestFile(String fileName) {
