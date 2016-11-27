@@ -14,9 +14,13 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +28,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.LogManager;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -47,20 +52,18 @@ public class Tools {
     private static final int UNICODE_HEX_DIGIT_COUNT = 4;
     private static final int BUFFER_SIZE = 16384;
 
-    private Map<Character, String> escapeMap;
-    private Logger log;
-
     private static Tools instance;
 
-    public static final synchronized Tools getInstance() {
+    private Map<Character, String> escapeMap;
+    private Logger log;
+    private Pattern trailingWhiteSpacePattern;
+    private Pattern whiteSpacePattern;
+
+    public static synchronized Tools getInstance() {
         if (instance == null) {
             instance = new Tools();
         }
         return instance;
-    }
-
-    public BufferedReader createBufferedReader(File file) throws IOException {
-        return createBufferedReader(file, null);
     }
 
     public BufferedReader createBufferedReader(File file, String encoding) throws IOException {
@@ -117,13 +120,11 @@ public class Tools {
         while (!loggingSetup && (fileIndex < possibleLoggingSetupFiles.length)) {
             File loggingSetupFilePath = possibleLoggingSetupFiles[fileIndex];
             try {
-                FileInputStream in = new FileInputStream(loggingSetupFilePath);
-                try {
+
+                try (FileInputStream in = new FileInputStream(loggingSetupFilePath)) {
                     LogManager.getLogManager().readConfiguration(in);
                     Logger.getLogger(Tools.class.getName())
                             .info("setup loggers from: \"" + loggingSetupFilePath + "\"");
-                } finally {
-                    in.close();
                 }
             } catch (FileNotFoundException errorToIgnore) {
                 // Ignore that optional logging setup file could not be found.
@@ -135,15 +136,18 @@ public class Tools {
             fileIndex += 1;
         }
 
-        escapeMap = new TreeMap<Character, String>();
-        escapeMap.put(Character.valueOf('\"'), "\\\"");
-        escapeMap.put(Character.valueOf('\''), "\\\'");
-        escapeMap.put(Character.valueOf('\\'), "\\\\");
-        escapeMap.put(Character.valueOf('\b'), "\\b");
-        escapeMap.put(Character.valueOf('\f'), "\\f");
-        escapeMap.put(Character.valueOf('\n'), "\\n");
-        escapeMap.put(Character.valueOf('\r'), "\\r");
-        escapeMap.put(Character.valueOf('\t'), "\\t");
+        trailingWhiteSpacePattern = Pattern.compile("\\s+$");
+        whiteSpacePattern = Pattern.compile("\\s+");
+
+        escapeMap = new TreeMap<>();
+        escapeMap.put('\'', "\\\'");
+        escapeMap.put('\"', "\\\"");
+        escapeMap.put('\\', "\\\\");
+        escapeMap.put('\b', "\\b");
+        escapeMap.put('\f', "\\f");
+        escapeMap.put('\n', "\\n");
+        escapeMap.put('\r', "\\r");
+        escapeMap.put('\t', "\\t");
     }
 
     private boolean isEscapable(Character some) {
@@ -156,15 +160,32 @@ public class Tools {
      */
     public void attemptToDeleteAll(File folder) {
         assert folder != null;
-        if (folder.isDirectory()) {
-            File[] files = folder.listFiles();
 
-            // TODO #3: Check if steams make sense here.
-            for (int i = 0; i < files.length; i += 1) {
-                attemptToDeleteAll(files[i]);
-            }
+        try {
+            Files.walkFileTree(folder.toPath(), new SimpleFileVisitor<Path>() {
+                private FileVisitResult deleteOrWarn(Path some) {
+                    try {
+                        Files.delete(some);
+                        log.fine("deleted \"" + some.toString() + "\"");
+                    } catch (IOException error) {
+                        log.warning("cannot delete \"" + some.toString() + "\": " + error.toString());
+                    }
+                    return FileVisitResult.CONTINUE;
+                }
+
+                @Override
+                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                    return deleteOrWarn(file);
+                }
+
+                @Override
+                public FileVisitResult postVisitDirectory(Path directory, IOException exc) throws IOException {
+                    return deleteOrWarn(directory);
+                }
+            });
+        } catch (IOException error) {
+            assert false: "IOException must be logged by walkFileTree";
         }
-        deleteOrWarn(folder);
     }
 
     /**
@@ -193,12 +214,7 @@ public class Tools {
      */
     public String withoutTrailingWhiteSpace(String some) {
         assert some != null;
-
-        int i = some.length() - 1;
-        while ((i >= 0) && (Character.isWhitespace(some.charAt(i)))) {
-            i -= 1;
-        }
-        return some.substring(0, i + 1);
+        return trailingWhiteSpacePattern.matcher(some).replaceFirst("");
     }
 
     /**
@@ -206,19 +222,11 @@ public class Tools {
      */
     public String withoutWhiteSpace(String some) {
         assert some != null;
-        String result = "";
-
-        // TODO #3: Use streams.
-        for (char ch : some.toCharArray()) {
-            if (!Character.isWhitespace(ch)) {
-                result += ch;
-            }
-        }
-        return result;
+        return whiteSpacePattern.matcher(some).replaceAll("");
     }
 
     public String[] splitFile(File file) {
-        List<String> result = new LinkedList<String>();
+        List<String> result = new LinkedList<>();
         File parentRider = file.getAbsoluteFile();
 
         while (parentRider.getName().length() > 0) {
@@ -301,11 +309,10 @@ public class Tools {
             buffer.append('\"');
             for (int i = 0; i < some.length(); i += 1) {
                 char c = some.charAt(i);
-                Character cAsCharacter = Character.valueOf(c);
                 String escaped = null;
 
-                if (isEscapable(cAsCharacter)) {
-                    escaped = escapeMap.get(cAsCharacter);
+                if (isEscapable(c)) {
+                    escaped = escapeMap.get(c);
                 } else if (c < ' ') {
                     escaped = hexString(c, UNICODE_HEX_DIGIT_COUNT, "\\u");
                 }
@@ -463,11 +470,8 @@ public class Tools {
 
         mkdirs(target.getParentFile());
 
-        InputStream in = new FileInputStream(source);
-        try {
-            OutputStream out = new FileOutputStream(target);
-
-            try {
+        try (InputStream in = new FileInputStream(source)) {
+            try (OutputStream out = new FileOutputStream(target)) {
                 byte[] buffer = new byte[BUFFER_SIZE];
 
                 while (!copied) {
@@ -480,13 +484,10 @@ public class Tools {
                     }
                 }
             } finally {
-                out.close();
                 if (!copied) {
                     delete(target);
                 }
             }
-        } finally {
-            in.close();
         }
     }
 
@@ -534,21 +535,10 @@ public class Tools {
                 }
             }
             if (cause != null) {
-                IOException error = new IOException("cannot copy stream");
-                error.initCause(cause);
+                IOException error = new IOException("cannot copy stream", cause);
                 throw error;
             }
         }
-    }
-
-    public String[] getRelativePaths(File baseDir, File[] filesInBaseDir) {
-        // TODO #3: Use streams.
-        String[] result = new String[filesInBaseDir.length];
-
-        for (int i = 0; i < filesInBaseDir.length; i += 1) {
-            result[i] = getRelativePath(baseDir, filesInBaseDir[i]);
-        }
-        return result;
     }
 
     /**

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import net.sf.grotag.common.AmigaPathList;
 import net.sf.grotag.common.AmigaTools;
@@ -43,7 +44,7 @@ public class Guide {
     private List<AbstractItem> items;
     private TagPool tagPool;
     private MessagePool messagePool;
-    private List<CommandItem> nodeList;
+    private List<CommandItem> nodeList;  // TODO: Improve naming, e.g. commandItemList.
     private Tools tools;
     private int uniqueNodeCounter;
     private Map<String, CommandItem> nodeMap;
@@ -68,8 +69,8 @@ public class Guide {
         guideSource = newGuideSource;
         amigaPaths = newAmigaPaths;
         tagPool = new TagPool();
-        nodeInfoMap = new TreeMap<String, NodeInfo>();
-        globalRelationLinkMap = new TreeMap<Relation, Link>();
+        nodeInfoMap = new TreeMap<>();
+        globalRelationLinkMap = new TreeMap<>();
     }
 
     private void defineMacros() {
@@ -181,7 +182,7 @@ public class Guide {
     }
 
     private void collectLinks() {
-        links = new ArrayList<Link>();
+        links = new ArrayList<>();
 
         // Collect links from relations.
         // TODO #3: Check if streams are useful here.
@@ -248,9 +249,9 @@ public class Guide {
     }
 
     private void collectNodes() {
-        nodeList = new ArrayList<CommandItem>();
-        nodeMap = new TreeMap<String, CommandItem>();
-        endNodeMap = new TreeMap<String, CommandItem>();
+        nodeList = new ArrayList<>();
+        nodeMap = new TreeMap<>();
+        endNodeMap = new TreeMap<>();
 
         String nodeName = null;
         int i = 0;
@@ -265,7 +266,7 @@ public class Guide {
                     if (nodeName != null) {
                         // Add missing @endnode.
                         CommandItem endNodeItem = new CommandItem(command.getFile(), command.getLine(), command
-                                .getColumn(), "endnode", false, new ArrayList<AbstractItem>());
+                                .getColumn(), "endnode", false, new ArrayList<>());
                         items.add(i, endNodeItem);
                         endNodeMap.put(nodeName, endNodeItem);
                         i += 1;
@@ -357,7 +358,7 @@ public class Guide {
         AbstractItem lastItem = items.get(items.size() - 1);
         assert lastItem instanceof NewLineItem : "lastItem=" + lastItem.getClass().getName();
         CommandItem endNodeItem = new CommandItem(lastItem.getFile(), lastItem.getLine(), lastItem.getColumn(),
-                "endnode", false, new ArrayList<AbstractItem>());
+                "endnode", false, new ArrayList<>());
         items.add(endNodeItem);
         endNodeMap.put(nodeName, endNodeItem);
 
@@ -387,8 +388,8 @@ public class Guide {
     }
 
     private void validateCommands() {
-        uniqueGlobalCommandsOccurred = new TreeMap<String, CommandItem>();
-        uniqueNodeCommandsOccurred = new TreeMap<String, CommandItem>();
+        uniqueGlobalCommandsOccurred = new TreeMap<>();
+        uniqueNodeCommandsOccurred = new TreeMap<>();
         NodeInfo currentNodeInfo = null;
         int itemIndex = 0;
 
@@ -848,16 +849,14 @@ public class Guide {
      * in the guide.
      */
     public List<NodeInfo> getNodeInfos() {
-        List<NodeInfo> result = new ArrayList<NodeInfo>(nodeList.size());
-        // TODO #3: Check if streams are useful here.
-        for (CommandItem nodeCommand : nodeList) {
+        List<NodeInfo> result = nodeList.stream().map(nodeCommand -> {
             String nodeName = getNodeName(nodeCommand);
             assert nodeName != null;
             NodeInfo nodeInfo = getNodeInfo(nodeName);
             assert nodeInfo != null;
             assert nodeInfo.getName().equals(nodeName);
-            result.add(nodeInfo);
-        }
+            return nodeInfo;
+        }).collect(Collectors.toList());
         assert result.size() == nodeList.size();
         assert result.size() == nodeInfoMap.size();
 
@@ -874,7 +873,6 @@ public class Guide {
 
     public void writePretty(Writer writer) throws IOException {
         checkNoMacrosHaveBeenDefined();
-        // TODO #3: Check if streams are useful here.
         for (AbstractItem item : getItems()) {
             writer.write(item.toPrettyAmigaguide());
         }
@@ -882,21 +880,12 @@ public class Guide {
 
     public void writePretty(File targetFile) throws IOException {
         checkNoMacrosHaveBeenDefined();
-        FileOutputStream fileOutStream = new FileOutputStream(targetFile);
-        try {
-            OutputStreamWriter outStreamWriter = new OutputStreamWriter(fileOutStream, AmigaTools.ENCODING);
-            try {
-                BufferedWriter writer = new BufferedWriter(outStreamWriter);
-                try {
+        try (FileOutputStream fileOutStream = new FileOutputStream(targetFile)) {
+            try (OutputStreamWriter outStreamWriter = new OutputStreamWriter(fileOutStream, AmigaTools.ENCODING)) {
+                try (BufferedWriter writer = new BufferedWriter(outStreamWriter)) {
                     writePretty(writer);
-                } finally {
-                    writer.close();
                 }
-            } finally {
-                outStreamWriter.close();
             }
-        } finally {
-            fileOutStream.close();
         }
     }
 

@@ -21,6 +21,15 @@ public class ToolsTest {
     }
 
     @Test
+    public void testWithoutWhiteSpace() {
+        assertEquals("hugo", tools.withoutWhiteSpace("hugo"));
+        assertEquals("hugo", tools.withoutWhiteSpace(" \thugo"));
+        assertEquals("hugo", tools.withoutWhiteSpace(" hugo\t"));
+        assertEquals("hugo", tools.withoutWhiteSpace(" hu go "));
+        assertEquals("", tools.withoutWhiteSpace(" \t \t "));
+    }
+
+    @Test
     public void testWithoutTrailingWhiteSpace() {
         assertEquals("hugo", tools.withoutTrailingWhiteSpace("hugo"));
         assertEquals("hugo", tools.withoutTrailingWhiteSpace("hugo "));

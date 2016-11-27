@@ -112,7 +112,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
          * List of actions as assigned to the buttons in this tool bar.
          */
         public List<Action> getActionList() {
-            List<Action> result = new LinkedList<Action>();
+            List<Action> result = new LinkedList<>();
 
             for (Component component : getComponents()) {
                 if (component instanceof JButton) {
@@ -169,7 +169,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
          * List of actions as assigned to the items in the menu bar.
          */
         public List<Action> getActionList() {
-            List<Action> result = new LinkedList<Action>();
+            List<Action> result = new LinkedList<>();
 
             for (int menuIndex = 0; menuIndex < getMenuCount(); menuIndex += 1) {
                 JMenu menu = getMenu(menuIndex);
@@ -395,6 +395,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * @author Thomas Aglassinger
      */
     private class ReadWorker extends SwingWorker {
+        // TODO #3: Change to javax.swing.SwingWorker.
         private File guideFile;
         private AmigaPathList amigaPaths;
 
@@ -587,9 +588,9 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
         settings = Preferences.userNodeForPackage(Grotag.class);
 
         pageHistoryIndex = NO_INDEX;
-        pageHistory = new ArrayList<URI>();
-        relationMap = new TreeMap<Relation, URI>();
-        relationButtons = new LinkedList<JButton>();
+        pageHistory = new ArrayList<>();
+        relationMap = new TreeMap<>();
+        relationButtons = new LinkedList<>();
         pageLock = new SyncLock("page or file operations");
         openChooser = new JFileChooser();
         openChooser.addChoosableFileFilter(new GuideFileFilter());
@@ -641,10 +642,8 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
      * Build a map to find editor actions by name.
      */
     private void setUpEditorActionTable(JTextComponent textComponent) {
-        editorKitActionMap = new HashMap<Object, Action>();
-        Action[] actionsArray = textComponent.getActions();
-        for (int i = 0; i < actionsArray.length; i++) {
-            Action a = actionsArray[i];
+        editorKitActionMap = new HashMap<>();
+        for (Action a: textComponent.getActions()) {
             editorKitActionMap.put(a.getValue(Action.NAME), a);
         }
     }
@@ -776,7 +775,7 @@ public class GrotagFrame extends JFrame implements HyperlinkListener {
                 progressBar.setMaximum(nodeCount);
                 progressBar.setIndeterminate(false);
 
-                urlToNodeMap = new HashMap<URI, NodeInfo>();
+                urlToNodeMap = new HashMap<>();
                 int nodesWritten = 0;
                 for (Guide guide : newPile.getGuides()) {
                     for (NodeInfo nodeInfo : guide.getNodeInfos()) {
