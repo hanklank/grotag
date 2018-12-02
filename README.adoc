@@ -1,15 +1,12 @@
-Grotag 
--------------
+= Grotag 
 
 Grotag views Amigaguide documents or converts them to HTML and DocBook XML. Additionally it can validate and pretty print such documents.
 
 This is a fork of the original Grotag which intends to modernize the code a bit, fix some bugs, a v40 support and AsciiDoc saveas.
 
-Getting Started
-~~~~~~~~~~~~~~~
+== Getting Started
 
-Prerequisites
-^^^^^^^^^^^^^
+=== Prerequisites
 
 What things you need to install the software and how to install them
 
@@ -17,8 +14,8 @@ What things you need to install the software and how to install them
  Java 8
 ....
 
-Installing
-^^^^^^^^^^
+=== Installing
+
 First build the project.
 ....
 ./gradlew clean build
@@ -31,44 +28,40 @@ Run it with
 java -jar -Dawt.useSystemAAFontSettings=on -Dswing.aatext=true NAMEOFTHEFGROTAG.JAR
 ....
 
-Running the tests
-~~~~~~~~~~~~~~~~~
+== Running the tests
 
 ....
 ./gradlew clean check
 ....
 
 
-Built With
-~~~~~~~~~~
+== Built With
+
 TODO
 
-Contributing
-~~~~~~~~~~~~
+== Contributing
+
 TODO
 
-Versioning
-~~~~~~~~~~
+== Versioning
 
 We use http://semver.org/[SemVer] for versioning. For the versions
 available, see the https://github.com/your/project/tags[tags on this
 repository].
 
-Authors
-~~~~~~~
+== Authors
 
 * *Thomas Aglassinger* - _Initial work, creator_ 
 https://github.com/roskakori[roskakori]
+
 TODO
 
-License
-~~~~~~~
+== License
 
 This project is licensed under the GPLv3 License - see the link:LICENSE[LiCENSE] file
 for details
 
-Acknowledgments
-~~~~~~~~~~~~~~~
+== Acknowledgments
 
 * Thomas for the original project
 * Amiga OS and the Amiga comuunity for still being fascinating after all these years.
