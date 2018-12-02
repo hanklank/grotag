@@ -87,7 +87,7 @@
     <unjar src="${external.dir}/twelvemonkeys-imageio-iff.jar" dest="${classes.dir}" />
     <javac debug="true" destdir="${classes.dir}" includeantruntime="false" source="1.5" srcdir="${source.dir}" target="1.5" />
     <mkdir dir="${styles.dir}" />
-    <copy file="/amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
+    <copy file="amigaguide.css" tofile="${styles.dir}/amigaguide.css" />
     <jar destfile="${Grotag.jar}">
       <fileset dir="${classes.dir}" excludes="**/*Test.class" includes="**/*.class, **/*.css, **/*.properties" />
       <fileset dir="${resources.dir}" includes="images/*.png" />

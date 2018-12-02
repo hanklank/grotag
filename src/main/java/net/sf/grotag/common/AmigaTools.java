@@ -74,7 +74,7 @@ public class AmigaTools {
     public File getFileFor(String amigaPath, AmigaPathList amigaPaths) {
         assert amigaPath != null;
         assert amigaPaths != null;
-        String currentFolderPath = System.getProperty("user.dir");
+        String currentFolderPath = System.getProperty("java.io.tmpdir");
         return getFileFor(amigaPath, new File(currentFolderPath), amigaPaths);
     }
 

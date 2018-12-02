@@ -9,6 +9,7 @@ import net.sf.grotag.common.TestTools;
 import net.sf.grotag.common.Tools;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
@@ -57,5 +58,11 @@ public class HtmlDomFactoryTest {
     @Test
     public void testCreateRootDocument() throws Exception {
         testCreateNodeDocument("root");
+    }
+
+
+    private File readResourceFile(String filepath){
+        ClassLoader classLoader = getClass().getClassLoader();
+        return new File(classLoader.getResource(filepath).getFile());
     }
 }

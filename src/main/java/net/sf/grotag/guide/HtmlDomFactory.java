@@ -10,8 +10,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -452,7 +454,7 @@ public class HtmlDomFactory extends AbstractDomFactory {
         if (cssIn == null) {
             throw new IllegalStateException("cannot find CSS style resource: " + CSS_RESOURCE);
         }
-        Files.copy(cssIn, Paths.get(getStyleFile().toURI()));
+        Files.copy(cssIn, Paths.get(getStyleFile().toURI()), StandardCopyOption.REPLACE_EXISTING);
     }
 
     /**

@@ -1,0 +1,49 @@
+
+plugins {
+//    id 'application'
+
+  id "com.github.ben-manes.versions" version "0.20.0"
+    id 'java'
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+    maven {
+        url = 'http://repo.maven.apache.org/maven2'
+    }
+}
+
+dependencies {
+    compile 'com.martiansoftware:jsap:2.1'
+    compile 'com.twelvemonkeys.imageio:imageio-core:3.4.1'
+    compile group: 'net.sf.docbook', name: 'docbook-xsl', version: '1.79.1'
+    compile 'com.twelvemonkeys.imageio:imageio-iff:3.4.1'
+    testCompile 'junit:junit:4.11'
+
+    compile group: 'org.docbook', name: 'docbook-xml', version: '5.0'
+
+    testCompile group: 'commons-io', name: 'commons-io', version: '2.6'
+}
+
+jar {
+   manifest {
+      attributes 'Main-Class': 'net.sf.grotag.Grotag'
+   }
+     from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+/*application {
+    mainClassName = 'net.sf.grotag.Grotag'
+}*/
+
+group = 'net.sf.grotag'
+version = '0.4-SNAPSHOT'
+description = 'grotag'
+sourceCompatibility = '1.8'
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}

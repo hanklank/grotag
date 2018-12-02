@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -25,7 +26,7 @@ import com.martiansoftware.jsap.JSAPResult;
 
 /**
  * Grotag - View, convert, validate and pretty print Amigaguide documents.
- * 
+ *
  * @author Thomas Aglassinger
  */
 public class Grotag {
@@ -187,6 +188,9 @@ public class Grotag {
         Logger mainLog = Logger.getLogger(Grotag.class.getName());
         int exitCode = 1;
         try {
+
+            UIManager.setLookAndFeel(
+                    UIManager.getSystemLookAndFeelClassName());
             Grotag grotag = new Grotag();
             grotag.work(arguments);
             exitCode = 0;

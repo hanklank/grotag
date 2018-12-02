@@ -30,7 +30,7 @@ public class AmigaToolsTest {
     @Test
     public void testGetFilePathString() {
         File basicsFile = testTools.getTestInputFile("basics.guide");
-        testGetFilePathString("tests/input/basics.guide", basicsFile);
+        testGetFilePathString("test/.temp/input/basics.guide", basicsFile);
     }
 
     @Test

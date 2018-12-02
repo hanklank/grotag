@@ -1,5 +1,7 @@
 package net.sf.grotag.common;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.nio.file.*;
 
@@ -25,6 +27,8 @@ public class TestTools {
         }
 
     }
+
+    private String tmpDir = System.getProperty("java.io.tmpdir");
 
     public static final synchronized TestTools getInstance() {
         if (instance == null) {
@@ -54,10 +58,21 @@ public class TestTools {
         return getTestFile(Folder.GUIDES, fileName);
     }
 
+    public void copyDirectory() throws IOException {
+        Path path = Paths.get(tmpDir + "/test/.temp");
+            if(!Files.exists(path)) {
+                Files.createDirectories(path);
+
+        }
+             ClassLoader classLoader = getClass().getClassLoader();
+        File f  = new File(classLoader.getResource("input").getFile());
+        FileUtils.copyDirectoryToDirectory(f,path.toFile());
+    }
+
     public File getTestFile(Folder baseFolder, String fileName)  {
         Path resultPath;
         boolean hasResouceToCopy = baseFolder != Folder.ACTUAL;
-        String currentFolder = System.getProperty("user.home");
+        String currentFolder = System.getProperty("java.io.tmpdir");
         if (hasResouceToCopy) {
             resultPath = Paths.get(currentFolder, "test", ".temp", baseFolder.getValue(), fileName);
         } else {

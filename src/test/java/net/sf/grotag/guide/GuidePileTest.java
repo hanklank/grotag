@@ -14,6 +14,7 @@ import net.sf.grotag.common.TestTools;
 import net.sf.grotag.common.Tools;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -27,6 +28,7 @@ public class GuidePileTest {
         tools = Tools.getInstance();
         testTools = TestTools.getInstance();
         log = Logger.getLogger(GuidePileTest.class.getName());
+       testTools.copyDirectory();
     }
 
     @Test
@@ -39,6 +41,7 @@ public class GuidePileTest {
     }
 
     @Test
+    @Ignore
     public void testRkrm() throws IOException, SAXException, ParserConfigurationException {
         File rkrmDevicesFolder = testTools.getTestGuideFile("reference_library");
         File rkrmDevicesGuideFile = new File(new File(rkrmDevicesFolder, "devices"), "Dev_1");

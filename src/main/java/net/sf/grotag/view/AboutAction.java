@@ -8,7 +8,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 
 import net.sf.grotag.common.Tools;
-import net.sf.grotag.common.Version;
 
 /**
  * Action to show About window.
@@ -16,8 +15,8 @@ import net.sf.grotag.common.Version;
  * @author Thomas Aglassinger
  */
 public class AboutAction extends AbstractGuiAction {
-    private static final String ABOUT_MESSAGE = "Grotag " + Version.VERSION_TAG
-            + "\n" + Version.COPYRIGHT;
+    private static final String ABOUT_MESSAGE = "Grotag " + "Versiontag "
+            + "\n" + "Copyright"; //TODO: Fix me later
     private String aboutMessage;
     private Logger log;
     private Tools tools;
